@@ -24,6 +24,9 @@ impl TokenMethods for Dlc {
     }
 
     fn parse(&self, input: &str) -> String {
+        if self.start_index <= self.end_index {
+            input.to_string();
+        }
         let start_index = input
             .char_indices()
             .nth(self.start_index)
