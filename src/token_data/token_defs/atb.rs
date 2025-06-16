@@ -55,17 +55,33 @@ impl BytecodeTokenMethods for Atb {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
         if instruction.op_code == Atb::default().get_opcode() {
             if !instruction.operands[0].is_empty() {
                 self.text = instruction.operands[1].clone();
                 return Ok(());
             }
 
-            return Err("An ATP Bytecode parsing error ocurred: Invalid Operands".to_string());
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::InvalidOperands(
+                        "Invalid operands for this instruction! expected {text}".to_string()
+                    ),
+                    self.token_to_bytecode_instruction().to_bytecode_line(),
+                    instruction.operands.join(" ")
+                )
+            );
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::BytecodeNotFound(
+                    "Invalid code for this parser!".to_string()
+                ),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
