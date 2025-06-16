@@ -2,17 +2,29 @@ use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
     token_data::TokenMethods,
-    utils::{ mapping::get_supported_default_tokens, validations::check_file_path },
+    utils::{
+        errors::{ AtpError, AtpErrorCode },
+        mapping::get_supported_default_tokens,
+        validations::check_file_path,
+    },
 };
 
-pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, String> {
+pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
     check_file_path(path, Some("atp"))?;
     let mut result: Vec<Box<dyn TokenMethods>> = Vec::new();
 
     let file = match OpenOptions::new().read(true).open(path) {
         Ok(x) => x,
         Err(_) => {
-            return Err("An ATP parsing error ocurred: File not found".to_string());
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::FileOpeningError(
+                        "Failed opening File".to_string()
+                    ),
+                    "".to_string(),
+                    format!("{:?}", path)
+                )
+            );
         }
     };
 
@@ -22,7 +34,15 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, String>
         let mut line_text = match line {
             Ok(x) => x,
             Err(_) => {
-                return Err("An ATP Parsing error ocurred: Error reading file line".to_string());
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::FileReadingError(
+                            "Failed reading file line".to_string()
+                        ),
+                        "".to_string(),
+                        "".to_string()
+                    )
+                );
             }
         };
 
@@ -31,7 +51,15 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, String>
         let chunks = match shell_words::split(&line_text) {
             Ok(x) => x,
             Err(_) => {
-                return Err("An ATP parsing error ocurred: Shell Words internal error".to_string());
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::TextParsingError(
+                            "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                        ),
+                        "shell words split".to_string(),
+                        line_text.to_string()
+                    )
+                );
             }
         };
 
@@ -39,7 +67,15 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, String>
         let token_factory = match supported_tokens.get(&chunks[0]) {
             Some(x) => x,
             None => {
-                return Err("An ATP parsing error ocurred: Invalid Sintax".to_string());
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenNotFound(
+                            "Token not recognized".to_string()
+                        ),
+                        "".to_string(),
+                        chunks[0].to_string()
+                    )
+                );
             }
         };
 
@@ -48,7 +84,15 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, String>
         match token.token_from_vec_params(chunks) {
             Ok(x) => x,
             Err(_) => {
-                return Err("An Atp parsing error ocurred: Invalid token".to_string());
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TextParsingError(
+                            "Token not recognized".to_string()
+                        ),
+                        "".to_string(),
+                        "".to_string()
+                    )
+                );
             }
         }
 
