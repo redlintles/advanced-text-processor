@@ -1,4 +1,4 @@
-use crate::{ token_data::{ TokenMethods } };
+use crate::{ token_data::TokenMethods, utils::errors::AtpError };
 
 pub mod writer;
 pub mod reader;
@@ -27,7 +27,7 @@ pub trait BytecodeTokenMethods: TokenMethods {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String>;
+    ) -> Result<(), AtpError>;
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction;
 
     fn get_opcode(&self) -> u8;
