@@ -1,4 +1,4 @@
-use crate::token_data::TokenMethods;
+use crate::{ token_data::TokenMethods, utils::errors::AtpError };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -22,19 +22,27 @@ impl TokenMethods for Atb {
         format!("atb {};\n", self.text)
     }
 
-    fn parse(&self, input: &str) -> String {
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(&self.text);
         s.push_str(input);
-        s
+        Ok(s)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "atb;"
 
         if line[0] == "atb" {
             self.text = line[1].clone();
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Token not recognized".to_string()
+                ),
+                self.token_to_atp_line(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
