@@ -151,4 +151,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(rpt::Rpt::params(times)));
         self
     }
+
+    pub fn select(mut self, start_index: usize, end_index: usize) -> Self {
+        self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)));
+        self
+    }
 }
