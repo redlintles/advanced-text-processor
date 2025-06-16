@@ -1,9 +1,12 @@
 use regex::Regex;
 
-use crate::token_data::TokenMethods;
+use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::{
+    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
+    utils::errors::{ AtpError, AtpErrorCode },
+};
 // Replace first with
 #[derive(Clone)]
 pub struct Rcw {
@@ -38,19 +41,35 @@ impl TokenMethods for Rcw {
         format!("rcw {} {} {};\n", self.count, self.pattern, self.text_to_replace)
     }
 
-    fn parse(&self, input: &str) -> String {
-        self.pattern.replacen(input, self.count, &self.text_to_replace).to_string()
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
+        Ok(self.pattern.replacen(input, self.count, &self.text_to_replace).to_string())
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "rcw;"
 
         if line[0] == "rcw" {
-            self.pattern = Regex::new(&line[2]).map_err(|x| x.to_string())?;
+            self.pattern = Regex::new(&line[1]).map_err(|_|
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::TextParsingError(
+                        "Failed creating regex".to_string()
+                    ),
+                    line[0].to_string(),
+                    line.join(" ")
+                )
+            )?;
             self.text_to_replace = line[3].clone();
-            self.count = line[1].parse::<usize>().map_err(|x| x.to_string())?;
+            self.count = string_to_usize(&line[1])?;
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line[0].to_string(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -62,20 +81,40 @@ impl BytecodeTokenMethods for Rcw {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
         if instruction.op_code == Rcw::default().get_opcode() {
             if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
-                self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|x|
-                    x.to_string()
+                self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|_|
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TextParsingError(
+                            "Failed creating regex".to_string()
+                        ),
+                        instruction.op_code.to_string(),
+                        instruction.operands.join(" ")
+                    )
                 )?;
                 self.text_to_replace = instruction.operands[1].clone();
                 return Ok(());
             }
 
-            return Err("An ATP Bytecode parsing error ocurred: Invalid Operands".to_string());
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidOperands(
+                        "Invalid operands for this instruction".to_string()
+                    ),
+                    instruction.op_code.to_string(),
+                    instruction.operands.join(" ")
+                )
+            );
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".to_string()),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
