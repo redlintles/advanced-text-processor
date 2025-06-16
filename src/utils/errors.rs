@@ -54,6 +54,7 @@ pub enum AtpErrorCode {
     IndexOutOfRange(String),
     InvalidOperands(String),
     InvalidParameters(String),
+    ValidationError(String),
 }
 
 impl AtpErrorCode {
@@ -69,6 +70,7 @@ impl AtpErrorCode {
             Self::InvalidParameters(_) => 203,
             Self::TextParsingError(_) => 300,
             Self::BytecodeParsingError(_) => 301,
+            Self::ValidationError(_) => 302,
         }
     }
 
@@ -83,6 +85,7 @@ impl AtpErrorCode {
             | Self::BytecodeNotFound(x)
             | Self::BytecodeParsingError(x)
             | Self::InvalidParameters(x)
+            | Self::ValidationError(x)
             | Self::TokenArrayNotFound(x) => x.to_string(),
         }
     }
