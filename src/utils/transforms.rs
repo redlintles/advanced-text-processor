@@ -1,4 +1,4 @@
-pub fn string_to_usize(chunk: &str) -> Result<usize, String> {
+pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
     let mut parsed_chunk = String::from(chunk);
     if chunk.ends_with(";") {
         parsed_chunk.pop();
@@ -6,7 +6,17 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, String> {
 
     match parsed_chunk.parse() {
         Ok(v) => Ok(v),
-        Err(_) => { Err("Parsing from string to usize failed".to_string()) }
+        Err(_) => {
+            Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::TextParsingError(
+                        "String to usize Parsing failed".to_string()
+                    ),
+                    chunk.to_string(),
+                    chunk.to_string()
+                )
+            )
+        }
     }
 }
 
@@ -18,6 +28,7 @@ pub fn token_from_hex_string(s: &str) -> Option<u8> {
 
     Some(byte)
 }
+use crate::utils::errors::AtpError;
 #[cfg(feature = "bytecode")]
 use crate::{
     bytecode_parser::BytecodeTokenMethods,
@@ -28,7 +39,7 @@ use crate::{
 #[cfg(feature = "bytecode")]
 pub fn token_to_bytecode_token(
     token: &Box<dyn TokenMethods>
-) -> Result<Box<dyn BytecodeTokenMethods>, String> {
+) -> Result<Box<dyn BytecodeTokenMethods>, AtpError> {
     let mut line = token.token_to_atp_line().trim().to_string();
 
     if line.ends_with(";") {
@@ -37,8 +48,16 @@ pub fn token_to_bytecode_token(
 
     let chunks = match shell_words::split(&line) {
         Ok(x) => x,
-        Err(e) => {
-            return Err(e.to_string());
+        Err(_) => {
+            return Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::TextParsingError(
+                        "Shell words split failed".to_string()
+                    ),
+                    "shell_words::split()".to_string(),
+                    token.token_to_atp_line()
+                )
+            );
         }
     };
 
@@ -47,7 +66,15 @@ pub fn token_to_bytecode_token(
     let factory = match string_token_map.get(&token.get_string_repr()) {
         Some(x) => x,
         None => {
-            return Err("Invalid Token".to_string());
+            return Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::TokenNotFound(
+                        "Token not found in the token map".to_string()
+                    ),
+                    token.token_to_atp_line(),
+                    token.token_to_atp_line()
+                )
+            );
         }
     };
 
@@ -61,7 +88,7 @@ pub fn token_to_bytecode_token(
 #[cfg(feature = "bytecode")]
 pub fn bytecode_token_to_token(
     token: &Box<dyn BytecodeTokenMethods>
-) -> Result<Box<dyn TokenMethods>, String> {
+) -> Result<Box<dyn TokenMethods>, AtpError> {
     use super::mapping::get_supported_default_tokens;
 
     let mut line = token.token_to_atp_line().trim().to_string();
@@ -72,14 +99,34 @@ pub fn bytecode_token_to_token(
         line = line.trim_end_matches(";").to_string();
     }
 
-    let chunks = shell_words::split(&line).map_err(|e| e.to_string())?;
-
+    let chunks = match shell_words::split(&line) {
+        Ok(x) => x,
+        Err(_) => {
+            return Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::TextParsingError(
+                        "Shell words split failed".to_string()
+                    ),
+                    "shell_words::split()".to_string(),
+                    token.token_to_atp_line()
+                )
+            );
+        }
+    };
     let string_token_map = get_supported_default_tokens();
 
     let factory = match string_token_map.get(&token.get_string_repr()) {
         Some(x) => x,
         None => {
-            return Err("Invalid Token".to_string());
+            return Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::TokenNotFound(
+                        "Token not found in the token map".to_string()
+                    ),
+                    token.token_to_atp_line(),
+                    token.token_to_atp_line()
+                )
+            );
         }
     };
 
@@ -94,7 +141,7 @@ pub fn bytecode_token_to_token(
 #[cfg(feature = "bytecode")]
 pub fn token_vec_to_bytecode_token_vec(
     tokens: &Vec<Box<dyn TokenMethods>>
-) -> Result<Vec<Box<dyn BytecodeTokenMethods>>, String> {
+) -> Result<Vec<Box<dyn BytecodeTokenMethods>>, AtpError> {
     let mut r: Vec<Box<dyn BytecodeTokenMethods>> = Vec::new();
 
     for tk in tokens {
@@ -107,7 +154,7 @@ pub fn token_vec_to_bytecode_token_vec(
 #[cfg(feature = "bytecode")]
 pub fn bytecode_token_vec_to_token_vec(
     tokens: &Vec<Box<dyn BytecodeTokenMethods>>
-) -> Result<Vec<Box<dyn TokenMethods>>, String> {
+) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
     let mut r: Vec<Box<dyn TokenMethods>> = Vec::new();
 
     for tk in tokens {
