@@ -1,4 +1,49 @@
-enum ErrorCode {
+#[derive(Default, Clone)]
+pub struct ErrorManager {
+    panic_with_error: bool,
+    show_warnings: bool,
+    error_vec: Vec<AtpError>,
+}
+
+#[derive(Clone)]
+pub struct AtpError {
+    error_code: AtpErrorCode,
+    instruction: String,
+    input: String,
+}
+
+impl AtpError {
+    pub fn new(error_code: AtpErrorCode, instruction: String, input: String) -> Self {
+        AtpError { error_code, instruction, input }
+    }
+}
+
+impl ErrorManager {
+    pub fn will_panic(&mut self, val: bool) {
+        self.panic_with_error = val;
+    }
+    pub fn will_log(&mut self, val: bool) {
+        self.show_warnings = val;
+    }
+    pub fn add_error(&mut self, err: AtpError) {
+        self.error_vec.push(err);
+    }
+
+    pub fn print_errors(&self) {
+        for (error, index) in self.error_vec.iter().zip(0..self.error_vec.len()) {
+            println!(
+                "[{}] => {}:\n\tInstruction: {}\n\t Message: {}\n\tProcessing: {}",
+                index,
+                error.error_code.get_error_code(),
+                error.instruction,
+                error.error_code.get_message(),
+                error.input
+            );
+        }
+    }
+}
+#[derive(Clone)]
+pub enum AtpErrorCode {
     FileNotFound(String),
     TokenNotFound(String),
     TokenArrayNotFound(String),
@@ -8,20 +53,22 @@ enum ErrorCode {
     InvalidIndex(String),
     IndexOutOfRange(String),
     InvalidOperands(String),
+    InvalidParameters(String),
 }
 
-impl ErrorCode {
+impl AtpErrorCode {
     pub fn get_error_code(&self) -> i32 {
         match self {
-            ErrorCode::FileNotFound(_) => 100,
-            ErrorCode::TokenNotFound(_) => 101,
-            ErrorCode::TokenArrayNotFound(_) => 102,
-            ErrorCode::BytecodeNotFound(_) => 103,
-            ErrorCode::InvalidOperands(_) => 200,
-            ErrorCode::IndexOutOfRange(_) => 201,
-            ErrorCode::InvalidIndex(_) => 202,
-            ErrorCode::TextParsingError(_) => 300,
-            ErrorCode::BytecodeParsingError(_) => 301,
+            Self::FileNotFound(_) => 100,
+            Self::TokenNotFound(_) => 101,
+            Self::TokenArrayNotFound(_) => 102,
+            Self::BytecodeNotFound(_) => 103,
+            Self::InvalidOperands(_) => 200,
+            Self::IndexOutOfRange(_) => 201,
+            Self::InvalidIndex(_) => 202,
+            Self::InvalidParameters(_) => 203,
+            Self::TextParsingError(_) => 300,
+            Self::BytecodeParsingError(_) => 301,
         }
     }
 
@@ -35,6 +82,7 @@ impl ErrorCode {
             | Self::TokenNotFound(x)
             | Self::BytecodeNotFound(x)
             | Self::BytecodeParsingError(x)
+            | Self::InvalidParameters(x)
             | Self::TokenArrayNotFound(x) => x.to_string(),
         }
     }
