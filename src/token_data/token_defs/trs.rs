@@ -1,4 +1,4 @@
-use crate::token_data::TokenMethods;
+use crate::{ token_data::TokenMethods, utils::errors::AtpError };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -12,16 +12,24 @@ impl TokenMethods for Trs {
         "trs;\n".to_string()
     }
 
-    fn parse(&self, input: &str) -> String {
-        String::from(input.trim_end())
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
+        Ok(String::from(input.trim_end()))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "trs;"
 
         if line[0] == "trs" {
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line[0].to_string(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -33,12 +41,20 @@ impl BytecodeTokenMethods for Trs {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
+        use crate::utils::errors::AtpErrorCode;
+
         if instruction.op_code == Trs::default().get_opcode() {
             return Ok(());
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".to_string()),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
