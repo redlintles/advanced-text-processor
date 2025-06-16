@@ -1,7 +1,10 @@
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::{
+    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
+    utils::errors::AtpError,
+};
 // Delete after
 #[derive(Clone, Copy, Default)]
 pub struct Dla {
@@ -21,7 +24,7 @@ impl TokenMethods for Dla {
         format!("dla {};\n", self.index)
     }
 
-    fn parse(&self, input: &str) -> String {
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
         if
@@ -31,18 +34,34 @@ impl TokenMethods for Dla {
                 .map(|(i, _)| i)
         {
             s.drain(byte_index..);
+            return Ok(s);
         }
-
-        s
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                    "Index is out of range for the desired string".to_string()
+                ),
+                self.token_to_atp_line(),
+                input.to_string()
+            )
+        )
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dla;"
 
         if line[0] == "dla" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line[0].to_string(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -54,17 +73,35 @@ impl BytecodeTokenMethods for Dla {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
+        use crate::utils::errors::AtpErrorCode;
+
         if instruction.op_code == Dla::default().get_opcode() {
+            use crate::utils::errors::AtpErrorCode;
+
             if !instruction.operands[0].is_empty() {
                 self.index = string_to_usize(&instruction.operands[1])?;
                 return Ok(());
             }
 
-            return Err("An ATP Bytecode parsing error ocurred: Invalid Operands".to_string());
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidOperands(
+                        "Invalid operands for this instruction".to_string()
+                    ),
+                    instruction.op_code.to_string(),
+                    instruction.operands.join(" ")
+                )
+            );
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".to_string()),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
