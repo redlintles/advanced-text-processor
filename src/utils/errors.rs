@@ -47,6 +47,8 @@ pub enum AtpErrorCode {
     FileNotFound(String),
     TokenNotFound(String),
     TokenArrayNotFound(String),
+    FileReadingError(String),
+    FileWritingError(String),
     BytecodeNotFound(String),
     TextParsingError(String),
     BytecodeParsingError(String),
@@ -63,6 +65,8 @@ impl AtpErrorCode {
             Self::FileNotFound(_) => 100,
             Self::TokenNotFound(_) => 101,
             Self::TokenArrayNotFound(_) => 102,
+            Self::FileReadingError(_) => 103,
+            Self::FileWritingError(_) => 104,
             Self::BytecodeNotFound(_) => 103,
             Self::InvalidOperands(_) => 200,
             Self::IndexOutOfRange(_) => 201,
@@ -86,6 +90,8 @@ impl AtpErrorCode {
             | Self::BytecodeParsingError(x)
             | Self::InvalidParameters(x)
             | Self::ValidationError(x)
+            | Self::FileReadingError(x)
+            | Self::FileWritingError(x)
             | Self::TokenArrayNotFound(x) => x.to_string(),
         }
     }
