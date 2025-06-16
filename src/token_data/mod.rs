@@ -1,10 +1,12 @@
+use crate::utils::errors::AtpError;
+
 pub mod token_defs;
 
 pub trait TokenMethods: TokenMethodsClone {
     fn token_to_atp_line(&self) -> String;
-    fn parse(&self, input: &str) -> String;
+    fn parse(&self, input: &str) -> Result<String, AtpError>;
     fn get_string_repr(&self) -> String;
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String>;
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError>;
 }
 
 pub trait TokenMethodsClone {
