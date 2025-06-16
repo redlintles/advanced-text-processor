@@ -18,12 +18,13 @@ use crate::text_parser::parser::parse_token;
 use crate::text_parser::reader::read_from_file;
 use crate::text_parser::writer::write_to_file;
 
-use crate::utils::errors::token_array_not_found;
+use crate::utils::errors::{ token_array_not_found, ErrorManager };
 #[cfg(feature = "bytecode")]
 use crate::utils::transforms::{ bytecode_token_vec_to_token_vec, token_vec_to_bytecode_token_vec };
 #[derive(Default)]
 pub struct AtpProcessor {
     transforms: HashMap<String, Vec<Box<dyn TokenMethods>>>,
+    errors: ErrorManager,
 }
 
 pub trait AtpProcessorMethods {
@@ -56,7 +57,7 @@ pub trait AtpProcessorBytecodeDebugMethods: AtpProcessorBytecodeMethods {
 
 impl AtpProcessor {
     pub fn new() -> Self {
-        AtpProcessor { transforms: HashMap::new() }
+        AtpProcessor { transforms: HashMap::new(), errors: ErrorManager::default() }
     }
 }
 
