@@ -1,7 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{ token_data::TokenMethods, utils::{ errors::AtpError, transforms::string_to_usize } };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::utils::errors::AtpErrorCode;
 // Delete before
 #[derive(Clone, Copy, Default)]
 pub struct Dlb {
@@ -21,7 +22,7 @@ impl TokenMethods for Dlb {
         format!("dlb {};\n", self.index)
     }
 
-    fn parse(&self, input: &str) -> String {
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
         if
@@ -33,16 +34,32 @@ impl TokenMethods for Dlb {
             s.drain(..=byte_index);
         }
 
-        s
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                    format!("Supported indexes 0-{}, entered index {}", input.len() - 1, self.index)
+                ),
+                self.token_to_atp_line(),
+                input.to_string()
+            )
+        )
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dlb;"
 
         if line[0] == "dlb" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line[0].to_string(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -54,17 +71,31 @@ impl BytecodeTokenMethods for Dlb {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
         if instruction.op_code == Dlb::default().get_opcode() {
             if !instruction.operands[0].is_empty() {
                 self.index = string_to_usize(&instruction.operands[1])?;
                 return Ok(());
             }
 
-            return Err("An ATP Bytecode parsing error ocurred: Invalid Operands".to_string());
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidOperands(
+                        "Invalid operands for this instruction".to_string()
+                    ),
+                    instruction.op_code.to_string(),
+                    instruction.operands.join(" ")
+                )
+            );
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".to_string()),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
