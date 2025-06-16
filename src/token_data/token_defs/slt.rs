@@ -1,12 +1,20 @@
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    token_data::TokenMethods,
-    utils::transforms::string_to_usize,
-};
+use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+
+#[cfg(feature = "bytecode")]
+use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 #[derive(Clone, Default)]
 pub struct Slt {
     pub start_index: usize,
     pub end_index: usize,
+}
+
+impl Slt {
+    pub fn params(start_index: usize, end_index: usize) -> Self {
+        Slt {
+            start_index,
+            end_index,
+        }
+    }
 }
 
 impl TokenMethods for Slt {
@@ -37,6 +45,7 @@ impl TokenMethods for Slt {
     }
 }
 
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Slt {
     fn get_opcode(&self) -> u8 {
         0x11
