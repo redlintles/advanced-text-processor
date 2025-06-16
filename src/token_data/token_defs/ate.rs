@@ -1,4 +1,4 @@
-use crate::token_data::TokenMethods;
+use crate::{ token_data::TokenMethods, utils::errors::AtpError };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -21,19 +21,27 @@ impl TokenMethods for Ate {
         format!("ate {};\n", self.text)
     }
 
-    fn parse(&self, input: &str) -> String {
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
         s.push_str(&self.text);
-        s
+        Ok(s)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "ate;"
 
         if line[0] == "ate" {
             self.text = line[1].clone();
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line.join(" "),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -45,17 +53,33 @@ impl BytecodeTokenMethods for Ate {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
         if instruction.op_code == Ate::default().get_opcode() {
             if !instruction.operands[0].is_empty() {
                 self.text = instruction.operands[1].clone();
                 return Ok(());
             }
 
-            return Err("An ATP Bytecode parsing error ocurred: Invalid Operands".to_string());
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::InvalidOperands(
+                        "An ATP Bytecode parsing error ocurred: Invalid Operands".to_string()
+                    ),
+                    instruction.to_bytecode_line(),
+                    instruction.operands.join(" ")
+                )
+            );
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "An ATP Bytecode parsing error ocurred: Invalid Token".to_string()
+                ),
+                instruction.to_bytecode_line(),
+                instruction.operands.join("")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
