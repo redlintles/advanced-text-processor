@@ -26,6 +26,7 @@ pub mod benchmark {
             .trim_both()
             .trim_left()
             .trim_right()
+            .select(3, 7)
             .build()
             .text_debug_processor();
 
@@ -73,6 +74,7 @@ pub mod benchmark {
             .trim_both()
             .trim_left()
             .trim_right()
+            .select(3, 7)
             .build()
             .text_processor();
 
