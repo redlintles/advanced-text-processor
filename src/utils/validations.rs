@@ -1,6 +1,8 @@
-use std::path::Path;
+use std::{ path::Path };
 
-pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), String> {
+use crate::utils::errors::AtpError;
+
+pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     let parsed_ext = ext.unwrap_or("atp");
 
     let mut v1: String = match path.extension() {
@@ -32,6 +34,23 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), String> {
     if v1.is_empty() {
         Ok(())
     } else {
-        Err(v1)
+        Err(
+            AtpError::new(
+                super::errors::AtpErrorCode::ValidationError("Validation Failed".to_string()),
+                "".to_string(),
+                path
+                    .to_str()
+                    .ok_or_else(||
+                        AtpError::new(
+                            super::errors::AtpErrorCode::ValidationError(
+                                "Failed converting Path to string".to_string()
+                            ),
+                            "Path.to_str()".to_string(),
+                            format!("{:?}", path).to_string()
+                        )
+                    )?
+                    .to_string()
+            )
+        )
     }
 }
