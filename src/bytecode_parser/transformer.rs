@@ -3,12 +3,12 @@ use std::{ fs::OpenOptions, io::Write, path::Path };
 use crate::{
     text_parser::reader::read_from_file,
     token_data::TokenMethods,
-    utils::{ transforms::token_to_bytecode_token, validations::check_file_path },
+    utils::{ errors::AtpError, transforms::token_to_bytecode_token, validations::check_file_path },
 };
 
 use super::{ reader::read_bytecode_from_file };
 
-pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Result<(), String> {
+pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Result<(), AtpError> {
     check_file_path(input_file, Some("atp"))?;
     check_file_path(output_file, Some("atpbc"))?;
 
@@ -19,25 +19,40 @@ pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Resul
         .truncate(true)
         .write(true)
         .open(output_file)
-        .map_err(|x| x.to_string())?;
+        .map_err(|_|
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::FileOpeningError(
+                    "Failed opening File".to_string()
+                ),
+                "".to_string(),
+                format!("{:?}", output_file)
+            )
+        )?;
 
     for token in tokens.into_iter() {
-        let line = token_to_bytecode_token(&token)
-            .expect("Invalid Path")
+        let line = token_to_bytecode_token(&token)?
             .token_to_bytecode_instruction()
             .to_bytecode_line();
 
         match new_file.write(line.as_bytes()) {
             Ok(_) => (),
-            Err(e) => {
-                return Err(e.to_string());
+            Err(_) => {
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::FileWritingError(
+                            "Failed writing text to atp file".to_string()
+                        ),
+                        "".to_string(),
+                        line.to_string()
+                    )
+                );
             }
         }
     }
     Ok(())
 }
 
-pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result<(), String> {
+pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result<(), AtpError> {
     check_file_path(input_file, Some("atpbc"))?;
     check_file_path(output_file, Some("atp"))?;
 
@@ -48,15 +63,31 @@ pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result
         .truncate(true)
         .write(true)
         .open(output_file)
-        .map_err(|e| e.to_string())?;
+        .map_err(|_|
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::FileOpeningError(
+                    "Failed opening File".to_string()
+                ),
+                "".to_string(),
+                format!("{:?}", output_file)
+            )
+        )?;
 
     for token in tokens.into_iter() {
         let line = token.token_to_atp_line();
 
         match new_file.write(line.as_bytes()) {
             Ok(_) => (),
-            Err(e) => {
-                return Err(e.to_string());
+            Err(_) => {
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::FileWritingError(
+                            "Failed writing text to atp file".to_string()
+                        ),
+                        "".to_string(),
+                        line.to_string()
+                    )
+                );
             }
         }
     }
