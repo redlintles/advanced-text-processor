@@ -1,4 +1,4 @@
-use crate::token_data::TokenMethods;
+use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -11,18 +11,26 @@ impl TokenMethods for Dlf {
         "dlf;\n".to_string()
     }
 
-    fn parse(&self, input: &str) -> String {
+    fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
         s.drain(..1);
-        s
+        Ok(s)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), String> {
+    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dlf;"
 
         if line[0] == "dlf" {
             return Ok(());
         }
-        Err("Parsing Error".to_string())
+        Err(
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::TokenNotFound(
+                    "Invalid parser for this token".to_string()
+                ),
+                line[0].to_string(),
+                line.join(" ")
+            )
+        )
     }
 
     fn get_string_repr(&self) -> String {
@@ -34,12 +42,18 @@ impl BytecodeTokenMethods for Dlf {
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
-    ) -> Result<(), String> {
+    ) -> Result<(), AtpError> {
         if instruction.op_code == Dlf::default().get_opcode() {
             return Ok(());
         }
 
-        Err("An ATP Bytecode parsing error ocurred: Invalid Token".to_string())
+        Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".to_string()),
+                instruction.op_code.to_string(),
+                instruction.operands.join(" ")
+            )
+        )
     }
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
