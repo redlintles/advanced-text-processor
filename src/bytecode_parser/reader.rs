@@ -122,7 +122,7 @@ pub fn read_bytecode_from_file(
             Err(_) => {
                 return Err(
                     AtpError::new(
-                        crate::utils::errors::AtpErrorCode::TokenNotFound(
+                        crate::utils::errors::AtpErrorCode::BytecodeParsingError(
                             "Token not recognized".to_string()
                         ),
                         "".to_string(),
