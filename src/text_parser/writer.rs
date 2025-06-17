@@ -1,15 +1,23 @@
 use std::{ fs::OpenOptions, io::Write, path::Path };
 
-use crate::{ token_data::TokenMethods, utils::validations::check_file_path };
+use crate::{ token_data::TokenMethods, utils::{ errors::AtpError, validations::check_file_path } };
 
-pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result<(), String> {
+pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result<(), AtpError> {
     check_file_path(path, Some("atp"))?;
     let mut file = OpenOptions::new()
         .create(true)
         .write(true)
         .truncate(true)
         .open(path)
-        .map_err(|x| x.to_string())?;
+        .map_err(|_|
+            AtpError::new(
+                crate::utils::errors::AtpErrorCode::FileOpeningError(
+                    "Failed opening File".to_string()
+                ),
+                "".to_string(),
+                format!("{:?}", path)
+            )
+        )?;
 
     let mut success = true;
 
@@ -26,6 +34,15 @@ pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result
 
     match success {
         true => Ok(()),
-        false => Err("An unexpected error ocurred!".to_string()),
+        false =>
+            Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::FileWritingError(
+                        "Failed writing text to atp file".to_string()
+                    ),
+                    "".to_string(),
+                    "".to_string()
+                )
+            ),
     }
 }
