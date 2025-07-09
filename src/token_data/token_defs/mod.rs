@@ -17,4 +17,5 @@ pub mod rcw;
 pub mod slt;
 pub mod tua;
 pub mod tla;
-pub mod tus;
+pub mod tucs;
+pub mod tlcs;

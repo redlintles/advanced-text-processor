@@ -65,7 +65,8 @@ macro_rules! for_each_token_entry {
             "slt" => slt::Slt,
             "tua" => tua::Tua,
             "tla" => tla::Tla,
-            "tus" => tus::Tus,
+            "tucs" => tucs::Tucs,
+            "tlcs" => tlcs::Tlcs,
         }
     };
 }
@@ -92,7 +93,8 @@ macro_rules! for_each_bytecode_entry {
             0x11 => slt::Slt,
             0x12 => tua::Tua,
             0x13 => tla::Tla,
-            0x14 => tus::Tus,
+            0x14 => tucs::Tucs,
+            0x15 => tlcs::Tlcs,
         }
     };
 }

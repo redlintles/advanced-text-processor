@@ -7,29 +7,29 @@ use crate::{
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
 #[derive(Clone, Copy, Default)]
-pub struct Tus {
+pub struct Tlcs {
     index: usize,
 }
 
-impl TokenMethods for Tus {
+impl TokenMethods for Tlcs {
     fn get_string_repr(&self) -> String {
-        "tus".to_string()
+        "tlcs".to_string()
     }
 
     fn token_to_atp_line(&self) -> String {
-        format!("tus {};\n", self.index)
+        format!("tlcs {};\n", self.index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let result: String = input
             .char_indices()
             .map(|(i, c)| {
-                if i == self.index { c.to_uppercase().to_string() } else { c.to_string() }
+                if i == self.index { c.to_lowercase().to_string() } else { c.to_string() }
             })
             .collect();
         Ok(result)
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "tus" {
+        if line[0] == "tlcs" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
         }
@@ -45,16 +45,16 @@ impl TokenMethods for Tus {
     }
 }
 
-impl BytecodeTokenMethods for Tus {
+impl BytecodeTokenMethods for Tlcs {
     fn get_opcode(&self) -> u8 {
-        0x14
+        0x15
     }
 
     fn token_from_bytecode_instruction(
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Tus::default().get_opcode() {
+        if instruction.op_code == Tlcs::default().get_opcode() {
             self.index = string_to_usize(&instruction.operands[1])?;
             return Ok(());
         }
@@ -70,7 +70,7 @@ impl BytecodeTokenMethods for Tus {
 
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
         BytecodeInstruction {
-            op_code: Tus::default().get_opcode(),
+            op_code: Tlcs::default().get_opcode(),
             operands: [self.index.to_string()].to_vec(),
         }
     }
