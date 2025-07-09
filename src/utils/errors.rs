@@ -100,8 +100,13 @@ impl AtpErrorCode {
     }
 }
 
-pub fn token_array_not_found(identifier: &str) -> impl Fn() -> String {
-    let message =
-        format!("Token array not found, is {} a valid identifier for this processor?", identifier);
+pub fn token_array_not_found(identifier: &str) -> impl Fn() -> AtpError {
+    let message = AtpError::new(
+        AtpErrorCode::TokenArrayNotFound(
+            format!("Token array not found, is {} a valid identifier for this processor?", identifier)
+        ),
+        "get identifier".to_string(),
+        "".to_string()
+    );
     move || message.clone()
 }
