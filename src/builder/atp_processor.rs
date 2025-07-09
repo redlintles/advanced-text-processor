@@ -18,7 +18,7 @@ use crate::text_parser::parser::parse_token;
 use crate::text_parser::reader::read_from_file;
 use crate::text_parser::writer::write_to_file;
 
-use crate::utils::errors::{ token_array_not_found, ErrorManager };
+use crate::utils::errors::{ token_array_not_found, AtpError, ErrorManager };
 #[cfg(feature = "bytecode")]
 use crate::utils::transforms::{ bytecode_token_vec_to_token_vec, token_vec_to_bytecode_token_vec };
 #[derive(Default)]
@@ -28,31 +28,43 @@ pub struct AtpProcessor {
 }
 
 pub trait AtpProcessorMethods {
-    fn write_to_text_file(&self, id: &str, path: &Path) -> Result<(), String>;
-    fn read_from_text_file(&mut self, path: &Path) -> Result<String, String>;
+    fn write_to_text_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
+    fn read_from_text_file(&mut self, path: &Path) -> Result<String, AtpError>;
     fn add_transform(&mut self, tokens: Vec<Box<dyn TokenMethods>>) -> String;
-    fn process_all(&self, id: &str, input: &str) -> Result<String, String>;
-    fn process_single(&self, token: Box<dyn TokenMethods>, input: &str) -> String;
+    fn process_all(&mut self, id: &str, input: &str) -> Result<String, AtpError>;
+    fn process_single(
+        &mut self,
+        token: Box<dyn TokenMethods>,
+        input: &str
+    ) -> Result<String, AtpError>;
 }
 #[cfg(feature = "bytecode")]
 pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
-    fn write_to_bytecode_file(&self, id: &str, path: &Path) -> Result<(), String>;
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), String>;
+    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), AtpError>;
 }
 #[cfg(feature = "debug")]
 pub trait AtpProcessorDebugMethods: AtpProcessorMethods {
-    fn process_all_with_debug(&self, id: &str, input: &str) -> Result<String, String>;
-    fn process_single_with_debug(&self, token: Box<dyn TokenMethods>, input: &str) -> String;
+    fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError>;
+    fn process_single_with_debug(
+        &mut self,
+        token: Box<dyn TokenMethods>,
+        input: &str
+    ) -> Result<String, AtpError>;
 }
 
 #[cfg(feature = "bytecode_debug")]
 pub trait AtpProcessorBytecodeDebugMethods: AtpProcessorBytecodeMethods {
-    fn process_all_bytecode_with_debug(&self, id: &str, input: &str) -> Result<String, String>;
+    fn process_all_bytecode_with_debug(
+        &mut self,
+        id: &str,
+        input: &str
+    ) -> Result<String, AtpError>;
     fn process_single_bytecode_with_debug(
-        &self,
+        &mut self,
         token: Box<dyn BytecodeTokenMethods>,
         input: &str
-    ) -> String;
+    ) -> Result<String, AtpError>;
 }
 
 impl AtpProcessor {
@@ -62,14 +74,26 @@ impl AtpProcessor {
 }
 
 impl AtpProcessorMethods for AtpProcessor {
-    fn write_to_text_file(&self, id: &str, path: &Path) -> Result<(), String> {
-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
+    fn write_to_text_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
         write_to_file(Path::new(path), tokens)
     }
 
-    fn read_from_text_file(&mut self, path: &Path) -> Result<String, String> {
-        let tokens = read_from_file(Path::new(path))?;
+    fn read_from_text_file(&mut self, path: &Path) -> Result<String, AtpError> {
+        let tokens = match read_from_file(Path::new(path)) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
         let identifier = Uuid::new_v4();
 
@@ -78,16 +102,23 @@ impl AtpProcessorMethods for AtpProcessor {
         Ok(identifier.to_string())
     }
 
-    fn process_all(&self, id: &str, input: &str) -> Result<String, String> {
+    fn process_all(&mut self, id: &str, input: &str) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
+        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id));
 
-        for token in tokens.iter() {
-            result = parse_token(token.as_ref(), result.as_str());
+        match tokens {
+            Ok(tks) => {
+                for token in tks.iter() {
+                    result = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
+                }
+                Ok(result.to_string())
+            }
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                Err(e)
+            }
         }
-
-        Ok(result.to_string())
     }
 
     fn add_transform(&mut self, tokens: Vec<Box<dyn TokenMethods>>) -> String {
@@ -97,22 +128,59 @@ impl AtpProcessorMethods for AtpProcessor {
         identifier.to_string()
     }
 
-    fn process_single(&self, token: Box<dyn TokenMethods>, input: &str) -> String {
-        token.parse(input)
+    fn process_single(
+        &mut self,
+        token: Box<dyn TokenMethods>,
+        input: &str
+    ) -> Result<String, AtpError> {
+        match token.parse(input) {
+            Ok(x) => Ok(x),
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                Err(e)
+            }
+        }
     }
 }
 
 #[cfg(feature = "bytecode")]
 impl AtpProcessorBytecodeMethods for AtpProcessor {
-    fn write_to_bytecode_file(&self, id: &str, path: &Path) -> Result<(), String> {
-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
+    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
-        write_bytecode_to_file(path, token_vec_to_bytecode_token_vec(tokens)?)
+        let btc_token_vec = match token_vec_to_bytecode_token_vec(tokens) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+        write_bytecode_to_file(path, btc_token_vec)
     }
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), String> {
-        let tokens = read_bytecode_from_file(path)?;
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), AtpError> {
+        let tokens = match read_bytecode_from_file(path) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
-        self.add_transform(bytecode_token_vec_to_token_vec(&tokens)?);
+        let token_vec = match bytecode_token_vec_to_token_vec(&tokens) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        self.add_transform(token_vec);
 
         Ok(())
     }
@@ -120,17 +188,23 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
 
 #[cfg(feature = "debug")]
 impl AtpProcessorDebugMethods for AtpProcessor {
-    fn process_all_with_debug(&self, id: &str, input: &str) -> Result<String, String> {
+    fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
         let dashes = 10;
 
-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
         println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(token.as_ref(), result.as_str());
+            let temp = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
 
             println!(
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
@@ -151,8 +225,18 @@ impl AtpProcessorDebugMethods for AtpProcessor {
         Ok(result.to_string())
     }
 
-    fn process_single_with_debug(&self, token: Box<dyn TokenMethods>, input: &str) -> String {
-        let output = token.parse(input);
+    fn process_single_with_debug(
+        &mut self,
+        token: Box<dyn TokenMethods>,
+        input: &str
+    ) -> Result<String, AtpError> {
+        let output = match token.parse(input) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
         println!(
             "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
             (0).to_string().blue(),
@@ -162,24 +246,36 @@ impl AtpProcessorDebugMethods for AtpProcessor {
             output.green()
         );
 
-        output
+        Ok(output)
     }
 }
 #[cfg(feature = "bytecode_debug")]
 impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
-    fn process_all_bytecode_with_debug(&self, id: &str, input: &str) -> Result<String, String> {
+    fn process_all_bytecode_with_debug(
+        &mut self,
+        id: &str,
+        input: &str
+    ) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
         let dashes = 10;
 
-        let tokens = token_vec_to_bytecode_token_vec(
-            self.transforms.get(id).ok_or_else(token_array_not_found(id))?
-        )?;
+        let tokens = match
+            token_vec_to_bytecode_token_vec(
+                self.transforms.get(id).ok_or_else(token_array_not_found(id))?
+            )
+        {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
 
         println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(token.as_ref(), result.as_str());
+            let temp = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
             println!(
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
                 counter.to_string().blue(),
@@ -200,11 +296,17 @@ impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
     }
 
     fn process_single_bytecode_with_debug(
-        &self,
+        &mut self,
         token: Box<dyn BytecodeTokenMethods>,
         input: &str
-    ) -> String {
-        let output = token.parse(input);
+    ) -> Result<String, AtpError> {
+        let output = match token.parse(input) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
         println!(
             "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
             (0).to_string().blue(),
@@ -214,6 +316,6 @@ impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
             output.green()
         );
 
-        output
+        Ok(output)
     }
 }
