@@ -62,7 +62,8 @@ macro_rules! for_each_token_entry {
             "rpt" => rpt::Rpt,
             "rtr" => rtr::Rtr,
             "rtl" => rtl::Rtl,
-            "slt" => slt::Slt
+            "slt" => slt::Slt,
+            "tua" => tua::Tua,
         }
     };
 }
@@ -86,7 +87,8 @@ macro_rules! for_each_bytecode_entry {
             0x0e => rtl::Rtl,
             0x0f => rtr::Rtr,
             0x10 => rcw::Rcw,
-            0x11 => slt::Slt
+            0x11 => slt::Slt,
+            0x12 => tua::Tua,
         }
     };
 }
