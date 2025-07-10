@@ -67,6 +67,7 @@ macro_rules! for_each_token_entry {
             "tla" => tla::Tla,
             "tucs" => tucs::Tucs,
             "tlcs" => tlcs::Tlcs,
+            "tucc" => tucc::Tucc
         }
     };
 }
@@ -95,6 +96,7 @@ macro_rules! for_each_bytecode_entry {
             0x13 => tla::Tla,
             0x14 => tucs::Tucs,
             0x15 => tlcs::Tlcs,
+            0x16 => tucc::Tucc
         }
     };
 }
