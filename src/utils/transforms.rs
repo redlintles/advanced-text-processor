@@ -36,6 +36,19 @@ use crate::{
     utils::mapping::get_supported_bytecode_tokens,
 };
 
+pub fn capitalize(input: &str) -> String {
+    let mut chars = input.chars();
+
+    match chars.next() {
+        Some(x) => {
+            let f = x.to_uppercase().to_string();
+            let r: String = chars.collect();
+            format!("{}{}", f, r)
+        }
+        None => input.to_string(),
+    }
+}
+
 #[cfg(feature = "bytecode")]
 pub fn token_to_bytecode_token(
     token: &Box<dyn TokenMethods>
