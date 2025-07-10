@@ -74,7 +74,7 @@ impl TokenMethods for Tucc {
 
 impl BytecodeTokenMethods for Tucc {
     fn get_opcode(&self) -> u8 {
-        0x14
+        0x16
     }
 
     fn token_from_bytecode_instruction(
