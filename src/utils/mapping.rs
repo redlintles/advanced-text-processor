@@ -70,6 +70,7 @@ macro_rules! for_each_token_entry {
             "tucc" => tucc::Tucc,
             "tlcc" => tlcc::Tlcc,
             "cfw" => cfw::Cfw,
+            "clw" => clw::Clw,
         }
     };
 }
@@ -101,6 +102,7 @@ macro_rules! for_each_bytecode_entry {
             0x16 => tucc::Tucc,
             0x17 => tlcc::Tlcc,
             0x18 => cfw::Cfw,
+            0x19 => clw::Clw,
         }
     };
 }
