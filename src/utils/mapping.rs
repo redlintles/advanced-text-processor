@@ -72,6 +72,7 @@ macro_rules! for_each_token_entry {
             "cfw" => cfw::Cfw,
             "clw" => clw::Clw,
             "sslt" => sslt::Sslt,
+            "ctc" => ctc::Ctc,
         }
     };
 }
@@ -105,6 +106,7 @@ macro_rules! for_each_bytecode_entry {
             0x18 => cfw::Cfw,
             0x19 => clw::Clw,
             0x20 => sslt::Sslt,
+            0x21 => ctc::Ctc,
         }
     };
 }
