@@ -71,7 +71,7 @@ macro_rules! for_each_token_entry {
             "tlcc" => tlcc::Tlcc,
             "cfw" => cfw::Cfw,
             "clw" => clw::Clw,
-            "splslt" => splslt::Splslt,
+            "sslt" => sslt::Sslt,
         }
     };
 }
@@ -104,7 +104,7 @@ macro_rules! for_each_bytecode_entry {
             0x17 => tlcc::Tlcc,
             0x18 => cfw::Cfw,
             0x19 => clw::Clw,
-            0x20 => splslt::Splslt,
+            0x20 => sslt::Sslt,
         }
     };
 }
