@@ -89,7 +89,7 @@ impl TokenMethods for Sslt {
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Sslt {
     fn get_opcode(&self) -> u8 {
-        0x11
+        0x1a
     }
 
     fn token_from_bytecode_instruction(

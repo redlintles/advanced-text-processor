@@ -141,6 +141,6 @@ impl BytecodeTokenMethods for Rnw {
         }
     }
     fn get_opcode(&self) -> u8 {
-        0x25
+        0x1f
     }
 }

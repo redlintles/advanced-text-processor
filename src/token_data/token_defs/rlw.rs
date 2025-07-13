@@ -130,6 +130,6 @@ impl BytecodeTokenMethods for Rlw {
         }
     }
     fn get_opcode(&self) -> u8 {
-        0x24
+        0x1e
     }
 }
