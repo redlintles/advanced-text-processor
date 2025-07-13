@@ -109,12 +109,12 @@ macro_rules! for_each_bytecode_entry {
             0x17 => tlcc::Tlcc,
             0x18 => cfw::Cfw,
             0x19 => clw::Clw,
-            0x20 => sslt::Sslt,
-            0x21 => ctc::Ctc,
-            0x22 => ctr::Ctr,
-            0x23 => cts::Cts,
-            0x24 => rlw::Rlw,
-            0x25 => rnw::Rnw,
+            0x1a => sslt::Sslt,
+            0x1b => ctc::Ctc,
+            0x1c => ctr::Ctr,
+            0x1d => cts::Cts,
+            0x1e => rlw::Rlw,
+            0x1f => rnw::Rnw,
         }
     };
 }
