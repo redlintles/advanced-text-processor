@@ -1,5 +1,3 @@
-use std::result;
-
 use regex::Regex;
 
 use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
