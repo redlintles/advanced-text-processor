@@ -76,6 +76,7 @@ macro_rules! for_each_token_entry {
             "ctr" => ctr::Ctr,
             "cts" => cts::Cts,
             "rlw" => rlw::Rlw,
+            "rnw" => rnw::Rnw,
         }
     };
 }
@@ -113,6 +114,7 @@ macro_rules! for_each_bytecode_entry {
             0x22 => ctr::Ctr,
             0x23 => cts::Cts,
             0x24 => rlw::Rlw,
+            0x25 => rnw::Rnw,
         }
     };
 }

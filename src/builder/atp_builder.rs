@@ -130,6 +130,17 @@ impl AtpBuilder {
         );
         self
     }
+    pub fn replace_nth_with(mut self, pattern: &str, text_to_replace: &str, index: usize) -> Self {
+        self.tokens.push(
+            Box::new(match
+                rnw::Rnw::params(pattern.to_string(), text_to_replace.to_string(), index)
+            {
+                Ok(x) => x,
+                Err(e) => panic!("{}", e),
+            })
+        );
+        self
+    }
 
     pub fn replace_count_with(
         mut self,

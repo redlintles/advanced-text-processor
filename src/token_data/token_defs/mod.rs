@@ -28,3 +28,4 @@ pub mod ctc;
 pub mod ctr;
 pub mod cts;
 pub mod rlw;
+pub mod rnw;
