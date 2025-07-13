@@ -14,11 +14,12 @@ pub struct Sslt {
 }
 
 impl Sslt {
-    pub fn params(pattern: Regex, index: usize) -> Self {
-        Sslt {
+    pub fn params(pattern: &str, index: usize) -> Result<Self, String> {
+        let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
+        Ok(Sslt {
             pattern,
             index,
-        }
+        })
     }
 }
 
