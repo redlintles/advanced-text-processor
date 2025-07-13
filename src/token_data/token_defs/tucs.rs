@@ -11,6 +11,14 @@ pub struct Tucs {
     index: usize,
 }
 
+impl Tucs {
+    pub fn params(index: usize) -> Self {
+        Tucs {
+            index,
+        }
+    }
+}
+
 impl TokenMethods for Tucs {
     fn get_string_repr(&self) -> String {
         "tucs".to_string()

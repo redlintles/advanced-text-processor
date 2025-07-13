@@ -11,6 +11,14 @@ pub struct Tlcs {
     index: usize,
 }
 
+impl Tlcs {
+    pub fn params(index: usize) -> Self {
+        Tlcs {
+            index,
+        }
+    }
+}
+
 impl TokenMethods for Tlcs {
     fn get_string_repr(&self) -> String {
         "tlcs".to_string()
