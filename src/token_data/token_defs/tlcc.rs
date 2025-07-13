@@ -12,6 +12,15 @@ pub struct Tlcc {
     end_index: usize,
 }
 
+impl Tlcc {
+    pub fn params(start_index: usize, end_index: usize) -> Self {
+        Tlcc {
+            start_index,
+            end_index,
+        }
+    }
+}
+
 impl TokenMethods for Tlcc {
     fn get_string_repr(&self) -> String {
         "tlcc".to_string()

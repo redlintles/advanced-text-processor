@@ -12,6 +12,15 @@ pub struct Tucc {
     end_index: usize,
 }
 
+impl Tucc {
+    pub fn params(start_index: usize, end_index: usize) -> Self {
+        Tucc {
+            start_index,
+            end_index,
+        }
+    }
+}
+
 impl TokenMethods for Tucc {
     fn get_string_repr(&self) -> String {
         "tucc".to_string()
