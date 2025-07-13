@@ -121,6 +121,15 @@ impl AtpBuilder {
         );
         self
     }
+    pub fn replace_last_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
+        self.tokens.push(
+            Box::new(match rlw::Rlw::params(pattern.to_string(), text_to_replace.to_string()) {
+                Ok(x) => x,
+                Err(e) => panic!("{}", e),
+            })
+        );
+        self
+    }
 
     pub fn replace_count_with(
         mut self,
@@ -154,6 +163,60 @@ impl AtpBuilder {
 
     pub fn select(mut self, start_index: usize, end_index: usize) -> Self {
         self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)));
+        self
+    }
+    pub fn to_uppercase_all(mut self) -> Self {
+        self.tokens.push(Box::new(tua::Tua::default()));
+        self
+    }
+    pub fn to_lowercase_all(mut self) -> Self {
+        self.tokens.push(Box::new(tla::Tla::default()));
+        self
+    }
+    pub fn to_uppercase_single(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(tucs::Tucs::params(index)));
+        self
+    }
+    pub fn to_lowercase_single(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(tlcs::Tlcs::params(index)));
+        self
+    }
+    pub fn to_uppercase_chunk(mut self, start_index: usize, end_index: usize) -> Self {
+        self.tokens.push(Box::new(tucc::Tucc::params(start_index, end_index)));
+        self
+    }
+    pub fn to_lowercase_chunk(mut self, start_index: usize, end_index: usize) -> Self {
+        self.tokens.push(Box::new(tlcc::Tlcc::params(start_index, end_index)));
+        self
+    }
+
+    pub fn capitalize_first_word(mut self) -> Self {
+        self.tokens.push(Box::new(cfw::Cfw::default()));
+        self
+    }
+    pub fn capitalize_last_word(mut self) -> Self {
+        self.tokens.push(Box::new(cfw::Cfw::default()));
+        self
+    }
+    pub fn split_select(mut self, pattern: &str, index: usize) -> Self {
+        self.tokens.push(
+            Box::new(match sslt::Sslt::params(pattern, index) {
+                Ok(x) => x,
+                Err(e) => panic!("{}", e),
+            })
+        );
+        self
+    }
+    pub fn capitalize_chunk(mut self, start_index: usize, end_index: usize) -> Self {
+        self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)));
+        self
+    }
+    pub fn capitalize_range(mut self, start_index: usize, end_index: usize) -> Self {
+        self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)));
+        self
+    }
+    pub fn capitalize_single_word(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(cts::Cts::params(index)));
         self
     }
 }
