@@ -230,4 +230,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(cts::Cts::params(index)));
         self
     }
+
+    pub fn to_url_encoded(mut self) -> Self {
+        self.tokens.push(Box::new(urle::Urle::default()));
+        self
+    }
 }

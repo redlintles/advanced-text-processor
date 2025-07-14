@@ -77,6 +77,7 @@ macro_rules! for_each_token_entry {
             "cts" => cts::Cts,
             "rlw" => rlw::Rlw,
             "rnw" => rnw::Rnw,
+            "urle" => urle::Urle,
         }
     };
 }
@@ -115,6 +116,7 @@ macro_rules! for_each_bytecode_entry {
             0x1d => cts::Cts,
             0x1e => rlw::Rlw,
             0x1f => rnw::Rnw,
+            0x20 => urle::Urle,
         }
     };
 }
