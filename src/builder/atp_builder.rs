@@ -275,4 +275,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(tlcw::Tlcw::params(index)));
         self
     }
+    pub fn to_uppercase_word(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(tucw::Tucw::params(index)));
+        self
+    }
 }
