@@ -247,4 +247,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(splc::Splc::default()));
         self
     }
+
+    pub fn to_html_escape(mut self) -> Self {
+        self.tokens.push(Box::new(htmle::Htmle::default()));
+        self
+    }
 }

@@ -81,6 +81,7 @@ macro_rules! for_each_token_entry {
             "urld" => urld::Urld,
             "rev" => rev::Rev,
             "splc" => splc::Splc,
+            "htmle" => htmle::Htmle,
         }
     };
 }
@@ -123,6 +124,7 @@ macro_rules! for_each_bytecode_entry {
             0x21 => urld::Urld,
             0x22 => rev::Rev,
             0x23 => splc::Splc,
+            0x24 => htmle::Htmle,
         }
     };
 }

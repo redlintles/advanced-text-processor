@@ -33,3 +33,4 @@ pub mod urle;
 pub mod urld;
 pub mod rev;
 pub mod splc;
+pub mod htmle;
