@@ -1,4 +1,6 @@
 use crate::bytecode_parser::BytecodeInstruction;
+
+#[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::BytecodeTokenMethods, token_data::TokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -34,6 +36,7 @@ impl TokenMethods for Rev {
     }
 }
 
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rev {
     fn get_opcode(&self) -> u8 {
         0x22
