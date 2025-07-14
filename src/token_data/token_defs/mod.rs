@@ -35,3 +35,4 @@ pub mod rev;
 pub mod splc;
 pub mod htmle;
 pub mod htmlu;
+pub mod jsone;

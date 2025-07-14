@@ -256,4 +256,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(htmlu::Htmlu::default()));
         self
     }
+
+    pub fn to_json_escaped(mut self) -> Self {
+        self.tokens.push(Box::new(jsone::Jsone::default()));
+        self
+    }
 }

@@ -83,7 +83,7 @@ macro_rules! for_each_token_entry {
             "splc" => splc::Splc,
             "htmle" => htmle::Htmle,            
             "htmlu" => htmlu::Htmlu,            
-
+            "jsone" => jsone::Jsone,
         }
     };
 }
@@ -128,6 +128,7 @@ macro_rules! for_each_bytecode_entry {
             0x23 => splc::Splc,
             0x24 => htmle::Htmle,
             0x25 => htmlu::Htmlu,
+            0x26 => jsone::Jsone,
         }
     };
 }
