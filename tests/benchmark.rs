@@ -9,7 +9,7 @@ pub mod benchmark {
 
         let mut total = 0.0;
 
-        let (processor, identifier) = AtpBuilder::new()
+        let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
             .add_to_end("pizza")
             .repeat(3)
@@ -57,7 +57,7 @@ pub mod benchmark {
 
         let mut total = 0.0;
 
-        let (processor, identifier) = AtpBuilder::new()
+        let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
             .add_to_end("pizza")
             .repeat(3)

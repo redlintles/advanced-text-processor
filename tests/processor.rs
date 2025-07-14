@@ -14,7 +14,7 @@ pub mod processor {
 
     #[test]
     fn test_process_all() {
-        let (processor, identifier) = AtpBuilder::new()
+        let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
@@ -31,7 +31,7 @@ pub mod processor {
     }
     #[test]
     fn test_process_all_with_debug() {
-        let (processor, identifier) = AtpBuilder::new()
+        let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
@@ -49,14 +49,14 @@ pub mod processor {
 
     #[test]
     fn test_process_single() {
-        let processor = AtpProcessor::new();
+        let mut processor = AtpProcessor::new();
         let token: Box<dyn TokenMethods> = Box::new(
             Raw::params("a".to_string(), "b".to_string()).unwrap()
         );
 
         let input = "a".repeat(100);
 
-        let output = processor.process_single(token, &input);
+        let output = processor.process_single(token, &input).unwrap();
 
         let expected_output = "b".repeat(100);
 
@@ -64,14 +64,14 @@ pub mod processor {
     }
     #[test]
     fn test_process_single_with_debug() {
-        let processor: Box<dyn AtpProcessorDebugMethods> = Box::new(AtpProcessor::new());
+        let mut processor: Box<dyn AtpProcessorDebugMethods> = Box::new(AtpProcessor::new());
         let token: Box<dyn TokenMethods> = Box::new(
             Raw::params("a".to_string(), "b".to_string()).unwrap()
         );
 
         let input = "a".repeat(100);
 
-        let output = processor.process_single_with_debug(token, &input);
+        let output = processor.process_single_with_debug(token, &input).unwrap();
 
         let expected_output = "b".repeat(100);
 
@@ -100,7 +100,7 @@ pub mod processor {
 
         let path = file.path();
 
-        let (processor, identifier) = AtpBuilder::new()
+        let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
