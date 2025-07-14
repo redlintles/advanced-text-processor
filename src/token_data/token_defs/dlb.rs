@@ -31,7 +31,7 @@ impl TokenMethods for Dlb {
                 .nth(self.index)
                 .map(|(i, _)| i)
         {
-            s.drain(..=byte_index);
+            return Ok(s.drain(..=byte_index).collect::<String>());
         }
 
         Err(
