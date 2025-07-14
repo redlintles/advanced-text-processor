@@ -32,3 +32,4 @@ pub mod rnw;
 pub mod urle;
 pub mod urld;
 pub mod rev;
+pub mod splc;

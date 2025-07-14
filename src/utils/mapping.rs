@@ -80,6 +80,7 @@ macro_rules! for_each_token_entry {
             "urle" => urle::Urle,
             "urld" => urld::Urld,
             "rev" => rev::Rev,
+            "splc" => splc::Splc,
         }
     };
 }
@@ -121,6 +122,7 @@ macro_rules! for_each_bytecode_entry {
             0x20 => urle::Urle,
             0x21 => urld::Urld,
             0x22 => rev::Rev,
+            0x23 => splc::Splc,
         }
     };
 }

@@ -243,4 +243,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(rev::Rev::default()));
         self
     }
+    pub fn split_characters(mut self) -> Self {
+        self.tokens.push(Box::new(splc::Splc::default()));
+        self
+    }
 }
