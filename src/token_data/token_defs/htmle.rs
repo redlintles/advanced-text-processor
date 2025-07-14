@@ -1,4 +1,4 @@
-use v_htmlescape::escape;
+use html_escape::encode_text;
 
 use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
@@ -17,7 +17,7 @@ impl TokenMethods for Htmle {
         "htmle;\n".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        Ok(escape(input).to_string())
+        Ok(encode_text(input).to_string())
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "htmle" {
