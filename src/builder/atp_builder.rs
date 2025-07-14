@@ -265,4 +265,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(jsonu::Jsonu::default()));
         self
     }
+
+    pub fn insert(mut self, index: usize, text_to_insert: &str) -> Self {
+        self.tokens.push(Box::new(ins::Ins::params(index, text_to_insert)));
+        self
+    }
 }

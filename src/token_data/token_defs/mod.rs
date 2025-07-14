@@ -37,3 +37,4 @@ pub mod htmle;
 pub mod htmlu;
 pub mod jsone;
 pub mod jsonu;
+pub mod ins;
