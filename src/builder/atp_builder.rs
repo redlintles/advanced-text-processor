@@ -235,4 +235,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(urle::Urle::default()));
         self
     }
+    pub fn to_url_decoded(mut self) -> Self {
+        self.tokens.push(Box::new(urld::Urld::default()));
+        self
+    }
 }

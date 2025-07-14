@@ -78,6 +78,7 @@ macro_rules! for_each_token_entry {
             "rlw" => rlw::Rlw,
             "rnw" => rnw::Rnw,
             "urle" => urle::Urle,
+            "urld" => urld::Urld,
         }
     };
 }
@@ -117,6 +118,7 @@ macro_rules! for_each_bytecode_entry {
             0x1e => rlw::Rlw,
             0x1f => rnw::Rnw,
             0x20 => urle::Urle,
+            0x21 => urld::Urld,
         }
     };
 }
