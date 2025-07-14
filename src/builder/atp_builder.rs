@@ -270,4 +270,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(ins::Ins::params(index, text_to_insert)));
         self
     }
+
+    pub fn to_lowercase_word(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(tlcw::Tlcw::params(index)));
+        self
+    }
 }

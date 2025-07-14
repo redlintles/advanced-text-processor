@@ -84,7 +84,8 @@ macro_rules! for_each_token_entry {
             "htmle" => htmle::Htmle,            
             "htmlu" => htmlu::Htmlu,            
             "jsone" => jsone::Jsone,
-            "ins" => ins::Ins
+            "ins" => ins::Ins,
+            "tlcw" => tlcw::Tlcw
         }
     };
 }
@@ -132,6 +133,7 @@ macro_rules! for_each_bytecode_entry {
             0x26 => jsone::Jsone,
             0x27 => jsonu::Jsonu,
             0x28 => ins::Ins,
+            0x29 => tlcw::Tlcw,
         }
     };
 }
