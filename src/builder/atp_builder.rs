@@ -261,4 +261,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(jsone::Jsone::default()));
         self
     }
+    pub fn to_json_unescaped(mut self) -> Self {
+        self.tokens.push(Box::new(jsonu::Jsonu::default()));
+        self
+    }
 }
