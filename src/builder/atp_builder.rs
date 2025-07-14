@@ -248,8 +248,12 @@ impl AtpBuilder {
         self
     }
 
-    pub fn to_html_escape(mut self) -> Self {
+    pub fn to_html_escaped(mut self) -> Self {
         self.tokens.push(Box::new(htmle::Htmle::default()));
+        self
+    }
+    pub fn to_html_unescaped(mut self) -> Self {
+        self.tokens.push(Box::new(htmlu::Htmlu::default()));
         self
     }
 }
