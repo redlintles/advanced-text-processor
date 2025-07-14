@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Default, Clone)]
 pub struct ErrorManager {
     panic_with_error: bool,
@@ -10,6 +12,18 @@ pub struct AtpError {
     error_code: AtpErrorCode,
     instruction: String,
     input: String,
+}
+
+impl Display for AtpError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Erro: {}\nInstruction: {}\n,Input: {}\n",
+            self.error_code,
+            self.instruction,
+            self.input
+        )
+    }
 }
 
 impl AtpError {
@@ -58,6 +72,12 @@ pub enum AtpErrorCode {
     InvalidOperands(String),
     InvalidParameters(String),
     ValidationError(String),
+}
+
+impl Display for AtpErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "\n\tCódigo: {}\n\tMensagem: {}\n", self.get_error_code(), self.get_message())
+    }
 }
 
 impl AtpErrorCode {
