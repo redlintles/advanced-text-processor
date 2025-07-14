@@ -239,4 +239,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(urld::Urld::default()));
         self
     }
+    pub fn to_reverse(mut self) -> Self {
+        self.tokens.push(Box::new(rev::Rev::default()));
+        self
+    }
 }
