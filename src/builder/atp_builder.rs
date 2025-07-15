@@ -304,4 +304,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(padr::Padr::params(text, times)));
         self
     }
+    pub fn remove_whitespace(mut self) -> Self {
+        self.tokens.push(Box::new(rmws::Rmws::default()));
+        self
+    }
 }
