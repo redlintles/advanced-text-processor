@@ -292,4 +292,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(jcmc::Jcmc::default()));
         self
     }
+    pub fn join_to_pascal_case(mut self) -> Self {
+        self.tokens.push(Box::new(jpsc::Jpsc::default()));
+        self
+    }
 }

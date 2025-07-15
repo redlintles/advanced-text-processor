@@ -89,6 +89,7 @@ macro_rules! for_each_token_entry {
             "tucw" => tucw::Tucw,
             "jkbc" => jkbc::Jkbc,
             "jcmc" => jcmc::Jcmc,
+            "jpsc" => jpsc::Jpsc,
         }
     };
 }
@@ -141,6 +142,7 @@ macro_rules! for_each_bytecode_entry {
             0x2b => jkbc::Jkbc,
             0x2c => jsnc::Jsnc,
             0x2d => jcmc::Jcmc,
+            0x2d => jpsc::Jpsc,
         }
     };
 }

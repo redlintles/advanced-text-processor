@@ -43,3 +43,4 @@ pub mod tucw;
 pub mod jkbc;
 pub mod jsnc;
 pub mod jcmc;
+pub mod jpsc;
