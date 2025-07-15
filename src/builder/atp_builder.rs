@@ -300,4 +300,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(padl::Padl::params(text, times)));
         self
     }
+    pub fn pad_right(mut self, text: &str, times: usize) -> Self {
+        self.tokens.push(Box::new(padr::Padr::params(text, times)));
+        self
+    }
 }
