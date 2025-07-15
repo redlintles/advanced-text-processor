@@ -279,4 +279,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(tucw::Tucw::params(index)));
         self
     }
+
+    pub fn join_to_kebab_case(mut self) -> Self {
+        self.tokens.push(Box::new(jkbc::Jkbc::default()));
+        self
+    }
 }

@@ -87,6 +87,7 @@ macro_rules! for_each_token_entry {
             "ins" => ins::Ins,
             "tlcw" => tlcw::Tlcw,
             "tucw" => tucw::Tucw,
+            "jkbc" => jkbc::Jkbc,
         }
     };
 }
@@ -136,6 +137,7 @@ macro_rules! for_each_bytecode_entry {
             0x28 => ins::Ins,
             0x29 => tlcw::Tlcw,
             0x2a => tucw::Tucw,
+            0x2b => jkbc::Jkbc,
         }
     };
 }
