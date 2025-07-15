@@ -308,4 +308,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(rmws::Rmws::default()));
         self
     }
+
+    pub fn delete_single(mut self, index: usize) -> Self {
+        self.tokens.push(Box::new(dls::Dls::params(index)));
+        self
+    }
 }

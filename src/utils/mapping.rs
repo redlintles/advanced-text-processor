@@ -93,6 +93,7 @@ macro_rules! for_each_token_entry {
             "padl" => padl::Padl,
             "padr" => padr::Padr,
             "rmws" => rmws::Rmws,
+            "dls" => dls::Dls,
         }
     };
 }
@@ -149,6 +150,7 @@ macro_rules! for_each_bytecode_entry {
             0x2f => padl::Padl,
             0x30 => padr::Padr,
             0x31 => rmws::Rmws,
+            0x32 => dls::Dls,
         }
     };
 }
