@@ -288,4 +288,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(jsnc::Jsnc::default()));
         self
     }
+    pub fn join_to_camel_case(mut self) -> Self {
+        self.tokens.push(Box::new(jcmc::Jcmc::default()));
+        self
+    }
 }
