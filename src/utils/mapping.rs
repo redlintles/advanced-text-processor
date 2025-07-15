@@ -138,6 +138,7 @@ macro_rules! for_each_bytecode_entry {
             0x29 => tlcw::Tlcw,
             0x2a => tucw::Tucw,
             0x2b => jkbc::Jkbc,
+            0x2c => jsnc::Jsnc,
         }
     };
 }

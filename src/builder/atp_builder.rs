@@ -284,4 +284,8 @@ impl AtpBuilder {
         self.tokens.push(Box::new(jkbc::Jkbc::default()));
         self
     }
+    pub fn join_to_snake_case(mut self) -> Self {
+        self.tokens.push(Box::new(jsnc::Jsnc::default()));
+        self
+    }
 }
