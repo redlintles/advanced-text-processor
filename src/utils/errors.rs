@@ -7,7 +7,7 @@ pub struct ErrorManager {
     error_vec: Vec<AtpError>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AtpError {
     error_code: AtpErrorCode,
     instruction: String,
@@ -56,7 +56,7 @@ impl ErrorManager {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum AtpErrorCode {
     FileNotFound(String),
     TokenNotFound(String),
