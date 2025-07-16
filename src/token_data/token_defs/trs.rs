@@ -65,3 +65,37 @@ impl BytecodeTokenMethods for Trs {
         0x07
     }
 }
+
+#[cfg(test)]
+mod trs_tests {
+    #[test]
+    fn test_trim_right_side() {
+        use crate::token_data::{ token_defs::trs::Trs, TokenMethods };
+        let mut token = Trs::default();
+
+        assert_eq!(token.parse("banana     "), Ok("banana".to_string()));
+        assert_eq!(token.token_to_atp_line(), "trs;\n".to_string());
+        assert_eq!(token.get_string_repr(), "trs".to_string());
+        assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_bytecode_trim_left_side() {
+        use crate::token_data::{ token_defs::trs::Trs };
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Trs::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x07,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x07);
+
+        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+
+        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+    }
+}
