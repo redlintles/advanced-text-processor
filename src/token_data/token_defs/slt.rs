@@ -1,10 +1,8 @@
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::{ AtpError, AtpErrorCode },
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 #[derive(Clone, Default)]
 pub struct Slt {
     pub start_index: usize,
@@ -31,9 +29,7 @@ impl TokenMethods for Slt {
             }
             return Err(
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TextParsingError(
-                        "Failed slicing the desired input".to_string()
-                    ),
+                    AtpErrorCode::TextParsingError("Failed slicing the desired input".to_string()),
                     self.token_to_atp_line(),
                     input.to_string()
                 )
@@ -41,9 +37,7 @@ impl TokenMethods for Slt {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::IndexOutOfRange(
-                    "Invalid bounds for the chunk to select".to_string()
-                ),
+                AtpErrorCode::IndexOutOfRange("Invalid bounds for the chunk to select".to_string()),
                 self.token_to_atp_line(),
                 input.to_string()
             )
@@ -58,9 +52,7 @@ impl TokenMethods for Slt {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )

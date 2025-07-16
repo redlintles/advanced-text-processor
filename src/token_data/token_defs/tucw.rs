@@ -1,4 +1,4 @@
-use crate::{ token_data::TokenMethods, utils::errors::AtpError };
+use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
@@ -45,9 +45,7 @@ impl TokenMethods for Tucw {
 
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid Parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid Parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -70,9 +68,7 @@ impl BytecodeTokenMethods for Tucw {
 
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::BytecodeNotFound(
-                    "Invalid Parser for this token".to_string()
-                ),
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".to_string()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

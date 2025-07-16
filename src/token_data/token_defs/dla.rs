@@ -1,10 +1,9 @@
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
+use crate::utils::errors::{ AtpError, AtpErrorCode };
+
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::AtpError,
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 // Delete after
 #[derive(Clone, Copy, Default)]
 pub struct Dla {
@@ -38,7 +37,7 @@ impl TokenMethods for Dla {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                AtpErrorCode::IndexOutOfRange(
                     "Index is out of range for the desired string".to_string()
                 ),
                 self.token_to_atp_line(),
@@ -55,9 +54,7 @@ impl TokenMethods for Dla {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -74,10 +71,10 @@ impl BytecodeTokenMethods for Dla {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
-        use crate::utils::errors::AtpErrorCode;
+        use AtpErrorCode;
 
         if instruction.op_code == Dla::default().get_opcode() {
-            use crate::utils::errors::AtpErrorCode;
+            use AtpErrorCode;
 
             if !instruction.operands[0].is_empty() {
                 self.index = string_to_usize(&instruction.operands[1])?;

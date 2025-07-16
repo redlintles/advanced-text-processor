@@ -1,8 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::{ errors::AtpError, transforms::string_to_usize } };
+use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-use crate::utils::errors::AtpErrorCode;
 // Delete before
 #[derive(Clone, Copy, Default)]
 pub struct Dlb {
@@ -36,7 +36,7 @@ impl TokenMethods for Dlb {
 
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                AtpErrorCode::IndexOutOfRange(
                     format!("Supported indexes 0-{}, entered index {}", input.len() - 1, self.index)
                 ),
                 self.token_to_atp_line(),
@@ -53,9 +53,7 @@ impl TokenMethods for Dlb {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )

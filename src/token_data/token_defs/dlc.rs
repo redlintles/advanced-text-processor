@@ -1,8 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::{ errors::AtpError, transforms::string_to_usize } };
+use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-use crate::utils::errors::AtpErrorCode;
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 // Delete Chunk
 #[derive(Clone, Copy, Default)]
 pub struct Dlc {
@@ -34,7 +34,7 @@ impl TokenMethods for Dlc {
             .map(|(i, _)| i)
             .ok_or_else(||
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                    AtpErrorCode::IndexOutOfRange(
                         format!(
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
                             input.len() - 1,
@@ -51,7 +51,7 @@ impl TokenMethods for Dlc {
             .map(|(i, _)| i)
             .ok_or_else(||
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::IndexOutOfRange(
+                    AtpErrorCode::IndexOutOfRange(
                         format!(
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
                             input.len() - 1,
@@ -78,9 +78,7 @@ impl TokenMethods for Dlc {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )

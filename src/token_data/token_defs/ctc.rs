@@ -1,10 +1,8 @@
 use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_to_usize } };
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::{ AtpError, AtpErrorCode },
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 #[derive(Clone, Default)]
 pub struct Ctc {
     pub start_index: usize,

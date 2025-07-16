@@ -1,10 +1,9 @@
 use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_to_usize } };
 
+use crate::utils::errors::{ AtpError, AtpErrorCode };
+
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::{ AtpError, AtpErrorCode },
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 #[derive(Clone, Default)]
 pub struct Cts {
     pub index: usize,
@@ -49,9 +48,7 @@ impl TokenMethods for Cts {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )

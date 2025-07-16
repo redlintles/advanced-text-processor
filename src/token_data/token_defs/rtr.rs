@@ -23,9 +23,7 @@ impl TokenMethods for Rtr {
         if input.is_empty() {
             return Err(
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::InvalidParameters(
-                        "Input is empty".to_string()
-                    ),
+                    AtpErrorCode::InvalidParameters("Input is empty".to_string()),
                     self.token_to_atp_line(),
                     "\" \"".to_string()
                 )
@@ -58,9 +56,7 @@ impl TokenMethods for Rtr {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )

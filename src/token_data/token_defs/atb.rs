@@ -1,4 +1,4 @@
-use crate::{ token_data::TokenMethods, utils::errors::AtpError };
+use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -36,9 +36,7 @@ impl TokenMethods for Atb {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Token not recognized".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Token not recognized".to_string()),
                 self.token_to_atp_line(),
                 line.join(" ")
             )
@@ -64,7 +62,7 @@ impl BytecodeTokenMethods for Atb {
 
             return Err(
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::InvalidOperands(
+                    AtpErrorCode::InvalidOperands(
                         "Invalid operands for this instruction! expected {text}".to_string()
                     ),
                     self.token_to_bytecode_instruction().to_bytecode_line(),
@@ -75,9 +73,7 @@ impl BytecodeTokenMethods for Atb {
 
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::BytecodeNotFound(
-                    "Invalid code for this parser!".to_string()
-                ),
+                AtpErrorCode::BytecodeNotFound("Invalid code for this parser!".to_string()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

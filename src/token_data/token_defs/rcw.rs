@@ -1,12 +1,9 @@
 use regex::Regex;
 
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
-
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::{ AtpError, AtpErrorCode },
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 // Replace first with
 #[derive(Clone)]
 pub struct Rcw {
@@ -50,9 +47,7 @@ impl TokenMethods for Rcw {
         if line[0] == "rcw" {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TextParsingError(
-                        "Failed creating regex".to_string()
-                    ),
+                    AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
                     line[0].to_string(),
                     line.join(" ")
                 )
@@ -63,9 +58,7 @@ impl TokenMethods for Rcw {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -86,9 +79,7 @@ impl BytecodeTokenMethods for Rcw {
             if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
                 self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|_|
                     AtpError::new(
-                        crate::utils::errors::AtpErrorCode::TextParsingError(
-                            "Failed creating regex".to_string()
-                        ),
+                        AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
                         instruction.op_code.to_string(),
                         instruction.operands.join(" ")
                     )

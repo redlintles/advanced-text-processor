@@ -57,9 +57,7 @@ impl TokenMethods for Rlw {
         if line[0] == "rlw" {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TextParsingError(
-                        "Failed creating regex".to_string()
-                    ),
+                    AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
                     line[0].to_string(),
                     line.join(" ")
                 )
@@ -69,9 +67,7 @@ impl TokenMethods for Rlw {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -92,9 +88,7 @@ impl BytecodeTokenMethods for Rlw {
             if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
                 self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|_|
                     AtpError::new(
-                        crate::utils::errors::AtpErrorCode::TextParsingError(
-                            "Failed creating regex".to_string()
-                        ),
+                        AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
                         instruction.op_code.to_string(),
                         instruction.operands.join(" ")
                     )
