@@ -4,7 +4,7 @@ pub mod writer;
 pub mod reader;
 pub mod transformer;
 pub mod parser;
-
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct BytecodeInstruction {
     pub op_code: u8,
     pub operands: Vec<String>,
