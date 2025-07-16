@@ -1,10 +1,9 @@
 use crate::token_data::TokenMethods;
 
+use crate::utils::errors::{ AtpError, AtpErrorCode };
+
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::AtpError,
-};
+use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 // Trim left side
 #[derive(Clone, Copy, Default)]
 pub struct Tls {}
@@ -25,9 +24,7 @@ impl TokenMethods for Tls {
         }
         Err(
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
-                ),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -66,5 +63,19 @@ impl BytecodeTokenMethods for Tls {
     }
     fn get_opcode(&self) -> u8 {
         0x06
+    }
+}
+
+#[cfg(test)]
+mod tls_tests {
+    #[test]
+    fn test_trim_left_side() {
+        use crate::token_data::{ token_defs::tls::Tls, TokenMethods };
+        let mut token = Tls::default();
+
+        assert_eq!(token.parse("   banana"), Ok("banana".to_string()));
+        assert_eq!(token.token_to_atp_line(), "tls;\n".to_string());
+        assert_eq!(token.get_string_repr(), "tls".to_string());
+        assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
     }
 }
