@@ -30,7 +30,7 @@ impl TokenMethods for Tua {
         )
     }
 }
-
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tua {
     fn get_opcode(&self) -> u8 {
         0x12

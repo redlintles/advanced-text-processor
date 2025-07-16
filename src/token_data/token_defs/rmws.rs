@@ -30,7 +30,7 @@ impl TokenMethods for Rmws {
         )
     }
 }
-
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rmws {
     fn get_opcode(&self) -> u8 {
         0x31

@@ -79,6 +79,7 @@ impl TokenMethods for Tucc {
     }
 }
 
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tucc {
     fn get_opcode(&self) -> u8 {
         0x16

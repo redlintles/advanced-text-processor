@@ -30,7 +30,7 @@ impl TokenMethods for Tla {
         )
     }
 }
-
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tla {
     fn get_opcode(&self) -> u8 {
         0x13

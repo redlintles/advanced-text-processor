@@ -50,7 +50,7 @@ impl TokenMethods for Tucs {
         )
     }
 }
-
+#[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tucs {
     fn get_opcode(&self) -> u8 {
         0x14
