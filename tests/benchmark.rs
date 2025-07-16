@@ -3,6 +3,7 @@ pub mod benchmark {
     use std::time::Instant;
     use atp_project::builder::atp_builder::AtpBuilder;
 
+    #[cfg(feature = "debug")]
     #[test]
     fn process_sbs_all_tokens() {
         let runs = 100;
