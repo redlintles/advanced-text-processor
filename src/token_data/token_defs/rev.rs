@@ -1,9 +1,7 @@
-use crate::bytecode_parser::BytecodeInstruction;
-
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::BytecodeTokenMethods, token_data::TokenMethods };
+use crate::{ bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction } };
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods };
 
 #[derive(Clone, Default, Copy)]
 pub struct Rev {}
