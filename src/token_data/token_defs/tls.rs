@@ -78,4 +78,24 @@ mod tls_tests {
         assert_eq!(token.get_string_repr(), "tls".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
     }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_bytecode_trim_left_side() {
+        use crate::token_data::{ token_defs::tls::Tls };
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Tls::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x06,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x06);
+
+        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+
+        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+    }
 }
