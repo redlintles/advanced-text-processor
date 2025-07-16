@@ -66,14 +66,25 @@ impl BytecodeTokenMethods for Tls {
     }
 }
 
+#[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tls_tests {
     #[test]
     fn test_trim_left_side() {
         use crate::token_data::{ token_defs::tls::Tls, TokenMethods };
+        use rand::Rng;
         let mut token = Tls::default();
 
-        assert_eq!(token.parse("   banana"), Ok("banana".to_string()));
+        let mut rng = rand::rng();
+
+        let random_number: usize = rng.random_range(0..100);
+        let spaces = " ".repeat(random_number);
+        let mut text = String::from("banana");
+
+        text = format!("{}{}", spaces, text);
+
+        assert_eq!(token.parse("     banana"), Ok("banana".to_string()));
+        assert_eq!(token.parse(&text), Ok("banana".to_string()));
         assert_eq!(token.token_to_atp_line(), "tls;\n".to_string());
         assert_eq!(token.get_string_repr(), "tls".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));

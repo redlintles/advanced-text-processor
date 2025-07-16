@@ -66,14 +66,25 @@ impl BytecodeTokenMethods for Trs {
     }
 }
 
+#[cfg(feature = "test_access")]
 #[cfg(test)]
 mod trs_tests {
     #[test]
     fn test_trim_right_side() {
         use crate::token_data::{ token_defs::trs::Trs, TokenMethods };
+        use rand::Rng;
         let mut token = Trs::default();
 
+        let mut rng = rand::rng();
+
+        let random_number: usize = rng.random_range(0..100);
+        let spaces = " ".repeat(random_number);
+        let mut text = String::from("banana");
+
+        text.push_str(&spaces);
+
         assert_eq!(token.parse("banana     "), Ok("banana".to_string()));
+        assert_eq!(token.parse(&text), Ok("banana".to_string()));
         assert_eq!(token.token_to_atp_line(), "trs;\n".to_string());
         assert_eq!(token.get_string_repr(), "trs".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
@@ -81,7 +92,7 @@ mod trs_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_bytecode_trim_left_side() {
+    fn test_bytecode_trim_right_side() {
         use crate::token_data::{ token_defs::trs::Trs };
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
