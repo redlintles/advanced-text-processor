@@ -57,3 +57,42 @@ impl BytecodeTokenMethods for Tla {
         BytecodeInstruction { op_code: Tla::default().get_opcode(), operands: [].to_vec() }
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod tla_tests {
+    use crate::token_data::{ token_defs::tla::Tla, TokenMethods };
+    #[test]
+    fn test_to_lowercase_all() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut token = Tla::default();
+
+        assert_eq!(token.parse("BANANA"), Ok("banana".to_string()));
+        assert_eq!(token.parse(&random_text), Ok(random_text.to_lowercase()));
+
+        assert_eq!(token.token_to_atp_line(), "tla;\n".to_string());
+        assert_eq!(token.get_string_repr(), "tla".to_string());
+        assert!(matches!(token.token_from_vec_params(["akdkjh".to_string()].to_vec()), Err(_)));
+        assert!(matches!(token.token_from_vec_params(["tla".to_string()].to_vec()), Ok(_)));
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_to_lowercase_all_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Tla::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x13,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x13);
+
+        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+
+        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+    }
+}
