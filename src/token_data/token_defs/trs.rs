@@ -88,6 +88,7 @@ mod trs_tests {
         assert_eq!(token.token_to_atp_line(), "trs;\n".to_string());
         assert_eq!(token.get_string_repr(), "trs".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
+        assert!(matches!(token.token_from_vec_params(["trs".to_string()].to_vec()), Ok(_)));
     }
 
     #[cfg(feature = "bytecode")]

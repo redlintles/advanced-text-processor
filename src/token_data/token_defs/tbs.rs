@@ -87,6 +87,7 @@ mod tbs_tests {
         assert_eq!(token.token_to_atp_line(), "tbs;\n".to_string());
         assert_eq!(token.get_string_repr(), "tbs".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
+        assert!(matches!(token.token_from_vec_params(["tbs".to_string()].to_vec()), Ok(_)));
     }
 
     #[cfg(feature = "bytecode")]

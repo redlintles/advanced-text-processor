@@ -88,6 +88,7 @@ mod tls_tests {
         assert_eq!(token.token_to_atp_line(), "tls;\n".to_string());
         assert_eq!(token.get_string_repr(), "tls".to_string());
         assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
+        assert!(matches!(token.token_from_vec_params(["tls".to_string()].to_vec()), Ok(_)));
     }
 
     #[cfg(feature = "bytecode")]
