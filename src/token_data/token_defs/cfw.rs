@@ -61,3 +61,67 @@ impl BytecodeTokenMethods for Cfw {
         BytecodeInstruction { op_code: Cfw::default().get_opcode(), operands: [].to_vec() }
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod cfw_tests {
+    use crate::{
+        token_data::{ token_defs::cfw::Cfw, TokenMethods },
+        utils::transforms::capitalize,
+    };
+
+    #[test]
+    fn test_capitalize_first_word() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut token = Cfw::default();
+
+        assert_eq!(
+            token.parse(&random_text),
+            Ok(capitalize(&random_text)),
+            "It supports random inputs"
+        );
+        assert_eq!(token.parse("banana"), Ok("Banana".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "cfw;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "cfw".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["cfw".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_capitalize_first_word_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Cfw::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x18,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x18, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+    }
+}
