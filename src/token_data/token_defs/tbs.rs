@@ -82,12 +82,26 @@ mod tbs_tests {
 
         text = format!("{}{}{}", spaces_start, text, spaces_end);
 
-        assert_eq!(token.parse("     banana  "), Ok("banana".to_string()));
-        assert_eq!(token.parse(&text), Ok("banana".to_string()));
-        assert_eq!(token.token_to_atp_line(), "tbs;\n".to_string());
-        assert_eq!(token.get_string_repr(), "tbs".to_string());
-        assert!(matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)));
-        assert!(matches!(token.token_from_vec_params(["tbs".to_string()].to_vec()), Ok(_)));
+        assert_eq!(
+            token.parse("     banana  "),
+            Ok("banana".to_string()),
+            "It supports expected inputs"
+        );
+        assert_eq!(token.parse(&text), Ok("banana".to_string()), "It supports random inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "tbs;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "tbs".to_string(), "get_string_repr works correctly");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tbs".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
     }
 
     #[cfg(feature = "bytecode")]
@@ -103,10 +117,18 @@ mod tbs_tests {
             operands: [].to_vec(),
         };
 
-        assert_eq!(token.get_opcode(), 0x05);
+        assert_eq!(token.get_opcode(), 0x05, "get_opcode does not disrepect ATP token mapping");
 
-        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
 
-        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }

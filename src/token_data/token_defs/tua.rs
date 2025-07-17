@@ -68,13 +68,23 @@ mod tua_tests {
 
         let mut token = Tua::default();
 
-        assert_eq!(token.parse("banana"), Ok("BANANA".to_string()));
-        assert_eq!(token.parse(&random_text), Ok(random_text.to_uppercase()));
+        assert_eq!(token.parse("banana"), Ok("BANANA".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.parse(&random_text),
+            Ok(random_text.to_uppercase()),
+            "It supports random inputs"
+        );
 
         assert_eq!(token.token_to_atp_line(), "tua;\n".to_string());
-        assert_eq!(token.get_string_repr(), "tua".to_string());
-        assert!(matches!(token.token_from_vec_params(["akdkjh".to_string()].to_vec()), Err(_)));
-        assert!(matches!(token.token_from_vec_params(["tua".to_string()].to_vec()), Ok(_)));
+        assert_eq!(token.get_string_repr(), "tua".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tua".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
     }
 
     #[cfg(feature = "bytecode")]
@@ -89,10 +99,18 @@ mod tua_tests {
             operands: [].to_vec(),
         };
 
-        assert_eq!(token.get_opcode(), 0x12);
+        assert_eq!(token.get_opcode(), 0x12, "get_opcode does not disrepect ATP token mapping");
 
-        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
 
-        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
