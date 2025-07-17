@@ -64,3 +64,68 @@ impl BytecodeTokenMethods for Dlf {
         0x03
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod dlf_tests {
+    use crate::token_data::{ token_defs::dlf::Dlf, TokenMethods };
+
+    #[test]
+    fn test_delete_first() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut expected_output = random_text.clone();
+
+        expected_output.drain(..1);
+
+        let mut token = Dlf::default();
+
+        assert_eq!(
+            token.parse(&random_text),
+            Ok(expected_output.to_string()),
+            "It supports random inputs"
+        );
+        assert_eq!(token.parse("banana"), Ok("anana".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "dlf;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "dlf".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["dlf".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_delete_first_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Dlf::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x03,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x03, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+    }
+}
