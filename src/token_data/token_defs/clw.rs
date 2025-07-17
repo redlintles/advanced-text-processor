@@ -89,7 +89,18 @@ mod clw_tests {
 
         assert_eq!(
             token.parse(&random_text),
-            Ok(capitalize(&random_text)),
+            Ok(
+                random_text
+                    .split_whitespace()
+                    .rev()
+                    .enumerate()
+                    .map(|(i, w)| if i == 0 { capitalize(w) } else { w.to_string() })
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .rev()
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ),
             "It supports random inputs"
         );
         assert_eq!(
