@@ -61,3 +61,71 @@ impl BytecodeTokenMethods for Rev {
         }
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod rev_tests {
+    use crate::{ token_data::{ token_defs::rev::Rev, TokenMethods } };
+
+    #[test]
+    fn test_capitalize_last_word() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut token = Rev::default();
+
+        assert_eq!(
+            token.parse(&random_text),
+            Ok(
+                random_text
+                    .chars()
+                    .rev()
+                    .map(|c| c.to_string())
+                    .collect::<Vec<String>>()
+                    .join("")
+            ),
+            "It supports random inputs"
+        );
+        assert_eq!(token.parse("banana"), Ok("ananab".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "rev;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "rev".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["rev".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_capitalize_last_word_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Rev::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x22,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x22, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+    }
+}
