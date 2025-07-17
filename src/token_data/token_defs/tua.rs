@@ -57,3 +57,42 @@ impl BytecodeTokenMethods for Tua {
         BytecodeInstruction { op_code: Tua::default().get_opcode(), operands: [].to_vec() }
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod tua_tests {
+    use crate::token_data::{ token_defs::tua::Tua, TokenMethods };
+    #[test]
+    fn test_to_uppercase_all() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut token = Tua::default();
+
+        assert_eq!(token.parse("banana"), Ok("BANANA".to_string()));
+        assert_eq!(token.parse(&random_text), Ok(random_text.to_uppercase()));
+
+        assert_eq!(token.token_to_atp_line(), "tua;\n".to_string());
+        assert_eq!(token.get_string_repr(), "tua".to_string());
+        assert!(matches!(token.token_from_vec_params(["akdkjh".to_string()].to_vec()), Err(_)));
+        assert!(matches!(token.token_from_vec_params(["tua".to_string()].to_vec()), Ok(_)));
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_to_uppercase_all_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Tua::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x12,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x12);
+
+        assert_eq!(token.token_from_bytecode_instruction(instruction.clone()), Ok(()));
+
+        assert_eq!(token.token_to_bytecode_instruction(), instruction);
+    }
+}
