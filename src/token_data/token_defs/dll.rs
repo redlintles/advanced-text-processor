@@ -76,7 +76,7 @@ mod dll_tests {
     use crate::token_data::{ token_defs::dll::Dll, TokenMethods };
 
     #[test]
-    fn test_delete_first() {
+    fn test_delete_last() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
 
         let mut expected_output = random_text.clone();
@@ -111,7 +111,7 @@ mod dll_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_delete_first_bytecode() {
+    fn test_delete_last_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dll::default();
