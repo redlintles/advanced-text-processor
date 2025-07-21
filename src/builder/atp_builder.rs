@@ -1,6 +1,7 @@
 use crate::token_data::{ TokenMethods };
 
 use crate::token_data::token_defs::*;
+use crate::utils::errors::AtpError;
 
 use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };
 #[cfg(feature = "debug")]
@@ -218,9 +219,13 @@ impl AtpBuilder {
         );
         self
     }
-    pub fn capitalize_chunk(mut self, start_index: usize, end_index: usize) -> Self {
-        self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)));
-        self
+    pub fn capitalize_chunk(
+        mut self,
+        start_index: usize,
+        end_index: usize
+    ) -> Result<Self, AtpError> {
+        self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)?));
+        Ok(self)
     }
     pub fn capitalize_range(mut self, start_index: usize, end_index: usize) -> Self {
         self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)));

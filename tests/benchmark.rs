@@ -2,10 +2,12 @@
 pub mod benchmark {
     use std::time::Instant;
     use atp_project::builder::atp_builder::AtpBuilder;
+    #[cfg(feature = "debug")]
+    use atp_project::utils::errors::AtpError;
 
     #[cfg(feature = "debug")]
     #[test]
-    fn process_sbs_all_tokens() {
+    fn process_sbs_all_tokens() -> Result<(), AtpError> {
         let runs = 100;
 
         let mut total = 0.0;
@@ -38,7 +40,7 @@ pub mod benchmark {
             .capitalize_last_word()
             .capitalize_range(1, 5)
             .split_select("b", 1)
-            .capitalize_chunk(1, 3)
+            .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")
             .replace_nth_with("b", "d", 3)
             .to_url_encoded()
@@ -75,9 +77,10 @@ pub mod benchmark {
         println!("Média: {:.6} Segundos", avg);
 
         assert!(avg < 0.003, "Executou muito devagar");
+        Ok(())
     }
     #[test]
-    fn process_all_tokens() {
+    fn process_all_tokens() -> Result<(), AtpError> {
         let runs = 100;
 
         let mut total = 0.0;
@@ -110,7 +113,7 @@ pub mod benchmark {
             .capitalize_last_word()
             .capitalize_range(1, 5)
             .split_select("b", 1)
-            .capitalize_chunk(1, 3)
+            .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")
             .replace_nth_with("b", "d", 3)
             .to_url_encoded()
@@ -144,5 +147,6 @@ pub mod benchmark {
         println!("Média: {:.6} Segundos", avg);
 
         assert!(avg < 0.003, "Executou muito devagar");
+        Ok(())
     }
 }

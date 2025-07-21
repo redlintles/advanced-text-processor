@@ -128,8 +128,8 @@ pub mod processor {
         use uuid::Variant;
         let mut tokens: Vec<Box<dyn TokenMethods>> = Vec::new();
 
-        tokens.push(Box::new(Atb::params("Banana".to_string())));
-        tokens.push(Box::new(Ate::params("Laranja".to_string())));
+        tokens.push(Box::new(Atb::params("Banana")));
+        tokens.push(Box::new(Ate::params("Laranja")));
         tokens.push(Box::new(Rpt::params(3)));
 
         let mut processor = AtpProcessor::new();
