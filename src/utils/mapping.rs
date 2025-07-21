@@ -139,7 +139,6 @@ macro_rules! for_each_bytecode_entry {
             0x24 => htmle::Htmle,
             0x25 => htmlu::Htmlu,
             0x26 => jsone::Jsone,
-            0x27 => jsonu::Jsonu,
             0x28 => ins::Ins,
             0x29 => tlcw::Tlcw,
             0x2a => tucw::Tucw,
