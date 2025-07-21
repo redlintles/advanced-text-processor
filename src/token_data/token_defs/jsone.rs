@@ -71,3 +71,72 @@ impl BytecodeTokenMethods for Jsone {
         }
     }
 }
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod jsone_tests {
+    use crate::{ token_data::{ token_defs::jsone::Jsone, TokenMethods } };
+
+    #[test]
+    fn test_capitalize_last_word() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
+
+        let mut token = Jsone::default();
+
+        assert_eq!(
+            token.parse(&random_text),
+            Ok(serde_json::to_string(&random_text).unwrap()),
+            "It supports random inputs"
+        );
+        assert_eq!(
+            token.parse("banana bananosa"),
+            Ok(serde_json::to_string("banana bananosa").unwrap()),
+            "It supports expected inputs"
+        );
+        assert_eq!(
+            token.token_to_atp_line(),
+            "jsone;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(
+            token.get_string_repr(),
+            "jsone".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["jsone".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_capitalize_last_word_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Jsone::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x26,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x26, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+    }
+}
