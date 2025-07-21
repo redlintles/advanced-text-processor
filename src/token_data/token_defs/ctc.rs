@@ -34,6 +34,17 @@ impl TokenMethods for Ctc {
         "ctc".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
+        if self.start_index >= input.chars().count() {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        "start_index does not exist in current string".to_string()
+                    ),
+                    self.token_to_atp_line(),
+                    input.to_string()
+                )
+            );
+        }
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
         let mut end = self.end_index;
@@ -150,9 +161,21 @@ mod ctc_tests {
     fn test_capitalize_chunk() {
         let mut token = Ctc::params(1, 5).unwrap();
 
-        assert!(matches!(Ctc::params(5, 1), Err(_)));
+        assert!(
+            matches!(Ctc::params(5, 1), Err(_)),
+            "it throws an error if start_index is bigger than end_index"
+        );
 
-        assert_eq!(token.parse("bananabananosa"), Ok("bAnanabananosa".to_string()));
+        assert!(
+            matches!(token.parse(""), Err(_)),
+            "It throws an error if start_index does not exists in input"
+        );
+
+        assert_eq!(
+            token.parse("bananabananosa"),
+            Ok("bAnanabananosa".to_string()),
+            "It works with expected inputs"
+        );
 
         assert_eq!(
             token.token_to_atp_line(),

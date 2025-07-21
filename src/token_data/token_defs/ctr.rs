@@ -33,6 +33,17 @@ impl TokenMethods for Ctr {
         "ctr".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
+        if self.start_index >= input.chars().count() {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        "start_index does not exist in current string".to_string()
+                    ),
+                    self.token_to_atp_line(),
+                    input.to_string()
+                )
+            );
+        }
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
 
@@ -145,7 +156,15 @@ mod ctr_tests {
     fn test_capitalize_range() {
         let mut token = Ctr::params(1, 5).unwrap();
 
-        assert!(matches!(Ctr::params(5, 1), Err(_)));
+        assert!(
+            matches!(Ctr::params(5, 1), Err(_)),
+            "it throws an error if start_index is bigger than end_index"
+        );
+
+        assert!(
+            matches!(token.parse(""), Err(_)),
+            "It throws an error if start_index does not exists in input"
+        );
 
         assert_eq!(
             token.parse("banana bananosa bananinha laranjinha vermelhinha azulzinha e fresquinha"),
@@ -155,7 +174,8 @@ mod ctr_tests {
         );
         assert_eq!(
             token.parse("banana bananosa bananinha laranjinha"),
-            Ok("banana Bananosa Bananinha Laranjinha".to_string())
+            Ok("banana Bananosa Bananinha Laranjinha".to_string()),
+            "It works with expected inputs"
         );
 
         assert_eq!(
