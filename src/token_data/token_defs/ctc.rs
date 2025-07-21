@@ -10,11 +10,22 @@ pub struct Ctc {
 }
 
 impl Ctc {
-    pub fn params(start_index: usize, end_index: usize) -> Self {
-        Ctc {
+    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+        if start_index > end_index {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidIndex(
+                        "Start index must be smaller than end index".to_string()
+                    ),
+                    format!("ctc {} {};", start_index, end_index),
+                    format!("Start Index: {}, End Index: {}", start_index, end_index)
+                )
+            );
+        }
+        Ok(Ctc {
             start_index,
             end_index,
-        }
+        })
     }
 }
 
@@ -23,18 +34,6 @@ impl TokenMethods for Ctc {
         "ctc".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if self.start_index > self.end_index {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidIndex(
-                        "Start index must be smaller than end index".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
-
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
         let mut end = self.end_index;
@@ -62,8 +61,22 @@ impl TokenMethods for Ctc {
 
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "ctc" {
-            self.start_index = string_to_usize(&line[1])?;
-            self.end_index = string_to_usize(&line[2])?;
+            let start_index = string_to_usize(&line[1])?;
+            let end_index = string_to_usize(&line[2])?;
+
+            if start_index > end_index {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidIndex(
+                            "Start index must be smaller than end index".to_string()
+                        ),
+                        format!("ctc {} {};", start_index, end_index),
+                        format!("Start Index: {}, End Index: {}", start_index, end_index)
+                    )
+                );
+            }
+            self.start_index = start_index;
+            self.end_index = end_index;
             return Ok(());
         }
         Err(
@@ -92,9 +105,23 @@ impl BytecodeTokenMethods for Ctc {
         &mut self,
         instruction: crate::bytecode_parser::BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Ctc::default().get_opcode() {
-            self.start_index = string_to_usize(&instruction.operands[1])?;
-            self.end_index = string_to_usize(&instruction.operands[2])?;
+        if instruction.op_code == Ctc::default().get_opcode() && !instruction.operands.is_empty() {
+            let start_index = string_to_usize(&instruction.operands[0])?;
+            let end_index = string_to_usize(&instruction.operands[1])?;
+
+            if start_index > end_index {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidIndex(
+                            "Start index must be smaller than end index".to_string()
+                        ),
+                        format!("ctc {} {};", start_index, end_index),
+                        format!("Start Index: {}, End Index: {}", start_index, end_index)
+                    )
+                );
+            }
+            self.start_index = start_index;
+            self.end_index = end_index;
             return Ok(());
         }
         Err(
@@ -111,5 +138,98 @@ impl BytecodeTokenMethods for Ctc {
             op_code: Ctc::default().get_opcode(),
             operands: [self.start_index.to_string(), self.end_index.to_string()].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod ctc_tests {
+    use crate::{ token_data::TokenMethods, token_data::token_defs::ctc::Ctc };
+
+    #[test]
+    fn test_capitalize_chunk() {
+        let mut token = Ctc::params(1, 5).unwrap();
+
+        assert!(matches!(Ctc::params(5, 1), Err(_)));
+
+        assert_eq!(token.parse("bananabananosa"), Ok("bAnanabananosa".to_string()));
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "ctc 1 5;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+
+        assert_eq!(token.get_string_repr(), "ctc".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["ctc".to_string(), (5).to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["ctc".to_string(), (1).to_string(), (5).to_string()].to_vec()
+                ),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_capitalize_chunk_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Ctc::params(1, 5).unwrap();
+
+        let mut instruction = BytecodeInstruction {
+            op_code: 0x1b,
+            operands: [(1).to_string(), (5).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x1b, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+
+        instruction.operands = [(5).to_string(), (1).to_string()].to_vec();
+
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid operands"
+        );
+
+        instruction.op_code = 0x01;
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid op_code"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["ctc".to_string(), (5).to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
     }
 }
