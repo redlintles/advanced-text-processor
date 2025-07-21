@@ -4,6 +4,23 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+
+/// Token `Cts` — Capitalize Single
+///
+/// Capitalizes a single word at the given index `i` within the input string.
+///
+/// Words are defined as sequences of characters separated by whitespace,
+/// following the behavior of `input.split_whitespace()`.
+///
+/// If `i` is out of bounds for the number of words in the input, an `AtpError` is returned.
+///
+/// # Example
+///
+/// ```rust
+/// let token = Cts::params(1);
+/// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
+/// ```
+
 #[derive(Clone, Default)]
 pub struct Cts {
     pub index: usize,
