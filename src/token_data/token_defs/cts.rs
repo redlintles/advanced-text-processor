@@ -22,7 +22,7 @@ impl TokenMethods for Cts {
         "cts".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if !(0..input.chars().count()).contains(&self.index) {
+        if !(0..input.len()).contains(&self.index) {
             return Err(
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
@@ -35,17 +35,12 @@ impl TokenMethods for Cts {
         }
         let v = input.split_whitespace().collect::<Vec<_>>();
 
-        let i = match self.index > v.iter().count() {
-            true => v.iter().count() - 1,
-            false => self.index,
-        };
-
         Ok(
             v
                 .iter()
                 .enumerate()
                 .map(|(index, word)| {
-                    if index == i { capitalize(word) } else { word.to_string() }
+                    if index == self.index { capitalize(word) } else { word.to_string() }
                 })
                 .collect::<Vec<_>>()
                 .join(" ")
