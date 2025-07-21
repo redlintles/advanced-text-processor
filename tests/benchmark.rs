@@ -38,7 +38,7 @@ pub mod benchmark {
             .to_lowercase_single(2)
             .capitalize_first_word()
             .capitalize_last_word()
-            .capitalize_range(1, 5)
+            .capitalize_range(1, 5)?
             .split_select("b", 1)
             .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")
@@ -111,7 +111,7 @@ pub mod benchmark {
             .to_lowercase_single(2)
             .capitalize_first_word()
             .capitalize_last_word()
-            .capitalize_range(1, 5)
+            .capitalize_range(1, 5)?
             .split_select("b", 1)
             .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")

@@ -227,9 +227,13 @@ impl AtpBuilder {
         self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)?));
         Ok(self)
     }
-    pub fn capitalize_range(mut self, start_index: usize, end_index: usize) -> Self {
-        self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)));
-        self
+    pub fn capitalize_range(
+        mut self,
+        start_index: usize,
+        end_index: usize
+    ) -> Result<Self, AtpError> {
+        self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)?));
+        Ok(self)
     }
     pub fn capitalize_single_word(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(cts::Cts::params(index)));
