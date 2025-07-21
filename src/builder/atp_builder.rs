@@ -75,7 +75,7 @@ impl AtpBuilder {
         self
     }
     pub fn add_to_end(mut self, text: &str) -> Self {
-        self.tokens.push(Box::new(ate::Ate::params(text.to_string())));
+        self.tokens.push(Box::new(ate::Ate::params(text)));
         self
     }
     pub fn add_to_beginning(mut self, text: &str) -> Self {
