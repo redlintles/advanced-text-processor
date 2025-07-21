@@ -10,9 +10,9 @@ pub struct Atb {
 }
 
 impl Atb {
-    pub fn params(text: String) -> Self {
+    pub fn params(text: &str) -> Self {
         Atb {
-            text,
+            text: text.to_string(),
         }
     }
 }
@@ -55,8 +55,8 @@ impl BytecodeTokenMethods for Atb {
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Atb::default().get_opcode() {
-            if !instruction.operands[0].is_empty() {
-                self.text = instruction.operands[1].clone();
+            if !instruction.operands.is_empty() {
+                self.text = instruction.operands[0].clone();
                 return Ok(());
             }
 
@@ -89,5 +89,63 @@ impl BytecodeTokenMethods for Atb {
 
     fn get_opcode(&self) -> u8 {
         0x01
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod atb_tests {
+    use crate::{ token_data::TokenMethods, token_data::token_defs::atb::Atb };
+
+    #[test]
+    fn test_add_to_beginning() {
+        let mut token = Atb::params("banana");
+
+        assert_eq!(token.parse("coxinha"), Ok("bananacoxinha".to_string()));
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "atb banana;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "atb".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["atb".to_string(), "banana".to_string()].to_vec()),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn test_add_to_beginning_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Atb::params("banana");
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x01,
+            operands: ["banana".to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x01, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }

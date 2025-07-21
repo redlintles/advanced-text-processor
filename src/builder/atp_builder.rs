@@ -79,7 +79,7 @@ impl AtpBuilder {
         self
     }
     pub fn add_to_beginning(mut self, text: &str) -> Self {
-        self.tokens.push(Box::new(atb::Atb::params(text.to_string())));
+        self.tokens.push(Box::new(atb::Atb::params(text)));
         self
     }
     pub fn delete_first(mut self) -> Self {
