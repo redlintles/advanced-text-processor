@@ -99,7 +99,10 @@ mod atb_tests {
 
     #[test]
     fn test_add_to_beginning() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
         let mut token = Atb::params("banana");
+
+        assert_eq!(token.parse(&random_text), Ok(format!("{}{}", "banana", random_text)));
 
         assert_eq!(token.parse("coxinha"), Ok("bananacoxinha".to_string()));
 

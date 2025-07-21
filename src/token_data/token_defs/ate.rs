@@ -98,7 +98,10 @@ mod ate_tests {
 
     #[test]
     fn test_add_to_end() {
+        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
         let mut token = Ate::params("banana");
+
+        assert_eq!(token.parse(&random_text), Ok(format!("{}{}", random_text, "banana")));
 
         assert_eq!(token.parse("coxinha"), Ok("coxinhabanana".to_string()));
 
