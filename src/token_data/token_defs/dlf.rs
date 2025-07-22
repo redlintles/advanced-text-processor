@@ -2,7 +2,20 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-// Delete first
+/// DLF - Delete First
+///
+/// Deletes the first character of `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::dlf::Dlf};
+///
+/// let token = Dlf::default();
+///
+/// assert_eq!(token.parse("banana"), Ok("anana".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Dlf {}
 
