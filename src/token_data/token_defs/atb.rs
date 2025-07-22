@@ -3,7 +3,18 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
-// add to beginning
+/// Token `Atb` — Add to Beginning
+///
+/// Adds `text` to the beginning of `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::atb::Atb};
+///
+/// let token = Atb::params("foo");
+/// assert_eq!(token.parse(" bar"), Ok("foo bar".to_string()));
+/// ```
 #[derive(Clone, Default)]
 pub struct Atb {
     pub text: String,
