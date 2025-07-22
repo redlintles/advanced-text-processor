@@ -6,6 +6,7 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods
 /// Rev - Reverse
 ///
 /// Reverses `input` character order
+///
 /// # Example:
 ///
 /// ```rust
