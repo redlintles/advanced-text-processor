@@ -99,7 +99,7 @@ impl BytecodeTokenMethods for Dls {
         if instruction.op_code == self.get_opcode() {
             use crate::utils::transforms::string_to_usize;
 
-            self.index = string_to_usize(&instruction.operands[1])?;
+            self.index = string_to_usize(&instruction.operands[0])?;
             return Ok(());
         }
 
@@ -151,5 +151,28 @@ mod dls_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn delete_single_bytecode_tests() {}
+    fn delete_single_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Dls::params(3);
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x32,
+            operands: [(3).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x32, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+    }
 }
