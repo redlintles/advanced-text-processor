@@ -5,7 +5,21 @@ use crate::{
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
-
+/// Token `Clw` — Capitalize Last Word
+///
+/// Capitalizes the last word of `input`
+///
+/// This is achieved by splitting the input by whitespace, reversing the resulting vector,
+/// capitalizing the first word, reversing it back, and rejoining into a single string.
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::clw::Clw};
+///
+/// let token = Clw::default();
+/// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
+/// ```
 #[derive(Copy, Clone, Default)]
 pub struct Clw {}
 
