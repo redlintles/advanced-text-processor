@@ -2,6 +2,24 @@ use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_t
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+
+/// Token `Ctr` — Capitalize Range
+///
+/// Capitalizes a range of words delimited by `start_index` and `end_index`(inclusive)
+///
+/// Words are defined as sequences of characters separated by whitespace,
+/// following the behavior of `input.split_whitespace()`.
+///
+/// If `start_index` is out of bounds for the number of words in the `input``, an `AtpError` is returned.
+/// If `end_index` is out of bound for the number of words in the input, it's clamped up to the number of words in `input`
+///
+/// # Example
+///
+/// ```ignore
+/// let token = Ctr::params(1,5).unwrap();
+/// assert_eq!(token.parse("foo bar mar"), Ok("foo Bar Mar".to_string()));
+/// ``````
+///
 #[derive(Clone, Default)]
 pub struct Ctr {
     pub start_index: usize,
