@@ -3,6 +3,21 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
+/// DLS - Delete Single
+///
+/// Delete's a single character specified by `index` in `input`
+///
+/// It will throw an `AtpError` if index does not exists in `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::dls::Dls};
+///
+/// let token = Dls::params(3);
+///
+/// assert_eq!(token.parse("banana"), Ok("banna".to_string()));
+/// ```
 #[derive(Clone, Copy, Default)]
 pub struct Dls {
     pub index: usize,
@@ -21,7 +36,7 @@ impl TokenMethods for Dls {
         "dls".to_string()
     }
     fn token_to_atp_line(&self) -> String {
-        "dls;\n".to_string()
+        format!("dls {};\n", self.index)
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
@@ -103,4 +118,38 @@ impl BytecodeTokenMethods for Dls {
             operands: [self.index.to_string()].to_vec(),
         }
     }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod dls_tests {
+    use crate::token_data::{ TokenMethods, token_defs::dls::Dls };
+
+    #[test]
+    fn delete_single_tests() {
+        let mut token = Dls::params(3);
+
+        assert_eq!(token.parse("banana"), Ok("banna".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "dls 3;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "dls".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["dls".to_string(), (3).to_string()].to_vec()),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn delete_single_bytecode_tests() {}
 }
