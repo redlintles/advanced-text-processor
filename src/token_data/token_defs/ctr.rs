@@ -21,7 +21,6 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// assert_eq!(token.parse("foo bar mar"), Ok("foo Bar Mar".to_string()));
 /// ```
 ///
-
 #[derive(Clone, Default)]
 pub struct Ctr {
     pub start_index: usize,
