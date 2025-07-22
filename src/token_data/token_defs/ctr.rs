@@ -15,11 +15,13 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 ///
 /// # Example
 ///
-/// ```ignore
+/// ```rust
+/// use atp_project::token_data::{TokenMethods,token_defs::ctr::Ctr};
 /// let token = Ctr::params(1,5).unwrap();
 /// assert_eq!(token.parse("foo bar mar"), Ok("foo Bar Mar".to_string()));
-/// ``````
+/// ```
 ///
+
 #[derive(Clone, Default)]
 pub struct Ctr {
     pub start_index: usize,
