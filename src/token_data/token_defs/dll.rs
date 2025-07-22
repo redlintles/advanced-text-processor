@@ -3,7 +3,20 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
-// Delete last
+/// DLL - Delete Last
+///
+/// Deletes the last character of `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::dll::Dll};
+///
+/// let token = Dll::default();
+///
+/// assert_eq!(token.parse("banana"), Ok("banan".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Dll {}
 
