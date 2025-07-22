@@ -3,25 +3,24 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
-/// Token `Ctc` — Capitalize chunk
+/// Token `Ctc` — Capitalize Chunk
 ///
-/// takes a subslice of input and capitalize every word contained in it(inclusive)
-/// and then, rebuild the original input containing that subslice
+/// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
 ///
-/// Words are defined as sequences of characters separated by whitespace,
-/// following the behavior of `input.split_whitespace()`.
+/// The range is applied directly to the character indices of the original string. The extracted chunk is then split
+/// into words (using `split_whitespace()`), capitalized individually, and finally reinserted into the original string.
 ///
-/// If `start_index` is out of bounds for the number of words in the `input``, an `AtpError` is returned.
-/// If `end_index` is out of bound for the number of words in the input, it's clamped up to the number of words in `input`
+/// - If `start_index` is out of bounds for the number of characters in the input, an `AtpError` is returned.
+/// - If `end_index` exceeds the input's length, it will be clamped to the input's character count.
 ///
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods,token_defs::ctc::Ctc};
-/// let token = Ctc::params(5,20).unwrap();
-/// assert_eq!(token.parse("foo bar mar war"), Ok("foo bAr Mar War".to_string()));
-/// ```
+/// use atp_project::token_data::{TokenMethods, token_defs::ctc::Ctc};
 ///
+/// let token = Ctc::params(1, 5).unwrap();
+/// assert_eq!(token.parse("bananabananosa"), Ok("bAnanabananosa".to_string()));
+/// ```
 #[derive(Clone, Default)]
 pub struct Ctc {
     pub start_index: usize,
