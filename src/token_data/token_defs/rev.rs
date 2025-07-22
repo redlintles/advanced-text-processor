@@ -3,6 +3,17 @@ use crate::{ bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction } };
 
 use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods };
 
+/// Rev - Reverse
+///
+/// Reverses `input` character order
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::rev::Rev};
+///
+/// let token = Rev::default();
+/// assert_eq!(token.parse("foobar"), Ok("raboof".to_string()));
+/// ``````
 #[derive(Clone, Default, Copy)]
 pub struct Rev {}
 
