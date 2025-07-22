@@ -52,7 +52,9 @@ impl TokenMethods for Ctc {
         "ctc".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if self.start_index >= input.chars().count() {
+        let total_chars = input.chars().count();
+
+        if self.start_index >= total_chars {
             return Err(
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
@@ -63,25 +65,39 @@ impl TokenMethods for Ctc {
                 )
             );
         }
-        // Since the user will probably not know the length of the string in the middle of the processing
-        // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
-        let mut end = self.end_index;
-        let total = input.chars().count();
 
-        if end > total {
-            end = input.len();
-        }
+        let end_index = self.end_index.min(total_chars); // clamp to avoid overflow
 
-        let slice: String = (&input[self.start_index..end]).to_string();
+        // Convert char indices to byte indices
+        let start_byte = input
+            .char_indices()
+            .nth(self.start_index)
+            .map(|(byte_idx, _)| byte_idx)
+            .unwrap(); // safe: start_index < total_chars
 
+        let end_byte = if end_index == total_chars {
+            input.len() // go to the end
+        } else {
+            input
+                .char_indices()
+                .nth(end_index)
+                .map(|(byte_idx, _)| byte_idx)
+                .unwrap()
+        };
+
+        // Extract slice safely
+        let slice = &input[start_byte..end_byte];
+
+        // Capitalize all words in the slice
         let capitalized_chunk = slice
             .split_whitespace()
-            .map(|w| capitalize(w).to_string())
+            .map(|w| capitalize(w))
             .collect::<Vec<_>>()
             .join(" ");
 
-        let prefix: String = input.chars().take(self.start_index).collect();
-        let suffix: String = input.chars().skip(end).collect();
+        // Rebuild final string
+        let prefix = &input[..start_byte];
+        let suffix = &input[end_byte..];
 
         let result = format!("{}{}{}", prefix, capitalized_chunk, suffix);
 
