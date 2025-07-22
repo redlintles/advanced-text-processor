@@ -5,7 +5,18 @@ use crate::{
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
-
+/// Token `Cfw` — Capitalize First Word
+///
+/// Capitalizes the first word of `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::cfw::Cfw};
+///
+/// let token = Cfw::default();
+/// assert_eq!(token.parse("foo bar"), Ok("Foo bar".to_string()));
+/// ```
 #[derive(Copy, Clone, Default)]
 pub struct Cfw {}
 
