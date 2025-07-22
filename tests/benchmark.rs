@@ -18,7 +18,7 @@ pub mod benchmark {
             .repeat(3)
             .delete_after(20 as usize)
             .delete_before(3 as usize)
-            .delete_chunk(0 as usize, 3 as usize)
+            .delete_chunk(0 as usize, 3 as usize)?
             .delete_first()
             .delete_last()
             .replace_all_with(r"a", "e")
@@ -92,7 +92,7 @@ pub mod benchmark {
             .delete_after(20 as usize)
             .delete_before(2 as usize)
             .insert(0, "Pizza")
-            .delete_chunk(0 as usize, 3 as usize)
+            .delete_chunk(0 as usize, 3 as usize)?
             .delete_first()
             .delete_last()
             .replace_all_with(r"a", "e")

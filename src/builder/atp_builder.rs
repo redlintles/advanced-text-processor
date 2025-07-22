@@ -99,9 +99,9 @@ impl AtpBuilder {
         self.tokens.push(Box::new(dlb::Dlb::params(index)));
         self
     }
-    pub fn delete_chunk(mut self, start_index: usize, end_index: usize) -> Self {
-        self.tokens.push(Box::new(dlc::Dlc::params(start_index, end_index)));
-        self
+    pub fn delete_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+        self.tokens.push(Box::new(dlc::Dlc::params(start_index, end_index)?));
+        Ok(self)
     }
     pub fn replace_all_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(

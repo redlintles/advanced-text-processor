@@ -3,7 +3,20 @@ use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-// Delete Chunk
+/// Dlc - Delete Chunk
+///
+/// Deletes an specific subslice of `input` delimited by `start_index` and `end_index`(inclusive)
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::dlc::Dlc};
+///
+/// let token = Dlc::params(1,5).unwrap();
+///
+/// assert_eq!(token.parse("bananalaranjacheiadecanja"), Ok("blaranjacheiadecanja".to_string()))
+///
+/// ```
 #[derive(Clone, Copy, Default)]
 pub struct Dlc {
     pub start_index: usize,
@@ -11,11 +24,22 @@ pub struct Dlc {
 }
 
 impl Dlc {
-    pub fn params(start_index: usize, end_index: usize) -> Self {
-        Dlc {
+    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+        if start_index > end_index {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidIndex(
+                        "Start index must be smaller than end index".to_string()
+                    ),
+                    format!("dlc {} {};", start_index, end_index),
+                    format!("Start Index: {}, End Index: {}", start_index, end_index)
+                )
+            );
+        }
+        Ok(Dlc {
             start_index,
             end_index,
-        }
+        })
     }
 }
 
@@ -37,7 +61,7 @@ impl TokenMethods for Dlc {
                     AtpErrorCode::IndexOutOfRange(
                         format!(
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
-                            input.len() - 1,
+                            input.char_indices().count().saturating_sub(1),
                             self.start_index
                         )
                     ),
@@ -47,14 +71,14 @@ impl TokenMethods for Dlc {
             )?;
         let end_index = input
             .char_indices()
-            .nth(self.end_index)
+            .nth(self.end_index + 1)
             .map(|(i, _)| i)
             .ok_or_else(||
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
                         format!(
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
-                            input.len() - 1,
+                            input.chars().count().saturating_sub(1),
                             self.end_index
                         )
                     ),
@@ -72,8 +96,22 @@ impl TokenMethods for Dlc {
         // "dlc;"
 
         if line[0] == "dlc" {
-            self.start_index = string_to_usize(&line[1])?;
-            self.end_index = string_to_usize(&line[2])?;
+            let start_index = string_to_usize(&line[1])?;
+            let end_index = string_to_usize(&line[2])?;
+
+            if start_index > end_index {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidIndex(
+                            "Start index must be smaller than end index".to_string()
+                        ),
+                        format!("dlc {} {};", start_index, end_index),
+                        format!("Start Index: {}, End Index: {}", start_index, end_index)
+                    )
+                );
+            }
+            self.start_index = start_index;
+            self.end_index = end_index;
             return Ok(());
         }
         Err(
@@ -96,9 +134,24 @@ impl BytecodeTokenMethods for Dlc {
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Dlc::default().get_opcode() {
-            if !instruction.operands[0].is_empty() {
-                self.start_index = string_to_usize(&instruction.operands[1])?;
-                self.end_index = string_to_usize(&instruction.operands[2])?;
+            if !instruction.operands.is_empty() {
+                let start_index = string_to_usize(&instruction.operands[0])?;
+                let end_index = string_to_usize(&instruction.operands[1])?;
+
+                if start_index > end_index {
+                    return Err(
+                        AtpError::new(
+                            AtpErrorCode::InvalidIndex(
+                                "Start index must be smaller than end index".to_string()
+                            ),
+                            format!("dlc {} {};", start_index, end_index),
+                            format!("Start Index: {}, End Index: {}", start_index, end_index)
+                        )
+                    );
+                }
+
+                self.start_index = start_index;
+                self.end_index = end_index;
                 return Ok(());
             }
 
@@ -130,5 +183,109 @@ impl BytecodeTokenMethods for Dlc {
     }
     fn get_opcode(&self) -> u8 {
         0x08
+    }
+}
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod dlc_tests {
+    use crate::token_data::{ TokenMethods, token_defs::dlc::Dlc };
+
+    #[test]
+    fn delete_chunk() {
+        let mut token = Dlc::params(1, 5).unwrap();
+        assert!(
+            matches!(Dlc::params(5, 1), Err(_)),
+            "it throws an error if start_index is bigger than end_index"
+        );
+
+        assert!(
+            matches!(token.parse(""), Err(_)),
+            "It throws an error if start_index does not exists in input"
+        );
+
+        assert_eq!(
+            token.parse("bananalaranjacheiadecanja"),
+            Ok("blaranjacheiadecanja".to_string()),
+            "It works with expected inputs"
+        );
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "dlc 1 5;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+
+        assert_eq!(token.get_string_repr(), "dlc".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["dlc".to_string(), (5).to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["dlc".to_string(), (1).to_string(), (5).to_string()].to_vec()
+                ),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn delete_chunk_bytecode() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Dlc::params(1, 5).unwrap();
+
+        let mut instruction = BytecodeInstruction {
+            op_code: 0x08,
+            operands: [(1).to_string(), (5).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x08, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+
+        instruction.operands = [(5).to_string(), (1).to_string()].to_vec();
+
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid operands"
+        );
+
+        instruction.op_code = 0x01;
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid op_code"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["dlc".to_string(), (5).to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
     }
 }
