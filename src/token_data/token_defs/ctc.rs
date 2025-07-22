@@ -3,6 +3,25 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+/// Token `Ctc` — Capitalize chunk
+///
+/// takes a subslice of input and capitalize every word contained in it(inclusive)
+/// and then, rebuild the original input containing that subslice
+///
+/// Words are defined as sequences of characters separated by whitespace,
+/// following the behavior of `input.split_whitespace()`.
+///
+/// If `start_index` is out of bounds for the number of words in the `input``, an `AtpError` is returned.
+/// If `end_index` is out of bound for the number of words in the input, it's clamped up to the number of words in `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods,token_defs::ctc::Ctc};
+/// let token = Ctc::params(5,20).unwrap();
+/// assert_eq!(token.parse("foo bar mar war"), Ok("foo bAr Mar War".to_string()));
+/// ```
+///
 #[derive(Clone, Default)]
 pub struct Ctc {
     pub start_index: usize,
