@@ -2,7 +2,19 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-// add to end
+/// Token `Ate` — Add to End
+///
+/// Appends `text` to the end of `input`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::ate::Ate};
+///
+/// let token = Ate::params(" bar");
+/// assert_eq!(token.parse("foo"), Ok("foo bar".to_string()));
+/// ```
+
 #[derive(Clone, Default)]
 pub struct Ate {
     pub text: String,
