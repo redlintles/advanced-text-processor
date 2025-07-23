@@ -1,19 +1,39 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    token_data::TokenMethods,
+    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
+};
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 
+/// PADL - Pad Left
+///
+/// Repeats `text` characters until `max_len` is reached, and then insert the result at the beggining of `input`
+///
+/// See Also:
+///
+/// - [`Padr` - Pad Right](crate::token_data::token_defs::padr)
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::padl::Padl};
+///
+/// let token = Padl::params("xy", 5);
+///
+/// assert_eq!(token.parse("banana"), Ok("xyxyxbanana".to_string()));
+/// ```
 #[derive(Clone, Default)]
 pub struct Padl {
     pub text: String,
-    pub times: usize,
+    pub max_len: usize,
 }
 
 impl Padl {
-    pub fn params(text: &str, times: usize) -> Self {
+    pub fn params(text: &str, max_len: usize) -> Self {
         Padl {
             text: text.to_string(),
-            times,
+            max_len,
         }
     }
 }
@@ -23,10 +43,10 @@ impl TokenMethods for Padl {
         "padl".to_string()
     }
     fn token_to_atp_line(&self) -> String {
-        "padl;\n".to_string()
+        format!("padl {} {};\n", self.text, self.max_len)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        let s = self.text.repeat(self.times);
+        let s = extend_string(&self.text, self.max_len);
 
         Ok(format!("{}{}", s, input))
     }
@@ -56,8 +76,8 @@ impl BytecodeTokenMethods for Padl {
         if instruction.op_code == self.get_opcode() {
             use crate::utils::transforms::string_to_usize;
 
-            self.text = instruction.operands[1].clone();
-            self.times = string_to_usize(&instruction.operands[2])?;
+            self.text = instruction.operands[0].clone();
+            self.max_len = string_to_usize(&instruction.operands[1])?;
             return Ok(());
         }
 
@@ -72,7 +92,72 @@ impl BytecodeTokenMethods for Padl {
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
         BytecodeInstruction {
             op_code: self.get_opcode(),
-            operands: [self.text.clone(), self.times.to_string()].to_vec(),
+            operands: [self.text.clone(), self.max_len.to_string()].to_vec(),
         }
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "test_access")]
+mod padl_tests {
+    use crate::token_data::{ TokenMethods, token_defs::padl::Padl };
+    #[test]
+    fn padl_tests() {
+        let mut token = Padl::params("xy", 5);
+        assert_eq!(
+            token.parse("banana"),
+            Ok("xyxyxbanana".to_string()),
+            "It supports expected inputs"
+        );
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "padl xy 5;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(
+            token.get_string_repr(),
+            "padl".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["padl".to_string(), "xy".to_string(), (5).to_string()].to_vec()
+                ),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn padl_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Padl::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x2f,
+            operands: ["xy".to_string(), (5).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x2f, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
