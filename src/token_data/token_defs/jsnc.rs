@@ -3,7 +3,26 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
-// Join to Kebab Case
+/// JSNC - Join to Snake Case
+///
+/// If `input` is a string whose words are separated by spaces, join `input` as a snake_case lowercased string
+/// For conversion between the screaming and normal versions of this case style, use the tokens TLA(To Lowercase All) and TUA(To Uppercase All) together with this one.
+///
+/// See Also:
+///
+/// - [`Tua` - To Uppercase All](crate::token_data::token_defs::tua)
+/// - [`Tla` - To Lowercase All](crate::token_data::token_defs::tla)
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::jsnc::Jsnc};
+///
+/// let token = Jsnc::default();
+///
+/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("banana_laranja_cheia_de_canja".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Jsnc {}
 
@@ -17,7 +36,7 @@ impl TokenMethods for Jsnc {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        Ok(input.split_whitespace().collect::<Vec<_>>().join("_"))
+        Ok(input.split_whitespace().collect::<Vec<_>>().join("_").to_lowercase())
     }
 
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -62,5 +81,64 @@ impl BytecodeTokenMethods for Jsnc {
             op_code: Jsnc::default().get_opcode(),
             operands: [].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod jsnc_tests {
+    use crate::token_data::{ TokenMethods, token_defs::jsnc::Jsnc };
+    #[test]
+    fn jsnc_tests() {
+        let mut token = Jsnc::default();
+        assert_eq!(
+            token.parse("banana laranja cheia de canja"),
+            Ok("banana_laranja_cheia_de_canja".to_string()),
+            "It supports expected inputs"
+        );
+        assert_eq!(
+            token.token_to_atp_line(),
+            "jsnc;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(
+            token.get_string_repr(),
+            "jsnc".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["jsnc".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn jsnc_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Jsnc::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x2c,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x2c, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
