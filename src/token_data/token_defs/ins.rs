@@ -5,7 +5,21 @@ use crate::{
     token_data::TokenMethods,
     utils::{ transforms::string_to_usize, errors::{ AtpError, AtpErrorCode } },
 };
-
+/// Ins - Insert
+///
+/// Inserts `text` after `index` position in `input`
+///
+/// If index does not exists in current string, `AtpError` is returned
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::ins::Ins};
+///
+/// let token = Ins::params(2,"laranja");
+///
+/// assert_eq!(token.parse("banana"), Ok("banlaranjaana".to_string()));
+/// ```
 #[derive(Clone, Default)]
 pub struct Ins {
     index: usize,
@@ -25,7 +39,7 @@ impl TokenMethods for Ins {
         "ins".to_string()
     }
     fn token_to_atp_line(&self) -> String {
-        "ins;\n".to_string()
+        format!("ins {} {};\n", self.index, self.text_to_insert)
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "ins" {
@@ -42,8 +56,31 @@ impl TokenMethods for Ins {
         )
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        let before = &input[..self.index];
-        let after = &input[self.index..];
+        if self.index > input.chars().count() {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        format!(
+                            "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
+                            input,
+                            input.len().saturating_sub(1)
+                        )
+                    ),
+                    self.token_to_atp_line(),
+                    input.to_string()
+                )
+            );
+        }
+        let mut before = String::new();
+        let mut after = String::new();
+
+        for (i, c) in input.chars().enumerate() {
+            if i <= self.index {
+                before.push(c);
+            } else {
+                after.push(c);
+            }
+        }
 
         let result = format!("{}{}{}", before, self.text_to_insert, after);
 
@@ -61,8 +98,8 @@ impl BytecodeTokenMethods for Ins {
         instruction: crate::bytecode_parser::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Ins::default().get_opcode() {
-            self.index = string_to_usize(&instruction.operands[1])?;
-            self.text_to_insert = instruction.operands[2].clone();
+            self.index = string_to_usize(&instruction.operands[0])?;
+            self.text_to_insert = instruction.operands[1].clone();
             return Ok(());
         }
         Err(
@@ -79,5 +116,66 @@ impl BytecodeTokenMethods for Ins {
             op_code: Ins::default().get_opcode(),
             operands: [self.index.to_string(), self.text_to_insert.clone()].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod ins_tests {
+    use crate::token_data::{ TokenMethods, token_defs::ins::Ins };
+    #[test]
+    fn insert_tests() {
+        let mut token = Ins::params(2, "laranja");
+        assert_eq!(
+            token.parse("banana"),
+            Ok("banlaranjaana".to_string()),
+            "It supports expected inputs"
+        );
+        assert_eq!(
+            token.token_to_atp_line(),
+            "ins 2 laranja;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "ins".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["ins".to_string(), (2).to_string(), "laranja".to_string()].to_vec()
+                ),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn insert_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Ins::params(2, "laranja");
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x28,
+            operands: [(2).to_string(), "laranja".to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x28, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
