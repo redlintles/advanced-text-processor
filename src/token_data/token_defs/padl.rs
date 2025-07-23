@@ -19,9 +19,9 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// ```rust
 /// use atp_project::token_data::{TokenMethods, token_defs::padl::Padl};
 ///
-/// let token = Padl::params("xy", 5);
+/// let token = Padl::params("xy", 7);
 ///
-/// assert_eq!(token.parse("banana"), Ok("xyxyxbanana".to_string()));
+/// assert_eq!(token.parse("banana"), Ok("xbanana".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Padl {
@@ -46,7 +46,13 @@ impl TokenMethods for Padl {
         format!("padl {} {};\n", self.text, self.max_len)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        let s = extend_string(&self.text, self.max_len);
+        let character_count = input.chars().count();
+
+        if character_count >= self.max_len {
+            return Ok(input.to_string());
+        }
+        let ml = self.max_len - character_count;
+        let s = extend_string(&self.text, ml);
 
         Ok(format!("{}{}", s, input))
     }
@@ -103,16 +109,12 @@ mod padl_tests {
     use crate::token_data::{ TokenMethods, token_defs::padl::Padl };
     #[test]
     fn padl_tests() {
-        let mut token = Padl::params("xy", 5);
-        assert_eq!(
-            token.parse("banana"),
-            Ok("xyxyxbanana".to_string()),
-            "It supports expected inputs"
-        );
+        let mut token = Padl::params("xy", 7);
+        assert_eq!(token.parse("banana"), Ok("xbanana".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.token_to_atp_line(),
-            "padl xy 5;\n".to_string(),
+            "padl xy 7;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(
@@ -127,7 +129,7 @@ mod padl_tests {
         assert!(
             matches!(
                 token.token_from_vec_params(
-                    ["padl".to_string(), "xy".to_string(), (5).to_string()].to_vec()
+                    ["padl".to_string(), "xy".to_string(), (7).to_string()].to_vec()
                 ),
                 Ok(_)
             ),
@@ -143,7 +145,7 @@ mod padl_tests {
 
         let instruction = BytecodeInstruction {
             op_code: 0x2f,
-            operands: ["xy".to_string(), (5).to_string()].to_vec(),
+            operands: ["xy".to_string(), (7).to_string()].to_vec(),
         };
 
         assert_eq!(token.get_opcode(), 0x2f, "get_opcode does not disrepect ATP token mapping");
