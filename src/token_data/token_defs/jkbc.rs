@@ -5,7 +5,13 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JKBC - Join to Kebab Case
 ///
-/// If `input` is a string whose words are separated by spaces, join `input` as a kebab-case string
+/// If `input` is a string whose words are separated by spaces, join `input` as a kebab-case lowercased string
+/// For conversion between the screaming and normal versions of this case style, use the tokens TLA(To Lowercase All) and TUA(To Uppercase All) together with this one.
+///
+/// See Also:
+///
+/// - [`Tua` - To Uppercase All](crate::token_data::token_defs::tua)
+/// - [`Tla` - To Lowercase All](crate::token_data::token_defs::tla)
 ///
 /// # Example
 ///
@@ -30,7 +36,7 @@ impl TokenMethods for Jkbc {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        Ok(input.split_whitespace().collect::<Vec<_>>().join("-"))
+        Ok(input.split_whitespace().collect::<Vec<_>>().join("-").to_lowercase())
     }
 
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
