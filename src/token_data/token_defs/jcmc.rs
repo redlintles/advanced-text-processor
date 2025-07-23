@@ -8,7 +8,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JCMC - Join to Camel Case
 ///
-/// If `input` is a string whose words are separed by spaces, join `input` as a camelCase string
+/// If `input` is a string whose words are separated by spaces, join `input` as a camelCase string
 ///
 /// # Example
 ///
