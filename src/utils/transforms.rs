@@ -49,6 +49,17 @@ pub fn capitalize(input: &str) -> String {
     }
 }
 
+pub fn extend_string(input: &str, max_len: usize) -> String {
+    if input.is_empty() || max_len == 0 {
+        return String::new();
+    }
+    let to_repeat = max_len.div_ceil(input.chars().count());
+
+    let repeated_string = input.repeat(to_repeat).chars().take(max_len).collect();
+
+    repeated_string
+}
+
 #[cfg(feature = "bytecode")]
 pub fn token_to_bytecode_token(
     token: &Box<dyn TokenMethods>
