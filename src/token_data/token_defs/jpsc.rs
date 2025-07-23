@@ -6,7 +6,20 @@ use crate::{
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
-// Join to Kebab Case
+/// JPSC - Join to PascalCase
+///
+/// If `input` is a string whose words are separated by spaces, join `input` as a PascalCase string
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::jpsc::Jpsc};
+///
+/// let token = Jpsc::default();
+///
+/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("BananaLaranjaCheiaDeCanja".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Jpsc {}
 
@@ -73,5 +86,64 @@ impl BytecodeTokenMethods for Jpsc {
             op_code: Jpsc::default().get_opcode(),
             operands: [].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod jpsc_tests {
+    use crate::token_data::{ TokenMethods, token_defs::jpsc::Jpsc };
+    #[test]
+    fn jpsc_tests() {
+        let mut token = Jpsc::default();
+        assert_eq!(
+            token.parse("banana laranja cheia de canja"),
+            Ok("BananaLaranjaCheiaDeCanja".to_string()),
+            "It supports expected inputs"
+        );
+        assert_eq!(
+            token.token_to_atp_line(),
+            "jpsc;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(
+            token.get_string_repr(),
+            "jpsc".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["jpsc".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn jpsc_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Jpsc::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x2e,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x2e, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
