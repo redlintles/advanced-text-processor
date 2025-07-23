@@ -3,7 +3,20 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
-// Join to Kebab Case
+/// JKBC - Join to Kebab Case
+///
+/// If `input` is a string whose words are separated by spaces, join `input` as a kebab-case string
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::jkbc::Jkbc};
+///
+/// let token = Jkbc::default();
+///
+/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("banana-laranja-cheia-de-canja".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Jkbc {}
 
@@ -62,5 +75,64 @@ impl BytecodeTokenMethods for Jkbc {
             op_code: Jkbc::default().get_opcode(),
             operands: [].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod jkbc_tests {
+    use crate::token_data::{ TokenMethods, token_defs::jkbc::Jkbc };
+    #[test]
+    fn jkbc_tests() {
+        let mut token = Jkbc::default();
+        assert_eq!(
+            token.parse("banana laranja cheia de canja"),
+            Ok("banana-laranja-cheia-de-canja".to_string()),
+            "It supports expected inputs"
+        );
+        assert_eq!(
+            token.token_to_atp_line(),
+            "jkbc;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(
+            token.get_string_repr(),
+            "jkbc".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["jkbc".to_string()].to_vec()), Ok(_)),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn jkbc_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Jkbc::default();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x2b,
+            operands: [].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x2b, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
