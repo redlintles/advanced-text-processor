@@ -1,4 +1,7 @@
-use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods };
+use crate::{
+    token_data::TokenMethods,
+    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+};
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -73,6 +76,7 @@ impl TokenMethods for Dls {
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "dls" {
+            self.index = string_to_usize(&line[1])?;
             return Ok(());
         }
 
@@ -146,6 +150,12 @@ mod dls_tests {
                 Ok(_)
             ),
             "It does not throws an error for valid vec_params"
+        );
+
+        assert_eq!(
+            token.parse("banana"),
+            Ok("banna".to_string()),
+            "token_from_vec_params parses the argument list correctly"
         );
     }
 
