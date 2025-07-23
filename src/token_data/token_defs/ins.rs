@@ -71,16 +71,13 @@ impl TokenMethods for Ins {
                 )
             );
         }
-        let mut before = String::new();
-        let mut after = String::new();
+        let byte_index = input
+            .char_indices()
+            .nth(self.index + 1)
+            .map(|(i, _)| i)
+            .unwrap_or(input.len());
 
-        for (i, c) in input.chars().enumerate() {
-            if i <= self.index {
-                before.push(c);
-            } else {
-                after.push(c);
-            }
-        }
+        let (before, after) = input.split_at(byte_index);
 
         let result = format!("{}{}{}", before, self.text_to_insert, after);
 
