@@ -4,7 +4,27 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-// Replace first with
+/// RLW - Replace Last With
+///
+/// Replace the last ocurrency of `pattern` in `input` with `text_to_replace`
+///
+/// See Also:
+///
+/// - [`RAW` - Replace All With](crate::token_data::token_defs::raw)
+/// - [`RCW` - Replace First With](crate::token_data::token_defs::rcw)
+/// - [`RFW` - Replace Last With](crate::token_data::token_defs::rfw)
+/// - [`RNW` - Replace Nth With](crate::token_data::token_defs::rnw)
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::rlw::Rlw};
+///
+/// let token = Rlw::params(&"a", "b").unwrap();
+///
+/// assert_eq!(token.parse("aaaaa"), Ok("aaaab".to_string()));
+/// ```
+///
 #[derive(Clone)]
 pub struct Rlw {
     pub pattern: Regex,
@@ -12,10 +32,10 @@ pub struct Rlw {
 }
 
 impl Rlw {
-    pub fn params(pattern: String, text_to_replace: String) -> Result<Self, String> {
+    pub fn params(pattern: &str, text_to_replace: &str) -> Result<Self, String> {
         let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
         Ok(Rlw {
-            text_to_replace,
+            text_to_replace: text_to_replace.to_string(),
             pattern,
         })
     }
@@ -125,5 +145,62 @@ impl BytecodeTokenMethods for Rlw {
     }
     fn get_opcode(&self) -> u8 {
         0x1e
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "test_access")]
+mod rlw_tests {
+    use crate::token_data::{ TokenMethods, token_defs::rlw::Rlw };
+    #[test]
+    fn replace_all_with_tests() {
+        let mut token = Rlw::params("a", "b").unwrap();
+        assert_eq!(token.parse("aaaaa"), Ok("aaaab".to_string()), "It supports expected inputs");
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "rlw a b;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "rlw".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["rlw".to_string(), "a".to_string(), "b".to_string()].to_vec()
+                ),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn replace_all_with_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Rlw::params("a", "b").unwrap();
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x1e,
+            operands: ["a".to_string(), "b".to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x1e, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }

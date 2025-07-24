@@ -124,7 +124,7 @@ impl AtpBuilder {
     }
     pub fn replace_last_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(
-            Box::new(match rlw::Rlw::params(pattern.to_string(), text_to_replace.to_string()) {
+            Box::new(match rlw::Rlw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
