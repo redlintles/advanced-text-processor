@@ -4,7 +4,7 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-/// RFW - Replace Firsth With
+/// RFW - Replace First With
 ///
 /// Replace the first ocurrency of `pattern` in `input` with `text_to_replace`
 ///
