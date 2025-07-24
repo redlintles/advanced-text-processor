@@ -1,4 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{
+    token_data::TokenMethods,
+    utils::transforms::string_to_usize,
+    utils::validations::check_chunk_bound_indexes,
+};
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -25,17 +29,7 @@ pub struct Dlc {
 
 impl Dlc {
     pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        if start_index > end_index {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidIndex(
-                        "Start index must be smaller than end index".to_string()
-                    ),
-                    format!("dlc {} {};", start_index, end_index),
-                    format!("Start Index: {}, End Index: {}", start_index, end_index)
-                )
-            );
-        }
+        check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Dlc {
             start_index,
             end_index,
@@ -49,9 +43,7 @@ impl TokenMethods for Dlc {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if self.start_index <= self.end_index {
-            input.to_string();
-        }
+        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
         let start_index = input
             .char_indices()
             .nth(self.start_index)
@@ -99,17 +91,7 @@ impl TokenMethods for Dlc {
             let start_index = string_to_usize(&line[1])?;
             let end_index = string_to_usize(&line[2])?;
 
-            if start_index > end_index {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidIndex(
-                            "Start index must be smaller than end index".to_string()
-                        ),
-                        format!("dlc {} {};", start_index, end_index),
-                        format!("Start Index: {}, End Index: {}", start_index, end_index)
-                    )
-                );
-            }
+            check_chunk_bound_indexes(start_index, end_index, None)?;
             self.start_index = start_index;
             self.end_index = end_index;
             return Ok(());
@@ -138,17 +120,7 @@ impl BytecodeTokenMethods for Dlc {
                 let start_index = string_to_usize(&instruction.operands[0])?;
                 let end_index = string_to_usize(&instruction.operands[1])?;
 
-                if start_index > end_index {
-                    return Err(
-                        AtpError::new(
-                            AtpErrorCode::InvalidIndex(
-                                "Start index must be smaller than end index".to_string()
-                            ),
-                            format!("dlc {} {};", start_index, end_index),
-                            format!("Start Index: {}, End Index: {}", start_index, end_index)
-                        )
-                    );
-                }
+                check_chunk_bound_indexes(start_index, end_index, None)?;
 
                 self.start_index = start_index;
                 self.end_index = end_index;
