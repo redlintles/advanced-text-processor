@@ -1,4 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_to_usize } };
+use crate::{
+    token_data::TokenMethods,
+    utils::transforms::{ capitalize, string_to_usize },
+    utils::validations::check_chunk_bound_indexes,
+};
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
@@ -29,17 +33,7 @@ pub struct Ctr {
 
 impl Ctr {
     pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        if start_index > end_index {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidIndex(
-                        "Start index must be smaller than end index".to_string()
-                    ),
-                    format!("ctc {} {};", start_index, end_index),
-                    format!("Start Index: {}, End Index: {}", start_index, end_index)
-                )
-            );
-        }
+        check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Ctr {
             start_index,
             end_index,
@@ -52,17 +46,7 @@ impl TokenMethods for Ctr {
         "ctr".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if self.start_index >= input.chars().count() {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "start_index does not exist in current string".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
 
@@ -88,17 +72,7 @@ impl TokenMethods for Ctr {
         if line[0] == "ctr" {
             let start_index = string_to_usize(&line[1])?;
             let end_index = string_to_usize(&line[2])?;
-            if start_index > end_index {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidIndex(
-                            "Start index must be smaller than end index".to_string()
-                        ),
-                        format!("ctc {} {};", start_index, end_index),
-                        format!("Start Index: {}, End Index: {}", start_index, end_index)
-                    )
-                );
-            }
+            check_chunk_bound_indexes(start_index, end_index, None)?;
 
             self.start_index = start_index;
             self.end_index = end_index;
@@ -132,17 +106,7 @@ impl BytecodeTokenMethods for Ctr {
         if instruction.op_code == Ctr::default().get_opcode() && !instruction.operands.is_empty() {
             let start_index = string_to_usize(&instruction.operands[0])?;
             let end_index = string_to_usize(&instruction.operands[1])?;
-            if start_index > end_index {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidIndex(
-                            "Start index must be smaller than end index".to_string()
-                        ),
-                        format!("ctc {} {};", start_index, end_index),
-                        format!("Start Index: {}, End Index: {}", start_index, end_index)
-                    )
-                );
-            }
+            check_chunk_bound_indexes(start_index, end_index, None)?;
 
             self.start_index = start_index;
             self.end_index = end_index;
