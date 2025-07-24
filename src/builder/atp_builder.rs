@@ -115,7 +115,7 @@ impl AtpBuilder {
     }
     pub fn replace_first_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(
-            Box::new(match rfw::Rfw::params(pattern.to_string(), text_to_replace.to_string()) {
+            Box::new(match rfw::Rfw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
