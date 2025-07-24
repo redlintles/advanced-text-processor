@@ -150,9 +150,7 @@ impl AtpBuilder {
         count: usize
     ) -> Self {
         self.tokens.push(
-            Box::new(match
-                rcw::Rcw::params(pattern.to_string(), text_to_replace.to_string(), count)
-            {
+            Box::new(match rcw::Rcw::params(pattern, text_to_replace, count) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
