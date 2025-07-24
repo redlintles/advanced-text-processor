@@ -1,6 +1,6 @@
 use std::{ path::Path };
 
-use crate::utils::errors::AtpError;
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     let parsed_ext = ext.unwrap_or("atp");
@@ -52,5 +52,79 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
                     .to_string()
             )
         )
+    }
+}
+
+pub fn check_chunk_bound_indexes(
+    start_index: usize,
+    end_index: usize,
+    check_against: Option<&str>
+) -> Result<(), AtpError> {
+    match check_against {
+        Some(text) => {
+            if !(0..text.chars().count()).contains(&start_index) {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::IndexOutOfRange(
+                            "Start index does not exist in current string!".to_string()
+                        ),
+                        "check_chunk_bound_indexes".to_string(),
+                        text.to_string()
+                    )
+                );
+            }
+
+            return Ok(());
+        }
+        None => {}
+    }
+    if start_index >= end_index {
+        return Err(
+            AtpError::new(
+                AtpErrorCode::InvalidIndex(
+                    "Start index must be smaller than end index".to_string()
+                ),
+                format!("dlc {} {};", start_index, end_index),
+                format!("Start Index: {}, End Index: {}", start_index, end_index)
+            )
+        );
+    }
+
+    Ok(())
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod validations_tests {
+    mod check_chunk_bound_indexes_tests {
+        use crate::utils::validations::check_chunk_bound_indexes;
+        #[test]
+        fn success_with_no_reference_to_compare() {
+            assert!(
+                matches!(check_chunk_bound_indexes(1, 5, None), Ok(_)),
+                "It does not throws an error for valid bounds"
+            );
+        }
+        #[test]
+        fn success_with_reference_to_compare() {
+            assert!(
+                matches!(check_chunk_bound_indexes(1, 5, Some("Banana")), Ok(_)),
+                "It does not throws an error for valid bounds"
+            );
+        }
+        #[test]
+        fn error_with_no_reference_to_compare() {
+            assert!(
+                matches!(check_chunk_bound_indexes(2, 1, None), Err(_)),
+                "It does throws an error for invalid bounds"
+            );
+        }
+        #[test]
+        fn error_with_reference_to_compare() {
+            assert!(
+                matches!(check_chunk_bound_indexes(10, 20, Some("Banana")), Err(_)),
+                "It does throws an error for invalid start_index"
+            );
+        }
     }
 }
