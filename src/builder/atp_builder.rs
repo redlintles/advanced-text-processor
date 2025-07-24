@@ -133,9 +133,7 @@ impl AtpBuilder {
     }
     pub fn replace_nth_with(mut self, pattern: &str, text_to_replace: &str, index: usize) -> Self {
         self.tokens.push(
-            Box::new(match
-                rnw::Rnw::params(pattern.to_string(), text_to_replace.to_string(), index)
-            {
+            Box::new(match rnw::Rnw::params(pattern, text_to_replace, index) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
