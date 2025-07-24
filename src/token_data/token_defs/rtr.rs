@@ -5,6 +5,20 @@ use crate::{
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+/// RTR - Rotate Right
+///
+/// Rotates `input` to the right `n` times
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::rtr::Rtr};
+///
+/// let token = Rtr::params(2);
+///
+/// assert_eq!(token.parse("banana"),Ok("nabana".to_string()));
+///
+/// ```
 #[derive(Clone, Default)]
 pub struct Rtr {
     pub times: usize,
@@ -70,8 +84,8 @@ impl BytecodeTokenMethods for Rtr {
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Rtr::default().get_opcode() {
-            if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
-                self.times = string_to_usize(&instruction.operands[1])?;
+            if !(instruction.operands[0].is_empty() && instruction.operands.len() == 1) {
+                self.times = string_to_usize(&instruction.operands[0])?;
                 return Ok(());
             }
 
@@ -103,5 +117,67 @@ impl BytecodeTokenMethods for Rtr {
     }
     fn get_opcode(&self) -> u8 {
         0x0f
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod rtr_tests {
+    use crate::token_data::{ TokenMethods, token_defs::rtr::Rtr };
+    #[test]
+    fn repeat_tests() {
+        let mut token = Rtr::params(2);
+
+        assert_eq!(token.parse("banana"), Ok("nabana".to_string()), "It supports expected inputs");
+        assert_eq!(
+            token.token_to_atp_line(),
+            "rtr 2;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+        assert_eq!(token.get_string_repr(), "rtr".to_string(), "get_string_repr works as expected");
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["rtr".to_string(), (2).to_string()].to_vec()),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+
+        assert_eq!(
+            token.parse("banana"),
+            Ok("nabana".to_string()),
+            "token_from_vec_params parses the argument list correctly"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn repeat_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Rtr::params(2);
+
+        let instruction = BytecodeInstruction {
+            op_code: 0x0f,
+            operands: [(2).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x0f, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
     }
 }
