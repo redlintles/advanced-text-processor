@@ -169,9 +169,9 @@ impl AtpBuilder {
         self
     }
 
-    pub fn select(mut self, start_index: usize, end_index: usize) -> Self {
-        self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)));
-        self
+    pub fn select(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+        self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)?));
+        Ok(self)
     }
     pub fn to_uppercase_all(mut self) -> Self {
         self.tokens.push(Box::new(tua::Tua::default()));
