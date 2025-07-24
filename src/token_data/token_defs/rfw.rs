@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 ///
 /// See Also:
 ///
-/// - [`RAW` - Replace All With](crate::token_data::token_defs::rfw)
+/// - [`RAW` - Replace All With](crate::token_data::token_defs::raw)
 /// - [`RCW` - Replace First With](crate::token_data::token_defs::rcw)
 /// - [`RLW` - Replace Last With](crate::token_data::token_defs::rlw)
 /// - [`RNW` - Replace Nth With](crate::token_data::token_defs::rnw)
