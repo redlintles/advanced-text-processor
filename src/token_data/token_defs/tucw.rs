@@ -1,7 +1,10 @@
 use crate::{
     token_data::TokenMethods,
-    utils::errors::{ AtpError, AtpErrorCode },
-    utils::transforms::string_to_usize,
+    utils::{
+        errors::{ AtpError, AtpErrorCode },
+        transforms::string_to_usize,
+        validations::{ check_index_against_input, check_vec_len },
+    },
 };
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
@@ -39,17 +42,7 @@ impl TokenMethods for Tucw {
     }
 
     fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
-        if !(0..input.chars().count()).contains(&self.index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "Index does not exist in the splitted vec".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_index_against_input(self.index, input)?;
         Ok(
             input
                 .split_whitespace()
@@ -67,6 +60,7 @@ impl TokenMethods for Tucw {
         &mut self,
         line: Vec<String>
     ) -> Result<(), crate::utils::errors::AtpError> {
+        check_vec_len(&line, 2)?;
         if line[0] == "tucw" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
@@ -91,7 +85,8 @@ impl BytecodeTokenMethods for Tucw {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Tucw::default().get_opcode() && instruction.operands.len() == 1 {
+        check_vec_len(&instruction.operands, 1)?;
+        if instruction.op_code == Tucw::default().get_opcode() {
             self.index = string_to_usize(&instruction.operands[0])?;
 
             return Ok(());
