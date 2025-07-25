@@ -1,4 +1,8 @@
-use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_to_usize } };
+use crate::{
+    token_data::TokenMethods,
+    utils::transforms::{ capitalize, string_to_usize },
+    utils::validations::check_chunk_bound_indexes,
+};
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
@@ -29,17 +33,7 @@ pub struct Ctc {
 
 impl Ctc {
     pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        if start_index > end_index {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidIndex(
-                        "Start index must be smaller than end index".to_string()
-                    ),
-                    format!("ctc {} {};", start_index, end_index),
-                    format!("Start Index: {}, End Index: {}", start_index, end_index)
-                )
-            );
-        }
+        check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Ctc {
             start_index,
             end_index,
@@ -54,17 +48,7 @@ impl TokenMethods for Ctc {
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let total_chars = input.chars().count();
 
-        if self.start_index >= total_chars {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "start_index does not exist in current string".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
         let end_index = self.end_index.min(total_chars); // clamp to avoid overflow
 
@@ -109,17 +93,7 @@ impl TokenMethods for Ctc {
             let start_index = string_to_usize(&line[1])?;
             let end_index = string_to_usize(&line[2])?;
 
-            if start_index > end_index {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidIndex(
-                            "Start index must be smaller than end index".to_string()
-                        ),
-                        format!("ctc {} {};", start_index, end_index),
-                        format!("Start Index: {}, End Index: {}", start_index, end_index)
-                    )
-                );
-            }
+            check_chunk_bound_indexes(start_index, end_index, None)?;
             self.start_index = start_index;
             self.end_index = end_index;
             return Ok(());
@@ -154,17 +128,7 @@ impl BytecodeTokenMethods for Ctc {
             let start_index = string_to_usize(&instruction.operands[0])?;
             let end_index = string_to_usize(&instruction.operands[1])?;
 
-            if start_index > end_index {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidIndex(
-                            "Start index must be smaller than end index".to_string()
-                        ),
-                        format!("ctc {} {};", start_index, end_index),
-                        format!("Start Index: {}, End Index: {}", start_index, end_index)
-                    )
-                );
-            }
+            check_chunk_bound_indexes(start_index, end_index, None)?;
             self.start_index = start_index;
             self.end_index = end_index;
             return Ok(());
