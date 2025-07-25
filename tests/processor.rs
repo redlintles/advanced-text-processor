@@ -50,9 +50,7 @@ pub mod processor {
     #[test]
     fn test_process_single() {
         let mut processor = AtpProcessor::new();
-        let token: Box<dyn TokenMethods> = Box::new(
-            Raw::params("a".to_string(), "b".to_string()).unwrap()
-        );
+        let token: Box<dyn TokenMethods> = Box::new(Raw::params("a", "b").unwrap());
 
         let input = "a".repeat(100);
 
@@ -65,9 +63,7 @@ pub mod processor {
     #[test]
     fn test_process_single_with_debug() {
         let mut processor: Box<dyn AtpProcessorDebugMethods> = Box::new(AtpProcessor::new());
-        let token: Box<dyn TokenMethods> = Box::new(
-            Raw::params("a".to_string(), "b".to_string()).unwrap()
-        );
+        let token: Box<dyn TokenMethods> = Box::new(Raw::params("a", "b").unwrap());
 
         let input = "a".repeat(100);
 

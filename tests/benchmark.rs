@@ -30,7 +30,7 @@ pub mod benchmark {
             .trim_both()
             .trim_left()
             .trim_right()
-            .select(3, 7)
+            .select(3, 7)?
             .replace_count_with("a", "b", 3)
             .to_uppercase_all()
             .to_lowercase_all()
@@ -53,7 +53,7 @@ pub mod benchmark {
             .to_json_unescaped()
             .insert(1, "banana")
             .to_uppercase_chunk(1, 3)
-            .to_lowercase_chunk(0, 2)
+            .to_lowercase_chunk(0, 2)?
             .build()
             .text_debug_processor();
 
@@ -103,7 +103,7 @@ pub mod benchmark {
             .trim_both()
             .trim_left()
             .trim_right()
-            .select(3, 7)
+            .select(3, 7)?
             .replace_count_with("a", "b", 3)
             .to_uppercase_all()
             .to_lowercase_all()
