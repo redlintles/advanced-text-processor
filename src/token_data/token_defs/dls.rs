@@ -1,6 +1,10 @@
 use crate::{
     token_data::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+    utils::{
+        errors::{ AtpError, AtpErrorCode },
+        transforms::string_to_usize,
+        validations::{ check_index_against_input, check_vec_len },
+    },
 };
 
 #[cfg(feature = "bytecode")]
@@ -43,23 +47,7 @@ impl TokenMethods for Dls {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if !(0..input.chars().count()).contains(&self.index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        format!(
-                            "O índice {} não existe na string {}, que só permite índices no intervalo {}-{}",
-                            self.index,
-                            input,
-                            0,
-                            input.chars().count()
-                        )
-                    ),
-                    self.get_string_repr(),
-                    input.to_string()
-                )
-            );
-        }
+        check_index_against_input(self.index, input)?;
         Ok(
             input
                 .chars()
@@ -75,6 +63,7 @@ impl TokenMethods for Dls {
         )
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+        check_vec_len(&line, 2)?;
         if line[0] == "dls" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
@@ -100,6 +89,7 @@ impl BytecodeTokenMethods for Dls {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
+        check_vec_len(&instruction.operands, 1)?;
         if instruction.op_code == self.get_opcode() {
             use crate::utils::transforms::string_to_usize;
 
