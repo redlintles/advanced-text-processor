@@ -1,3 +1,4 @@
+use crate::utils::validations::check_index_against_input;
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -38,17 +39,7 @@ impl TokenMethods for Dla {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if !(0..input.len()).contains(&self.index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "self.index does not exist in current input".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_index_against_input(self.index, input)?;
 
         let mut s = String::from(input);
         if
@@ -97,6 +88,10 @@ impl BytecodeTokenMethods for Dla {
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
         use AtpErrorCode;
+
+        use crate::utils::validations::check_vec_len;
+
+        check_vec_len(&instruction.operands, 1)?;
 
         if instruction.op_code == Dla::default().get_opcode() {
             use AtpErrorCode;
