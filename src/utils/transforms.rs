@@ -188,3 +188,19 @@ pub fn bytecode_token_vec_to_token_vec(
     }
     Ok(r)
 }
+
+pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, AtpError> {
+    Ok(
+        input
+            .char_indices()
+            .nth(index)
+            .map(|(i, _)| i)
+            .ok_or_else(||
+                AtpError::new(
+                    super::errors::AtpErrorCode::IndexOutOfRange("".to_string()),
+                    "Get safe utf-8 char index".to_string(),
+                    input.to_string()
+                )
+            )?
+    )
+}
