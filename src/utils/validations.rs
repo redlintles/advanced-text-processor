@@ -169,4 +169,35 @@ mod validations_tests {
             );
         }
     }
+
+    mod check_vec_len_tests {
+        use crate::utils::validations::check_vec_len;
+
+        #[test]
+        fn success_valid_vec() {
+            assert!(
+                matches!(check_vec_len(["rtl".to_string(), (5).to_string()].to_vec(), 2), Ok(_))
+            );
+        }
+
+        #[test]
+        fn error_invalid_vec() {
+            assert!(
+                matches!(check_vec_len(["tls".to_string(), (5).to_string()].to_vec(), 1), Err(_))
+            );
+        }
+    }
+
+    mod check_index_against_input_tests {
+        use crate::utils::validations::check_index_against_input;
+
+        #[test]
+        fn success_valid_index() {
+            assert!(matches!(check_index_against_input(1, "Bánáná"), Ok(_)));
+        }
+        #[test]
+        fn error_invalid_index() {
+            assert!(matches!(check_index_against_input(7, "Bánáná"), Err(_)));
+        }
+    }
 }
