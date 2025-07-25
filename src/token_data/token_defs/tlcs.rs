@@ -6,6 +6,21 @@ use crate::{
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
+/// TLCS - To Lowercase Single
+///
+/// Lowercases a single character in `input` identified by `index`
+///
+/// # Example
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::tlcs::Tlcs};
+///
+/// let token = Tlcs::params(1);
+///
+/// assert_eq!(token.parse("BANANA"), Ok("BaNANA".to_string()));
+///
+/// ```
+
 #[derive(Clone, Copy, Default)]
 pub struct Tlcs {
     index: usize,
@@ -28,6 +43,17 @@ impl TokenMethods for Tlcs {
         format!("tlcs {};\n", self.index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
+        if !(0..input.chars().count()).contains(&self.index) {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        "Index does not exist in the splitted vec".to_string()
+                    ),
+                    self.token_to_atp_line(),
+                    input.to_string()
+                )
+            );
+        }
         let result: String = input
             .char_indices()
             .map(|(i, c)| {
@@ -60,8 +86,8 @@ impl BytecodeTokenMethods for Tlcs {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Tlcs::default().get_opcode() {
-            self.index = string_to_usize(&instruction.operands[1])?;
+        if instruction.op_code == Tlcs::default().get_opcode() && instruction.operands.len() == 1 {
+            self.index = string_to_usize(&instruction.operands[0])?;
             return Ok(());
         }
 
@@ -79,5 +105,101 @@ impl BytecodeTokenMethods for Tlcs {
             op_code: Tlcs::default().get_opcode(),
             operands: [self.index.to_string()].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod tlcs_tests {
+    use crate::token_data::{ TokenMethods, token_defs::tlcs::Tlcs };
+    #[test]
+    fn to_lowercase_word_tests() {
+        let mut token = Tlcs::params(1);
+
+        assert_eq!(token.parse("BANANA"), Ok("BaNANA".to_string()));
+
+        assert!(
+            matches!(token.parse(""), Err(_)),
+            "It throws an error if start_index does not exists in input"
+        );
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "tlcs 1;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+
+        assert_eq!(
+            token.get_string_repr(),
+            "tlcs".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["tlcs".to_string(), "banana".to_string()].to_vec()),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["tlcs".to_string(), (1).to_string()].to_vec()),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn to_lowercase_word_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Tlcs::params(1);
+
+        let mut instruction = BytecodeInstruction {
+            op_code: 0x15,
+            operands: [(1).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x15, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+
+        instruction.operands = ["(".to_string(), (1).to_string()].to_vec();
+
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid operands"
+        );
+
+        instruction.op_code = 0x01;
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid op_code"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["tlcs".to_string(), "(".to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid param vec"
+        );
     }
 }
