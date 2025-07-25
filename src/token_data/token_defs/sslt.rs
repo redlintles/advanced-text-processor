@@ -1,5 +1,6 @@
 use regex::Regex;
 
+use crate::utils::validations::check_vec_len;
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -85,6 +86,7 @@ impl TokenMethods for Sslt {
     }
 
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+        check_vec_len(&line, 3)?;
         if line[0] == "sslt" {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
@@ -120,7 +122,8 @@ impl BytecodeTokenMethods for Sslt {
         &mut self,
         instruction: crate::bytecode_parser::BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Sslt::default().get_opcode() && instruction.operands.len() == 2 {
+        check_vec_len(&instruction.operands, 2)?;
+        if instruction.op_code == Sslt::default().get_opcode() {
             self.pattern = Regex::new(&instruction.operands[0]).map_err(|_|
                 AtpError::new(
                     AtpErrorCode::TextParsingError("Failed to create regex".to_string()),
