@@ -1,6 +1,10 @@
 use crate::{
     token_data::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+    utils::{
+        errors::{ AtpError, AtpErrorCode },
+        transforms::string_to_usize,
+        validations::{ check_index_against_input, check_vec_len },
+    },
 };
 
 #[cfg(feature = "bytecode")]
@@ -43,17 +47,7 @@ impl TokenMethods for Tlcs {
         format!("tlcs {};\n", self.index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if !(0..input.chars().count()).contains(&self.index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "Index does not exist in the splitted vec".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_index_against_input(self.index, input)?;
         let result: String = input
             .char_indices()
             .map(|(i, c)| {
@@ -63,6 +57,7 @@ impl TokenMethods for Tlcs {
         Ok(result)
     }
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+        check_vec_len(&line, 2)?;
         if line[0] == "tlcs" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
