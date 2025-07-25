@@ -26,11 +26,11 @@ impl TokenMethods for Splc {
     fn get_string_repr(&self) -> String {
         "splc".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "splc;\n".to_string()
     }
 
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "splc" {
             return Ok(());
         }
@@ -95,7 +95,7 @@ mod splc_tests {
             "It supports expected inputs"
         );
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "splc;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -105,11 +105,11 @@ mod splc_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["splc".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["splc".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
         assert_eq!(

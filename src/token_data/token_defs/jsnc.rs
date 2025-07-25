@@ -31,7 +31,7 @@ impl TokenMethods for Jsnc {
         "jsnc".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "jsnc;\n".to_string()
     }
 
@@ -39,7 +39,7 @@ impl TokenMethods for Jsnc {
         Ok(input.split_whitespace().collect::<Vec<_>>().join("_").to_lowercase())
     }
 
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "jsnc" {
             return Ok(());
         }
@@ -97,7 +97,7 @@ mod jsnc_tests {
             "It supports expected inputs"
         );
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "jsnc;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -107,11 +107,11 @@ mod jsnc_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["jsnc".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["jsnc".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

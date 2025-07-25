@@ -38,10 +38,10 @@ impl TokenMethods for Ins {
     fn get_string_repr(&self) -> String {
         "ins".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("ins {} {};\n", self.index, self.text_to_insert)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "ins" {
             self.index = string_to_usize(&line[1])?;
             self.text_to_insert = line[2].clone();
@@ -66,7 +66,7 @@ impl TokenMethods for Ins {
                             input.len().saturating_sub(1)
                         )
                     ),
-                    self.token_to_atp_line(),
+                    self.to_atp_line(),
                     input.to_string()
                 )
             );
@@ -129,18 +129,18 @@ mod ins_tests {
             "It supports expected inputs"
         );
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "ins 2 laranja;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "ins".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["ins".to_string(), (2).to_string(), "laranja".to_string()].to_vec()
                 ),
                 Ok(_)

@@ -29,7 +29,7 @@ impl Atb {
 }
 
 impl TokenMethods for Atb {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("atb {};\n", self.text)
     }
 
@@ -38,7 +38,7 @@ impl TokenMethods for Atb {
         s.push_str(input);
         Ok(s)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "atb;"
 
         if line[0] == "atb" {
@@ -48,7 +48,7 @@ impl TokenMethods for Atb {
         Err(
             AtpError::new(
                 AtpErrorCode::TokenNotFound("Token not recognized".to_string()),
-                self.token_to_atp_line(),
+                self.to_atp_line(),
                 line.join(" ")
             )
         )
@@ -137,7 +137,7 @@ mod atb_tests {
             let token = Atb::params("banana");
 
             assert_eq!(
-                token.token_to_atp_line(),
+                token.to_atp_line(),
                 "atb banana;\n".to_string(),
                 "conversion to atp_line works correctly"
             );
@@ -157,12 +157,12 @@ mod atb_tests {
         fn test_from_vec_params() {
             let mut token = Atb::params("laranja");
             assert!(
-                matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+                matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
                 "It throws an error for invalid vec_params"
             );
             assert!(
                 matches!(
-                    token.token_from_vec_params(["atb".to_string(), "banana".to_string()].to_vec()),
+                    token.from_vec_params(["atb".to_string(), "banana".to_string()].to_vec()),
                     Ok(_)
                 ),
                 "It does not throws an error for valid vec_params"

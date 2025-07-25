@@ -44,7 +44,7 @@ impl TokenMethods for Tucc {
         "tucc".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("tucc {} {};\n", self.start_index, self.end_index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
@@ -71,7 +71,7 @@ impl TokenMethods for Tucc {
             .collect();
         Ok(result)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "tucc" {
             let start_index = string_to_usize(&line[1])?;
             let end_index = string_to_usize(&line[2])?;
@@ -155,7 +155,7 @@ mod tucc_tests {
         );
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "tucc 1 4;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -166,12 +166,12 @@ mod tucc_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tucc".to_string(), (4).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)
@@ -180,7 +180,7 @@ mod tucc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tucc".to_string(), (1).to_string(), (4).to_string()].to_vec()
                 ),
                 Ok(_)
@@ -229,7 +229,7 @@ mod tucc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tucc".to_string(), (4).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)

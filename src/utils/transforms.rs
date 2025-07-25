@@ -64,7 +64,7 @@ pub fn extend_string(input: &str, max_len: usize) -> String {
 pub fn token_to_bytecode_token(
     token: &Box<dyn TokenMethods>
 ) -> Result<Box<dyn BytecodeTokenMethods>, AtpError> {
-    let mut line = token.token_to_atp_line().trim().to_string();
+    let mut line = token.to_atp_line().trim().to_string();
 
     if line.ends_with(";") {
         line = line.trim_end_matches(";").to_string();
@@ -79,7 +79,7 @@ pub fn token_to_bytecode_token(
                         "Shell words split failed".to_string()
                     ),
                     "shell_words::split()".to_string(),
-                    token.token_to_atp_line()
+                    token.to_atp_line()
                 )
             );
         }
@@ -95,8 +95,8 @@ pub fn token_to_bytecode_token(
                     super::errors::AtpErrorCode::TokenNotFound(
                         "Token not found in the token map".to_string()
                     ),
-                    token.token_to_atp_line(),
-                    token.token_to_atp_line()
+                    token.to_atp_line(),
+                    token.to_atp_line()
                 )
             );
         }
@@ -104,7 +104,7 @@ pub fn token_to_bytecode_token(
 
     let mut new_token = factory();
 
-    new_token.token_from_vec_params(chunks)?;
+    new_token.from_vec_params(chunks)?;
 
     Ok(new_token)
 }
@@ -115,7 +115,7 @@ pub fn bytecode_token_to_token(
 ) -> Result<Box<dyn TokenMethods>, AtpError> {
     use super::mapping::get_supported_default_tokens;
 
-    let mut line = token.token_to_atp_line().trim().to_string();
+    let mut line = token.to_atp_line().trim().to_string();
 
     println!("DEBUG TRANSFORM: {:?}", line);
 
@@ -132,7 +132,7 @@ pub fn bytecode_token_to_token(
                         "Shell words split failed".to_string()
                     ),
                     "shell_words::split()".to_string(),
-                    token.token_to_atp_line()
+                    token.to_atp_line()
                 )
             );
         }
@@ -147,8 +147,8 @@ pub fn bytecode_token_to_token(
                     super::errors::AtpErrorCode::TokenNotFound(
                         "Token not found in the token map".to_string()
                     ),
-                    token.token_to_atp_line(),
-                    token.token_to_atp_line()
+                    token.to_atp_line(),
+                    token.to_atp_line()
                 )
             );
         }
@@ -157,7 +157,7 @@ pub fn bytecode_token_to_token(
     let mut new_token = factory();
 
     println!("DEBUG TRANSFORM: {:?}", chunks);
-    new_token.token_from_vec_params(chunks)?;
+    new_token.from_vec_params(chunks)?;
 
     Ok(new_token)
 }

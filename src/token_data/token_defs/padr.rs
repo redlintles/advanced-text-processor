@@ -41,7 +41,7 @@ impl TokenMethods for Padr {
     fn get_string_repr(&self) -> String {
         "padr".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("padr {} {};\n", self.text, self.max_len)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
@@ -55,7 +55,7 @@ impl TokenMethods for Padr {
 
         Ok(format!("{}{}", input, s))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "padr" {
             return Ok(());
         }
@@ -112,7 +112,7 @@ mod padr_tests {
         assert_eq!(token.parse("banana"), Ok("bananax".to_string()), "It supports expected inputs");
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "padr xy 7;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -122,12 +122,12 @@ mod padr_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["padr".to_string(), "xy".to_string(), (7).to_string()].to_vec()
                 ),
                 Ok(_)

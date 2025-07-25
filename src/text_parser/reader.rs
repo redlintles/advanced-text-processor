@@ -81,7 +81,7 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpErro
 
         let mut token = token_factory();
 
-        match token.token_from_vec_params(chunks) {
+        match token.from_vec_params(chunks) {
             Ok(x) => x,
             Err(_) => {
                 return Err(

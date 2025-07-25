@@ -38,7 +38,7 @@ impl Dlc {
 }
 
 impl TokenMethods for Dlc {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("dlc {} {};\n", self.start_index, self.end_index)
     }
 
@@ -57,7 +57,7 @@ impl TokenMethods for Dlc {
                             self.start_index
                         )
                     ),
-                    self.token_to_atp_line(),
+                    self.to_atp_line(),
                     input.to_string()
                 )
             )?;
@@ -74,7 +74,7 @@ impl TokenMethods for Dlc {
                             self.end_index
                         )
                     ),
-                    self.token_to_atp_line(),
+                    self.to_atp_line(),
                     input.to_string()
                 )
             )?;
@@ -84,7 +84,7 @@ impl TokenMethods for Dlc {
 
         Ok(format!("{}{}", before, after))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dlc;"
 
         if line[0] == "dlc" {
@@ -182,19 +182,19 @@ mod dlc_tests {
         );
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "dlc 1 5;\n".to_string(),
             "conversion to atp_line works correctly"
         );
 
         assert_eq!(token.get_string_repr(), "dlc".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["dlc".to_string(), (5).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)
@@ -203,7 +203,7 @@ mod dlc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["dlc".to_string(), (1).to_string(), (5).to_string()].to_vec()
                 ),
                 Ok(_)
@@ -252,7 +252,7 @@ mod dlc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["dlc".to_string(), (5).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)

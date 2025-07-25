@@ -11,13 +11,13 @@ impl TokenMethods for Tua {
         "tua".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "tua;\n".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_uppercase())
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "tua" {
             return Ok(());
         }
@@ -75,14 +75,14 @@ mod tua_tests {
             "It supports random inputs"
         );
 
-        assert_eq!(token.token_to_atp_line(), "tua;\n".to_string());
+        assert_eq!(token.to_atp_line(), "tua;\n".to_string());
         assert_eq!(token.get_string_repr(), "tua".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tua".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["tua".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

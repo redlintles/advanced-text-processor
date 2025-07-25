@@ -210,7 +210,7 @@ impl AtpProcessorDebugMethods for AtpProcessor {
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
                 counter.to_string().blue(),
                 (counter + 1).to_string().blue(),
-                token.token_to_atp_line().yellow(),
+                token.to_atp_line().yellow(),
                 result.red(),
                 temp.green()
             );
@@ -241,7 +241,7 @@ impl AtpProcessorDebugMethods for AtpProcessor {
             "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
             (0).to_string().blue(),
             (1).to_string().blue(),
-            token.token_to_atp_line().yellow(),
+            token.to_atp_line().yellow(),
             input.red(),
             output.green()
         );
@@ -280,7 +280,7 @@ impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
                 counter.to_string().blue(),
                 (counter + 1).to_string().blue(),
-                token.token_to_atp_line().yellow(),
+                token.to_atp_line().yellow(),
                 result.red(),
                 temp.green()
             );
@@ -311,7 +311,7 @@ impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
             "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
             (0).to_string().blue(),
             (1).to_string().blue(),
-            token.token_to_atp_line().yellow(),
+            token.to_atp_line().yellow(),
             input.red(),
             output.green()
         );

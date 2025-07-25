@@ -51,14 +51,14 @@ impl Default for Rfw {
 }
 
 impl TokenMethods for Rfw {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("rfw {} {};\n", self.pattern, self.text_to_replace)
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(self.pattern.replace(input, &self.text_to_replace).to_string())
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "rfw;"
 
         if line[0] == "rfw" {
@@ -145,18 +145,18 @@ mod rfw_tests {
         assert_eq!(token.parse("aaaaa"), Ok("baaaa".to_string()), "It supports expected inputs");
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "rfw a b;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "rfw".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["rfw".to_string(), "a".to_string(), "b".to_string()].to_vec()
                 ),
                 Ok(_)

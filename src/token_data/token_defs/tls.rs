@@ -22,14 +22,14 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 pub struct Tls {}
 
 impl TokenMethods for Tls {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "tls;\n".to_string()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(String::from(input.trim_start()))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "tls;"
 
         if line[0] == "tls" {
@@ -102,14 +102,14 @@ mod tls_tests {
             "It supports expected inputs"
         );
         assert_eq!(token.parse(&text), Ok("banana".to_string()));
-        assert_eq!(token.token_to_atp_line(), "tls;\n".to_string(), "It supports random inputs");
+        assert_eq!(token.to_atp_line(), "tls;\n".to_string(), "It supports random inputs");
         assert_eq!(token.get_string_repr(), "tls".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tls".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["tls".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

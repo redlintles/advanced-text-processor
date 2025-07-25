@@ -22,7 +22,7 @@ pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result
     let mut success = true;
 
     for token in tokens.iter() {
-        let line = token.token_to_atp_line();
+        let line = token.to_atp_line();
 
         match file.write_all(line.as_bytes()) {
             Ok(_) => (),

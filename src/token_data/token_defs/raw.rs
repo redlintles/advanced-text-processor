@@ -51,14 +51,14 @@ impl Default for Raw {
 }
 
 impl TokenMethods for Raw {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("raw {} {};\n", self.pattern, self.text_to_replace)
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(self.pattern.replace_all(input, &self.text_to_replace).to_string())
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "raw;"
 
         if line[0] == "raw" {
@@ -145,18 +145,18 @@ mod raw_tests {
         assert_eq!(token.parse("aaaaa"), Ok("bbbbb".to_string()), "It supports expected inputs");
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "raw a b;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "raw".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["raw".to_string(), "a".to_string(), "b".to_string()].to_vec()
                 ),
                 Ok(_)

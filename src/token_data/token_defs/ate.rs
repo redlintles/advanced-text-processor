@@ -29,7 +29,7 @@ impl Ate {
 }
 
 impl TokenMethods for Ate {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("ate {};\n", self.text)
     }
 
@@ -38,7 +38,7 @@ impl TokenMethods for Ate {
         s.push_str(&self.text);
         Ok(s)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "ate;"
 
         if line[0] == "ate" {
@@ -118,18 +118,18 @@ mod ate_tests {
         assert_eq!(token.parse("coxinha"), Ok("coxinhabanana".to_string()));
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "ate banana;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "ate".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["ate".to_string(), "banana".to_string()].to_vec()),
+                token.from_vec_params(["ate".to_string(), "banana".to_string()].to_vec()),
                 Ok(_)
             ),
             "It does not throws an error for valid vec_params"

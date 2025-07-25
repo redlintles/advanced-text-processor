@@ -42,7 +42,7 @@ impl TokenMethods for Dls {
     fn get_string_repr(&self) -> String {
         "dls".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("dls {};\n", self.index)
     }
 
@@ -62,7 +62,7 @@ impl TokenMethods for Dls {
                 .collect()
         )
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         check_vec_len(&line, 2)?;
         if line[0] == "dls" {
             self.index = string_to_usize(&line[1])?;
@@ -125,18 +125,18 @@ mod dls_tests {
 
         assert_eq!(token.parse("banana"), Ok("banna".to_string()), "It supports expected inputs");
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "dls 3;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "dls".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["dls".to_string(), (3).to_string()].to_vec()),
+                token.from_vec_params(["dls".to_string(), (3).to_string()].to_vec()),
                 Ok(_)
             ),
             "It does not throws an error for valid vec_params"
@@ -145,7 +145,7 @@ mod dls_tests {
         assert_eq!(
             token.parse("banana"),
             Ok("banna".to_string()),
-            "token_from_vec_params parses the argument list correctly"
+            "from_vec_params parses the argument list correctly"
         );
     }
 

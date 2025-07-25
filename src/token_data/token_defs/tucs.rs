@@ -43,7 +43,7 @@ impl TokenMethods for Tucs {
         "tucs".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("tucs {};\n", self.index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
@@ -56,7 +56,7 @@ impl TokenMethods for Tucs {
             .collect();
         Ok(result)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         check_vec_len(&line, 2)?;
         if line[0] == "tucs" {
             self.index = string_to_usize(&line[1])?;
@@ -119,7 +119,7 @@ mod tucs_tests {
         );
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "tucs 1;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -130,19 +130,19 @@ mod tucs_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["tucs".to_string(), "banana".to_string()].to_vec()),
+                token.from_vec_params(["tucs".to_string(), "banana".to_string()].to_vec()),
                 Err(_)
             ),
             "It throws an error for invalid operands"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["tucs".to_string(), (1).to_string()].to_vec()),
+                token.from_vec_params(["tucs".to_string(), (1).to_string()].to_vec()),
                 Ok(_)
             ),
             "It does not throws an error for valid vec_params"
@@ -189,7 +189,7 @@ mod tucs_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tucs".to_string(), "(".to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)

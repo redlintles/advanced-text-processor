@@ -24,13 +24,13 @@ impl TokenMethods for Rmws {
     fn get_string_repr(&self) -> String {
         "rmws".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "rmws;\n".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join(""))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "rmws" {
             return Ok(());
         }
@@ -85,7 +85,7 @@ mod rmws_tests {
             "It supports expected inputs"
         );
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "rmws;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -95,11 +95,11 @@ mod rmws_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["rmws".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["rmws".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

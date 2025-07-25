@@ -22,11 +22,11 @@ impl TokenMethods for Rev {
     fn get_string_repr(&self) -> String {
         "rev".to_string()
     }
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "rev;\n".to_string()
     }
 
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "rev" {
             return Ok(());
         }
@@ -99,17 +99,17 @@ mod rev_tests {
         );
         assert_eq!(token.parse("banana"), Ok("ananab".to_string()), "It supports expected inputs");
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "rev;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "rev".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["rev".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["rev".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

@@ -38,7 +38,7 @@ impl TokenMethods for Tlcw {
         "tlcw".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("tlcw {};\n", self.index)
     }
 
@@ -57,10 +57,7 @@ impl TokenMethods for Tlcw {
         )
     }
 
-    fn token_from_vec_params(
-        &mut self,
-        line: Vec<String>
-    ) -> Result<(), crate::utils::errors::AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), crate::utils::errors::AtpError> {
         check_vec_len(&line, 2)?;
         if line[0] == "tlcw" {
             self.index = string_to_usize(&line[1])?;
@@ -131,7 +128,7 @@ mod tlcw_tests {
         );
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "tlcw 1;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -142,21 +139,18 @@ mod tlcw_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["tlcw".to_string(), "banana".to_string()].to_vec()),
+                token.from_vec_params(["tlcw".to_string(), "banana".to_string()].to_vec()),
                 Err(_)
             ),
             "It throws an error for invalid operands"
         );
         assert!(
-            matches!(
-                token.token_from_vec_params(["tlcw".to_string(), (1).to_string()].to_vec()),
-                Ok(_)
-            ),
+            matches!(token.from_vec_params(["tlcw".to_string(), (1).to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }
@@ -201,7 +195,7 @@ mod tlcw_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tlcw".to_string(), "(".to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)

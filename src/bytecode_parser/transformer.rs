@@ -74,7 +74,7 @@ pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result
         )?;
 
     for token in tokens.into_iter() {
-        let line = token.token_to_atp_line();
+        let line = token.to_atp_line();
 
         match new_file.write(line.as_bytes()) {
             Ok(_) => (),

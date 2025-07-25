@@ -21,14 +21,14 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Trs {}
 
 impl TokenMethods for Trs {
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "trs;\n".to_string()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(String::from(input.trim_end()))
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "trs;"
 
         if line[0] == "trs" {
@@ -103,17 +103,17 @@ mod trs_tests {
         );
         assert_eq!(token.parse(&text), Ok("banana".to_string()), "It supports random inputs");
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "trs;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "trs".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["trs".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["trs".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

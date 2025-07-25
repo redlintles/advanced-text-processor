@@ -45,7 +45,7 @@ impl TokenMethods for Tlcc {
         "tlcc".to_string()
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("tlcc {} {};\n", self.start_index, self.end_index)
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
@@ -72,7 +72,7 @@ impl TokenMethods for Tlcc {
             .collect();
         Ok(result)
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "tlcc" {
             let start_index = string_to_usize(&line[1])?;
             let end_index = string_to_usize(&line[2])?;
@@ -155,7 +155,7 @@ mod tlcc_tests {
         );
 
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "tlcc 1 4;\n".to_string(),
             "conversion to atp_line works correctly"
         );
@@ -166,12 +166,12 @@ mod tlcc_tests {
             "get_string_repr works as expected"
         );
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tlcc".to_string(), (4).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)
@@ -180,7 +180,7 @@ mod tlcc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tlcc".to_string(), (1).to_string(), (4).to_string()].to_vec()
                 ),
                 Ok(_)
@@ -229,7 +229,7 @@ mod tlcc_tests {
         );
         assert!(
             matches!(
-                token.token_from_vec_params(
+                token.from_vec_params(
                     ["tlcc".to_string(), (4).to_string(), (1).to_string()].to_vec()
                 ),
                 Err(_)

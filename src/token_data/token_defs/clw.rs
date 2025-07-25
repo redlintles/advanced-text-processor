@@ -27,7 +27,7 @@ impl TokenMethods for Clw {
     fn get_string_repr(&self) -> String {
         "clw".to_string()
     }
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "clw" {
             return Ok(());
         }
@@ -54,7 +54,7 @@ impl TokenMethods for Clw {
         Ok(v.join(" "))
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         "clw;\n".to_string()
     }
 }
@@ -123,17 +123,17 @@ mod clw_tests {
             "It supports expected inputs"
         );
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "clw;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "clw".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
-            matches!(token.token_from_vec_params(["clw".to_string()].to_vec()), Ok(_)),
+            matches!(token.from_vec_params(["clw".to_string()].to_vec()), Ok(_)),
             "It does not throws an error for valid vec_params"
         );
     }

@@ -38,7 +38,7 @@ impl TokenMethods for Rtr {
             return Err(
                 AtpError::new(
                     AtpErrorCode::InvalidParameters("Input is empty".to_string()),
-                    self.token_to_atp_line(),
+                    self.to_atp_line(),
                     "\" \"".to_string()
                 )
             );
@@ -56,14 +56,14 @@ impl TokenMethods for Rtr {
         )
     }
 
-    fn token_to_atp_line(&self) -> String {
+    fn to_atp_line(&self) -> String {
         format!("rtr {};\n", self.times)
     }
     fn get_string_repr(&self) -> String {
         "rtr".to_string()
     }
 
-    fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "rtr" {
             self.times = string_to_usize(&line[1])?;
             return Ok(());
@@ -130,18 +130,18 @@ mod rtr_tests {
 
         assert_eq!(token.parse("banana"), Ok("nabana".to_string()), "It supports expected inputs");
         assert_eq!(
-            token.token_to_atp_line(),
+            token.to_atp_line(),
             "rtr 2;\n".to_string(),
             "conversion to atp_line works correctly"
         );
         assert_eq!(token.get_string_repr(), "rtr".to_string(), "get_string_repr works as expected");
         assert!(
-            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
             "It throws an error for invalid vec_params"
         );
         assert!(
             matches!(
-                token.token_from_vec_params(["rtr".to_string(), (2).to_string()].to_vec()),
+                token.from_vec_params(["rtr".to_string(), (2).to_string()].to_vec()),
                 Ok(_)
             ),
             "It does not throws an error for valid vec_params"
@@ -150,7 +150,7 @@ mod rtr_tests {
         assert_eq!(
             token.parse("banana"),
             Ok("nabana".to_string()),
-            "token_from_vec_params parses the argument list correctly"
+            "from_vec_params parses the argument list correctly"
         );
     }
 
