@@ -1,3 +1,4 @@
+use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -39,6 +40,8 @@ impl TokenMethods for Dlb {
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
+        check_index_against_input(self.index, input)?;
+
         if
             let Some(byte_index) = s
                 .char_indices()
@@ -66,6 +69,8 @@ impl TokenMethods for Dlb {
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dlb;"
 
+        check_vec_len(&line, 2)?;
+
         if line[0] == "dlb" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
@@ -89,6 +94,7 @@ impl BytecodeTokenMethods for Dlb {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
+        check_vec_len(&instruction.operands, 1)?;
         if instruction.op_code == Dlb::default().get_opcode() {
             if !instruction.operands[0].is_empty() {
                 self.index = string_to_usize(&instruction.operands[0])?;
