@@ -52,7 +52,7 @@ pub mod benchmark {
             .to_json_escaped()
             .to_json_unescaped()
             .insert(1, "banana")
-            .to_uppercase_chunk(1, 3)
+            .to_uppercase_chunk(1, 3)?
             .to_lowercase_chunk(0, 2)?
             .build()
             .text_debug_processor();
