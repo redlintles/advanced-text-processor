@@ -115,7 +115,7 @@ pub fn check_index_against_input(index: usize, input: &str) -> Result<(), AtpErr
     Ok(())
 }
 
-pub fn check_vec_len(v: Vec<String>, max_size: usize) -> Result<(), AtpError> {
+pub fn check_vec_len(v: &Vec<String>, max_size: usize) -> Result<(), AtpError> {
     match v.len() == max_size {
         true => Ok(()),
         false =>
@@ -176,14 +176,14 @@ mod validations_tests {
         #[test]
         fn success_valid_vec() {
             assert!(
-                matches!(check_vec_len(["rtl".to_string(), (5).to_string()].to_vec(), 2), Ok(_))
+                matches!(check_vec_len(&["rtl".to_string(), (5).to_string()].to_vec(), 2), Ok(_))
             );
         }
 
         #[test]
         fn error_invalid_vec() {
             assert!(
-                matches!(check_vec_len(["tls".to_string(), (5).to_string()].to_vec(), 1), Err(_))
+                matches!(check_vec_len(&["tls".to_string(), (5).to_string()].to_vec(), 1), Err(_))
             );
         }
     }
