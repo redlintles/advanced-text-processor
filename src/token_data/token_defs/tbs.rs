@@ -2,7 +2,20 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-// Trim both sides
+/// TBS - Trim both sides
+///
+/// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::tbs::Tbs};
+///
+/// let token = Tbs::default();
+///
+/// assert_eq!(token.parse("   banana   "), Ok("banana".to_string()));
+/// ```
+///
 #[derive(Clone, Default)]
 pub struct Tbs {}
 
