@@ -1,7 +1,24 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    token_data::TokenMethods,
+    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+};
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
+/// TLCW - To Lowercase Word
+///
+/// Lowercase a single word of string
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::tlcw::Tlcw};
+///
+/// let token = Tlcw::params(1);
+///
+/// assert_eq!(token.parse("BANANA LARANJA CHEIA DE CANJA"), Ok("BANANA laranja CHEIA DE CANJA".to_string()));
+///
+/// ```
 #[derive(Clone, Default, Copy)]
 pub struct Tlcw {
     index: usize,
@@ -18,10 +35,21 @@ impl TokenMethods for Tlcw {
     }
 
     fn token_to_atp_line(&self) -> String {
-        "tlcw;\n".to_string()
+        format!("tlcw {};\n", self.index)
     }
 
     fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
+        if !(0..input.chars().count()).contains(&self.index) {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        "Index does not exist in the splitted vec".to_string()
+                    ),
+                    self.token_to_atp_line(),
+                    input.to_string()
+                )
+            );
+        }
         Ok(
             input
                 .split_whitespace()
@@ -40,6 +68,7 @@ impl TokenMethods for Tlcw {
         line: Vec<String>
     ) -> Result<(), crate::utils::errors::AtpError> {
         if line[0] == "tlcw" {
+            self.index = string_to_usize(&line[1])?;
             return Ok(());
         }
 
@@ -62,7 +91,10 @@ impl BytecodeTokenMethods for Tlcw {
         &mut self,
         instruction: BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Tlcw::default().get_opcode() {
+        if instruction.op_code == self.get_opcode() && instruction.operands.len() == 1 {
+            use crate::utils::transforms::string_to_usize;
+
+            self.index = string_to_usize(&instruction.operands[0])?;
             return Ok(());
         }
 
@@ -76,8 +108,107 @@ impl BytecodeTokenMethods for Tlcw {
     }
     fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
         BytecodeInstruction {
-            op_code: Tlcw::default().get_opcode(),
+            op_code: self.get_opcode(),
             operands: [self.index.to_string()].to_vec(),
         }
+    }
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod tlcw_tests {
+    use crate::token_data::{ TokenMethods, token_defs::tlcw::Tlcw };
+    #[test]
+    fn to_lowercase_word_tests() {
+        let mut token = Tlcw::params(1);
+
+        assert_eq!(
+            token.parse("BANANA LARANJA CHEIA DE CANJA"),
+            Ok("BANANA laranja CHEIA DE CANJA".to_string())
+        );
+
+        assert!(
+            matches!(token.parse(""), Err(_)),
+            "It throws an error if start_index does not exists in input"
+        );
+
+        assert_eq!(
+            token.token_to_atp_line(),
+            "tlcw 1;\n".to_string(),
+            "conversion to atp_line works correctly"
+        );
+
+        assert_eq!(
+            token.get_string_repr(),
+            "tlcw".to_string(),
+            "get_string_repr works as expected"
+        );
+        assert!(
+            matches!(token.token_from_vec_params(["tks".to_string()].to_vec()), Err(_)),
+            "It throws an error for invalid vec_params"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["tlcw".to_string(), "banana".to_string()].to_vec()),
+                Err(_)
+            ),
+            "It throws an error for invalid operands"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(["tlcw".to_string(), (1).to_string()].to_vec()),
+                Ok(_)
+            ),
+            "It does not throws an error for valid vec_params"
+        );
+    }
+
+    #[cfg(feature = "bytecode")]
+    #[test]
+    fn to_lowercase_word_bytecode_tests() {
+        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+
+        let mut token = Tlcw::params(1);
+
+        let mut instruction = BytecodeInstruction {
+            op_code: 0x29,
+            operands: [(1).to_string()].to_vec(),
+        };
+
+        assert_eq!(token.get_opcode(), 0x29, "get_opcode does not disrepect ATP token mapping");
+
+        assert_eq!(
+            token.token_from_bytecode_instruction(instruction.clone()),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
+
+        assert_eq!(
+            token.token_to_bytecode_instruction(),
+            instruction,
+            "Conversion to bytecode instruction works perfectly!"
+        );
+
+        instruction.operands = ["(".to_string(), (1).to_string()].to_vec();
+
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid operands"
+        );
+
+        instruction.op_code = 0x01;
+        assert!(
+            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            "It throws an error for invalid op_code"
+        );
+        assert!(
+            matches!(
+                token.token_from_vec_params(
+                    ["tlcw".to_string(), "(".to_string(), (1).to_string()].to_vec()
+                ),
+                Err(_)
+            ),
+            "It throws an error for invalid param vec"
+        );
     }
 }
