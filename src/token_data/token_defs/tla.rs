@@ -2,7 +2,20 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
-
+/// TLA - To Lowercase All
+///
+/// Lowercases every character from `input`
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::tla::Tla};
+///
+/// let token = Tla::default();
+///
+/// assert_eq!(token.parse("BANANA"), Ok("banana".to_string()));
+/// ```
+///
 #[derive(Clone, Copy, Default)]
 pub struct Tla {}
 
