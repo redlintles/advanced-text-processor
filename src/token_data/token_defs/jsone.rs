@@ -5,6 +5,21 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
+/// Jsone - Json Escape
+///
+/// Escapes JSON Special Characters in `input` with serde_json::to_string
+///
+/// # Example:
+///
+/// ```rust
+/// use atp_project::token_data::{TokenMethods, token_defs::jsone::Jsone};
+///
+///
+/// let token = Jsone::default();
+///
+/// assert_eq!(token.parse("banana"), Ok(serde_json::to_string("banana").unwrap()));
+/// ```
+
 #[derive(Clone, Copy, Default)]
 pub struct Jsone {}
 
