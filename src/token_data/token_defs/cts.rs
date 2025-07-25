@@ -1,4 +1,10 @@
-use crate::{ token_data::TokenMethods, utils::transforms::{ capitalize, string_to_usize } };
+use crate::{
+    token_data::TokenMethods,
+    utils::{
+        transforms::{ capitalize, string_to_usize },
+        validations::{ check_index_against_input, check_vec_len },
+    },
+};
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -40,17 +46,7 @@ impl TokenMethods for Cts {
         "cts".to_string()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        if !(0..input.len()).contains(&self.index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "self.index does not exist in current input".to_string()
-                    ),
-                    self.token_to_atp_line(),
-                    input.to_string()
-                )
-            );
-        }
+        check_index_against_input(self.index, input)?;
         let v = input.split_whitespace().collect::<Vec<_>>();
 
         Ok(
@@ -66,6 +62,7 @@ impl TokenMethods for Cts {
     }
 
     fn token_from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
+        check_vec_len(&line, 2)?;
         if line[0] == "cts" {
             self.index = string_to_usize(&line[1])?;
             return Ok(());
@@ -94,7 +91,8 @@ impl BytecodeTokenMethods for Cts {
         &mut self,
         instruction: crate::bytecode_parser::BytecodeInstruction
     ) -> Result<(), AtpError> {
-        if instruction.op_code == Cts::default().get_opcode() && !instruction.operands.is_empty() {
+        check_vec_len(&instruction.operands, 1)?;
+        if instruction.op_code == Cts::default().get_opcode() {
             self.index = string_to_usize(&instruction.operands[0])?;
             return Ok(());
         }
