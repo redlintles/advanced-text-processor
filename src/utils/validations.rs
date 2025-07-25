@@ -93,6 +93,28 @@ pub fn check_chunk_bound_indexes(
     Ok(())
 }
 
+pub fn check_index_against_input(index: usize, input: &str) -> Result<(), AtpError> {
+    let character_count = input.chars().count();
+    if !(0..character_count).contains(&index) {
+        return Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange(
+                    format!(
+                        "Index {} does not exist for {}, only indexes between 0-{} are allowed!",
+                        index,
+                        input,
+                        character_count.saturating_sub(1)
+                    )
+                ),
+                "Check index against input".to_string(),
+                input.to_string()
+            )
+        );
+    }
+
+    Ok(())
+}
+
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod validations_tests {
