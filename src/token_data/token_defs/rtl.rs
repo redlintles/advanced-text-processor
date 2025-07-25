@@ -124,7 +124,7 @@ impl BytecodeTokenMethods for Rtl {
 mod rtl_tests {
     use crate::token_data::{ TokenMethods, token_defs::rtl::Rtl };
     #[test]
-    fn repeat_tests() {
+    fn rotate_left_tests() {
         let mut token = Rtl::params(3);
 
         assert_eq!(token.parse("banana"), Ok("anaban".to_string()), "It supports expected inputs");
@@ -155,7 +155,7 @@ mod rtl_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn repeat_bytecode_tests() {
+    fn rotate_left_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rtl::params(3);

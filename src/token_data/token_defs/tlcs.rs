@@ -113,7 +113,7 @@ impl BytecodeTokenMethods for Tlcs {
 mod tlcs_tests {
     use crate::token_data::{ TokenMethods, token_defs::tlcs::Tlcs };
     #[test]
-    fn to_lowercase_word_tests() {
+    fn to_lowercase_single_tests() {
         let mut token = Tlcs::params(1);
 
         assert_eq!(token.parse("BANANA"), Ok("BaNANA".to_string()));
@@ -156,7 +156,7 @@ mod tlcs_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn to_lowercase_word_bytecode_tests() {
+    fn to_lowercase_single_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tlcs::params(1);

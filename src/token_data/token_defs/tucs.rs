@@ -113,7 +113,7 @@ impl BytecodeTokenMethods for Tucs {
 mod tucs_tests {
     use crate::token_data::{ TokenMethods, token_defs::tucs::Tucs };
     #[test]
-    fn to_lowercase_word_tests() {
+    fn to_uppercase_single_tests() {
         let mut token = Tucs::params(1);
 
         assert_eq!(token.parse("banana"), Ok("bAnana".to_string()));
@@ -156,7 +156,7 @@ mod tucs_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn to_lowercase_word_bytecode_tests() {
+    fn to_uppercase_single_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tucs::params(1);

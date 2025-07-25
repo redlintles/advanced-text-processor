@@ -91,7 +91,7 @@ impl BytecodeTokenMethods for Urld {
 mod urld_tests {
     use crate::token_data::{ token_defs::urld::Urld, TokenMethods };
     #[test]
-    fn test_trim_right_side() {
+    fn test_url_decode() {
         let mut token = Urld::default();
 
         assert_eq!(
@@ -121,7 +121,7 @@ mod urld_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_bytecode_trim_right_side() {
+    fn test_bytecode_url_decode() {
         use crate::token_data::{ token_defs::urld::Urld };
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 

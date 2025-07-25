@@ -136,7 +136,7 @@ mod tlcc_tests {
     use crate::token_data::{ TokenMethods, token_defs::tlcc::Tlcc };
 
     #[test]
-    fn delete_chunk() {
+    fn to_lowercase_chunk() {
         let mut token = Tlcc::params(1, 4).unwrap();
         assert!(
             matches!(Tlcc::params(4, 1), Err(_)),
@@ -191,7 +191,7 @@ mod tlcc_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn delete_chunk_bytecode() {
+    fn to_lowercase_chunk_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tlcc::params(1, 4).unwrap();

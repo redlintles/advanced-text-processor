@@ -137,7 +137,7 @@ mod slt_tests {
     use crate::token_data::{ TokenMethods, token_defs::slt::Slt };
 
     #[test]
-    fn delete_chunk() {
+    fn select() {
         let mut token = Slt::params(1, 5).unwrap();
         assert!(
             matches!(Slt::params(5, 1), Err(_)),
@@ -188,7 +188,7 @@ mod slt_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn delete_chunk_bytecode() {
+    fn select_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Slt::params(1, 5).unwrap();

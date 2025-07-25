@@ -107,7 +107,7 @@ impl BytecodeTokenMethods for Padr {
 mod padr_tests {
     use crate::token_data::{ TokenMethods, token_defs::padr::Padr };
     #[test]
-    fn padr_tests() {
+    fn pad_right_tests() {
         let mut token = Padr::params("xy", 7);
         assert_eq!(token.parse("banana"), Ok("bananax".to_string()), "It supports expected inputs");
 
@@ -137,7 +137,7 @@ mod padr_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn padr_bytecode_tests() {
+    fn pad_right_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Padr::default();

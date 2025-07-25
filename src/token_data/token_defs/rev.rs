@@ -80,7 +80,7 @@ mod rev_tests {
     use crate::{ token_data::{ token_defs::rev::Rev, TokenMethods } };
 
     #[test]
-    fn test_capitalize_last_word() {
+    fn test_reverse() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
 
         let mut token = Rev::default();
@@ -116,7 +116,7 @@ mod rev_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_capitalize_last_word_bytecode() {
+    fn test_reverse_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rev::default();

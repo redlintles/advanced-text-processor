@@ -3,9 +3,9 @@ use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode }
 #[cfg(feature = "bytecode")]
 use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 
-/// URLE - URL Escape
+/// URLE - URL Encode
 ///
-/// Escapes `input` to the URL Encoding Format
+/// Encodes `input` to the URL Encoding Format
 ///
 /// # Example
 ///
@@ -80,7 +80,7 @@ impl BytecodeTokenMethods for Urle {
 mod urle_tests {
     use crate::token_data::{ token_defs::urle::Urle, TokenMethods };
     #[test]
-    fn test_trim_right_side() {
+    fn test_url_encode() {
         let mut token = Urle::default();
 
         assert_eq!(
@@ -110,7 +110,7 @@ mod urle_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_bytecode_trim_right_side() {
+    fn test_bytecode_url_encode() {
         use crate::token_data::{ token_defs::urle::Urle };
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 

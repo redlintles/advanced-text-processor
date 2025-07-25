@@ -150,7 +150,7 @@ impl BytecodeTokenMethods for Rcw {
 mod rcw_tests {
     use crate::token_data::{ TokenMethods, token_defs::rcw::Rcw };
     #[test]
-    fn replace_all_with_tests() {
+    fn replace_count_with_tests() {
         let mut token = Rcw::params("a", "b", 3).unwrap();
         assert_eq!(token.parse("aaaaa"), Ok("bbbaa".to_string()), "It supports expected inputs");
 
@@ -176,7 +176,7 @@ mod rcw_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn replace_all_with_bytecode_tests() {
+    fn replace_count_with_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rcw::params("a", "b", 3).unwrap();

@@ -89,7 +89,7 @@ impl BytecodeTokenMethods for Jsnc {
 mod jsnc_tests {
     use crate::token_data::{ TokenMethods, token_defs::jsnc::Jsnc };
     #[test]
-    fn jsnc_tests() {
+    fn join_to_snake_case_tests() {
         let mut token = Jsnc::default();
         assert_eq!(
             token.parse("banana laranja cheia de canja"),
@@ -117,7 +117,7 @@ mod jsnc_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn jsnc_bytecode_tests() {
+    fn join_to_snake_case_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jsnc::default();

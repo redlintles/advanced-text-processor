@@ -79,7 +79,7 @@ mod jsonu_tests {
     use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
-    fn test_json_decode() {
+    fn test_json_unescape() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
 
         let mut token = Jsonu::default();
@@ -128,7 +128,7 @@ mod jsonu_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_json_decode_bytecode() {
+    fn test_json_unescape_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jsonu::default();

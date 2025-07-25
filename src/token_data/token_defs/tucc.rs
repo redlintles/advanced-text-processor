@@ -136,7 +136,7 @@ mod tucc_tests {
     use crate::token_data::{ TokenMethods, token_defs::tucc::Tucc };
 
     #[test]
-    fn delete_chunk() {
+    fn to_uppercase_chunk() {
         let mut token = Tucc::params(1, 4).unwrap();
         assert!(
             matches!(Tucc::params(4, 1), Err(_)),
@@ -191,7 +191,7 @@ mod tucc_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn delete_chunk_bytecode() {
+    fn to_uppercase_chunk_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tucc::params(1, 4).unwrap();

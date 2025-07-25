@@ -131,7 +131,7 @@ impl BytecodeTokenMethods for Dlb {
 mod dlb_tests {
     use crate::token_data::{ TokenMethods, token_defs::dlb::Dlb };
     #[test]
-    fn delete_after_test() {
+    fn delete_before_test() {
         let mut token = Dlb::params(3);
 
         assert_eq!(
@@ -163,7 +163,7 @@ mod dlb_tests {
         );
     }
     #[test]
-    fn delete_ater_bytecode() {
+    fn delete_before_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dlb::params(3);

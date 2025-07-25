@@ -97,7 +97,7 @@ impl BytecodeTokenMethods for Jcmc {
 mod jcmc_tests {
     use crate::token_data::{ TokenMethods, token_defs::jcmc::Jcmc };
     #[test]
-    fn jcmc_tests() {
+    fn join_to_camel_case_tests() {
         let mut token = Jcmc::default();
         assert_eq!(
             token.parse("banana laranja cheia de canja"),
@@ -125,7 +125,7 @@ mod jcmc_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn jcmc_bytecode_tests() {
+    fn join_to_camel_case_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jcmc::default();

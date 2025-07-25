@@ -172,7 +172,7 @@ impl BytecodeTokenMethods for Rnw {
 mod rnw_tests {
     use crate::token_data::{ TokenMethods, token_defs::rnw::Rnw };
     #[test]
-    fn replace_all_with_tests() {
+    fn replace_nth_with_tests() {
         let mut token = Rnw::params("a", "b", 2).unwrap();
         assert_eq!(token.parse("aaaaa"), Ok("aabaa".to_string()), "It supports expected inputs");
 
@@ -198,7 +198,7 @@ mod rnw_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn replace_all_with_bytecode_tests() {
+    fn replace_nth_with_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rnw::params("a", "b", 2).unwrap();

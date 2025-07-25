@@ -175,7 +175,7 @@ mod dla_tests {
         );
     }
     #[test]
-    fn delete_ater_bytecode() {
+    fn delete_after_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dla::params(3);

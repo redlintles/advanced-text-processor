@@ -94,7 +94,7 @@ impl BytecodeTokenMethods for Jpsc {
 mod jpsc_tests {
     use crate::token_data::{ TokenMethods, token_defs::jpsc::Jpsc };
     #[test]
-    fn jpsc_tests() {
+    fn join_to_pascal_case_tests() {
         let mut token = Jpsc::default();
         assert_eq!(
             token.parse("banana laranja cheia de canja"),
@@ -122,7 +122,7 @@ mod jpsc_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn jpsc_bytecode_tests() {
+    fn join_to_pascal_case_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jpsc::default();

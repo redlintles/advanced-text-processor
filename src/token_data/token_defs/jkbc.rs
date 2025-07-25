@@ -89,7 +89,7 @@ impl BytecodeTokenMethods for Jkbc {
 mod jkbc_tests {
     use crate::token_data::{ TokenMethods, token_defs::jkbc::Jkbc };
     #[test]
-    fn jkbc_tests() {
+    fn join_to_kebab_case_tests() {
         let mut token = Jkbc::default();
         assert_eq!(
             token.parse("banana laranja cheia de canja"),
@@ -117,7 +117,7 @@ mod jkbc_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn jkbc_bytecode_tests() {
+    fn join_to_kebab_case_bytecode_tests() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jkbc::default();

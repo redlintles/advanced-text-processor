@@ -78,7 +78,7 @@ mod jsone_tests {
     use crate::{ token_data::{ token_defs::jsone::Jsone, TokenMethods } };
 
     #[test]
-    fn test_json_encode() {
+    fn test_json_escape() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
 
         let mut token = Jsone::default();
@@ -115,7 +115,7 @@ mod jsone_tests {
 
     #[cfg(feature = "bytecode")]
     #[test]
-    fn test_json_encode_bytecode() {
+    fn test_json_escape_bytecode() {
         use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jsone::default();
