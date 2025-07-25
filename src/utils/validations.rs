@@ -115,6 +115,26 @@ pub fn check_index_against_input(index: usize, input: &str) -> Result<(), AtpErr
     Ok(())
 }
 
+pub fn check_vec_len(v: Vec<String>, max_size: usize) -> Result<(), AtpError> {
+    match v.len() == max_size {
+        true => Ok(()),
+        false =>
+            Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidArgumentNumber(
+                        format!(
+                            "Only {} arguments are allowed for this instruction, passed {}",
+                            max_size,
+                            v.len()
+                        )
+                    ),
+                    "check_vec_len".to_string(),
+                    v.join(" ")
+                )
+            ),
+    }
+}
+
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod validations_tests {

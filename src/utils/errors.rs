@@ -72,6 +72,7 @@ pub enum AtpErrorCode {
     InvalidOperands(String),
     InvalidParameters(String),
     ValidationError(String),
+    InvalidArgumentNumber(String),
 }
 
 impl Display for AtpErrorCode {
@@ -94,6 +95,7 @@ impl AtpErrorCode {
             Self::IndexOutOfRange(_) => 201,
             Self::InvalidIndex(_) => 202,
             Self::InvalidParameters(_) => 203,
+            Self::InvalidArgumentNumber(_) => 204,
             Self::TextParsingError(_) => 300,
             Self::BytecodeParsingError(_) => 301,
             Self::ValidationError(_) => 302,
@@ -112,6 +114,7 @@ impl AtpErrorCode {
             | Self::BytecodeParsingError(x)
             | Self::InvalidParameters(x)
             | Self::ValidationError(x)
+            | Self::InvalidArgumentNumber(x)
             | Self::FileReadingError(x)
             | Self::FileWritingError(x)
             | Self::FileOpeningError(x)
