@@ -30,6 +30,7 @@ pub mod benchmark {
             .trim_both()
             .trim_left()
             .trim_right()
+            .add_to_beginning("laranjadebananavermelha")
             .select(3, 7)?
             .replace_count_with("a", "b", 3)
             .to_uppercase_all()
@@ -37,9 +38,10 @@ pub mod benchmark {
             .to_uppercase_single(3)
             .to_lowercase_single(2)
             .capitalize_first_word()
+            .capitalize_single_word(1)
             .capitalize_last_word()
-            .capitalize_range(1, 5)?
-            .split_select("b", 1)
+            .capitalize_range(1, 3)?
+            .split_select("B", 1)
             .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")
             .replace_nth_with("b", "d", 3)
@@ -53,7 +55,13 @@ pub mod benchmark {
             .to_json_unescaped()
             .insert(1, "banana")
             .to_uppercase_chunk(1, 3)?
-            .to_lowercase_chunk(0, 2)?
+            .to_lowercase_chunk(0, 5)?
+            .join_to_camel_case()
+            .join_to_kebab_case()
+            .join_to_pascal_case()
+            .join_to_snake_case()
+            .pad_left("xy", 12)
+            .pad_right("yx", 20)
             .build()
             .text_debug_processor();
 
@@ -90,19 +98,20 @@ pub mod benchmark {
             .add_to_end("pizza")
             .repeat(3)
             .delete_after(20 as usize)
-            .delete_before(2 as usize)
-            .insert(0, "Pizza")
+            .delete_before(3 as usize)
             .delete_chunk(0 as usize, 3 as usize)?
             .delete_first()
             .delete_last()
             .replace_all_with(r"a", "e")
             .replace_first_with("L", "coxinha")
             .replace_count_with("e", "carro", 3)
+            .insert(0, "Coxinha Banana")
             .rotate_left(1 as usize)
             .rotate_right(2 as usize)
             .trim_both()
             .trim_left()
             .trim_right()
+            .add_to_beginning("laranjadebananavermelha")
             .select(3, 7)?
             .replace_count_with("a", "b", 3)
             .to_uppercase_all()
@@ -110,9 +119,10 @@ pub mod benchmark {
             .to_uppercase_single(3)
             .to_lowercase_single(2)
             .capitalize_first_word()
+            .capitalize_single_word(1)
             .capitalize_last_word()
-            .capitalize_range(1, 5)?
-            .split_select("b", 1)
+            .capitalize_range(1, 3)?
+            .split_select("B", 1)
             .capitalize_chunk(1, 3)?
             .replace_last_with("b", "c")
             .replace_nth_with("b", "d", 3)
@@ -125,6 +135,14 @@ pub mod benchmark {
             .to_json_escaped()
             .to_json_unescaped()
             .insert(1, "banana")
+            .to_uppercase_chunk(1, 3)?
+            .to_lowercase_chunk(0, 5)?
+            .join_to_camel_case()
+            .join_to_kebab_case()
+            .join_to_pascal_case()
+            .join_to_snake_case()
+            .pad_left("xy", 12)
+            .pad_right("yx", 20)
             .build()
             .text_processor();
 
