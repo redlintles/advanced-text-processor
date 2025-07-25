@@ -193,9 +193,13 @@ impl AtpBuilder {
         self.tokens.push(Box::new(tucc::Tucc::params(start_index, end_index)));
         self
     }
-    pub fn to_lowercase_chunk(mut self, start_index: usize, end_index: usize) -> Self {
-        self.tokens.push(Box::new(tlcc::Tlcc::params(start_index, end_index)));
-        self
+    pub fn to_lowercase_chunk(
+        mut self,
+        start_index: usize,
+        end_index: usize
+    ) -> Result<Self, AtpError> {
+        self.tokens.push(Box::new(tlcc::Tlcc::params(start_index, end_index)?));
+        Ok(self)
     }
 
     pub fn capitalize_first_word(mut self) -> Self {
