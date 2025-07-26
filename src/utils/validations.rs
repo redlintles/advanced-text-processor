@@ -20,7 +20,6 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     let v2: String = match path.parent() {
         Some(x) => {
             if x.exists() && !path.is_dir() {
-                println!("LOGGING : {},{}", x.exists(), !path.is_dir());
                 "".to_string()
             } else {
                 "Parent should be an already existing directory".to_string()
