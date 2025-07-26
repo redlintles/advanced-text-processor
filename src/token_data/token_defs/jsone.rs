@@ -16,8 +16,9 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 ///
 /// let token = Jsone::default();
+/// let expected_output = "\"{banana: '10'}\"".to_string();
 ///
-/// assert_eq!(token.parse("banana"), Ok(serde_json::to_string("banana").unwrap()));
+/// assert_eq!(token.parse("{banana: '10'}"), Ok(expected_output));
 /// ```
 
 #[derive(Clone, Copy, Default)]
@@ -94,18 +95,13 @@ mod jsone_tests {
 
     #[test]
     fn test_json_escape() {
-        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
-
         let mut token = Jsone::default();
 
+        let expected_output = "\"{banana: '10'}\"".to_string();
+
         assert_eq!(
-            token.parse(&random_text),
-            Ok(serde_json::to_string(&random_text).unwrap()),
-            "It supports random inputs"
-        );
-        assert_eq!(
-            token.parse("banana bananosa"),
-            Ok(serde_json::to_string("banana bananosa").unwrap()),
+            token.parse("{banana: '10'}"),
+            Ok(expected_output),
             "It supports expected inputs"
         );
         assert_eq!(

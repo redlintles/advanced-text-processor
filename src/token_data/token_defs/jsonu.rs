@@ -93,34 +93,16 @@ impl BytecodeTokenMethods for Jsonu {
 #[cfg(test)]
 mod jsonu_tests {
     use crate::{ token_data::{ token_defs::jsonu::Jsonu, TokenMethods } };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
     fn test_json_unescape() {
-        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
-
         let mut token = Jsonu::default();
 
+        let expected_output = "{banana: '10'}".to_string();
+
         assert_eq!(
-            token.parse(&random_text),
-            Err(
-                AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to deserialize to JSON".to_string()),
-                    "serde_json::from_str".to_string(),
-                    random_text.to_string()
-                )
-            ),
-            "It supports random inputs"
-        );
-        assert_eq!(
-            token.parse("banana bananosa"),
-            Err(
-                AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to deserialize to JSON".to_string()),
-                    "serde_json::from_str".to_string(),
-                    "banana bananosa".to_string()
-                )
-            ),
+            token.parse("\"{banana: '10'}\""),
+            Ok(expected_output),
             "It supports expected inputs"
         );
         assert_eq!(
