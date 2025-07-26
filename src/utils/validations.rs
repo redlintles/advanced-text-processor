@@ -5,53 +5,79 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     let parsed_ext = ext.unwrap_or("atp");
 
-    let mut v1: String = match path.extension() {
-        Some(os_ext) => {
-            let parsed_os_ext = os_ext.to_str().unwrap();
-            if parsed_os_ext.to_string() == parsed_ext.to_string() {
-                "".to_string()
-            } else {
-                format!("Path does not match required extension {}", parsed_ext)
-            }
-        }
-        None => "Unable to get file extension".to_string(),
-    };
-
-    let v2: String = match path.parent() {
-        Some(x) => {
-            if x.exists() && !path.is_dir() {
-                "".to_string()
-            } else {
-                "Parent should be an already existing directory".to_string()
-            }
-        }
-        None => "Parent does not exists".to_string(),
-    };
-
-    v1.push_str(&v2);
-
-    if v1.is_empty() {
-        Ok(())
-    } else {
-        Err(
+    let path = path
+        .canonicalize()
+        .map_err(|e| {
             AtpError::new(
-                super::errors::AtpErrorCode::ValidationError("Validation Failed".to_string()),
-                "".to_string(),
-                path
-                    .to_str()
-                    .ok_or_else(||
-                        AtpError::new(
-                            super::errors::AtpErrorCode::ValidationError(
-                                "Failed converting Path to string".to_string()
-                            ),
-                            "Path.to_str()".to_string(),
-                            format!("{:?}", path).to_string()
-                        )
-                    )?
-                    .to_string()
+                super::errors::AtpErrorCode::ValidationError(
+                    "Path canonicalization failed".to_string()
+                ),
+                "canonicalize".to_string(),
+                format!("{:?} - {}", path, e)
             )
-        )
+        })?;
+
+    // Verificação de extensão
+    if let Some(os_ext) = path.extension().and_then(|x| x.to_str()) {
+        if os_ext != parsed_ext {
+            return Err(
+                AtpError::new(
+                    super::errors::AtpErrorCode::ValidationError(
+                        "Wrong file extension".to_string()
+                    ),
+                    "check_file_path".to_string(),
+                    path.to_string_lossy().to_string()
+                )
+            );
+        }
+    } else {
+        return Err(
+            AtpError::new(
+                super::errors::AtpErrorCode::ValidationError("No file extension found".to_string()),
+                "check_file_path".to_string(),
+                path.to_string_lossy().to_string()
+            )
+        );
     }
+
+    // Verificação do diretório pai
+    let parent = path
+        .parent()
+        .ok_or_else(|| {
+            AtpError::new(
+                super::errors::AtpErrorCode::ValidationError(
+                    "Path has no parent directory".to_string()
+                ),
+                "check_file_path".to_string(),
+                path.to_string_lossy().to_string()
+            )
+        })?;
+
+    if !parent.exists() {
+        return Err(
+            AtpError::new(
+                super::errors::AtpErrorCode::ValidationError(
+                    "Parent directory does not exist".to_string()
+                ),
+                "check_file_path".to_string(),
+                parent.to_string_lossy().to_string()
+            )
+        );
+    }
+
+    if path.is_dir() {
+        return Err(
+            AtpError::new(
+                super::errors::AtpErrorCode::ValidationError(
+                    "Path is a directory, not a file".to_string()
+                ),
+                "check_file_path".to_string(),
+                path.to_string_lossy().to_string()
+            )
+        );
+    }
+
+    Ok(())
 }
 
 pub fn check_chunk_bound_indexes(
