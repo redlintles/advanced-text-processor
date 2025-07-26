@@ -3,7 +3,7 @@ use crate::{ utils::{ errors::AtpError, transforms::get_safe_utf8_char_index } }
 use crate::builder::atp_processor::AtpProcessorMethods;
 
 fn process_run(
-    processor: &mut Box<dyn AtpProcessorMethods>,
+    processor: &mut dyn AtpProcessorMethods,
     identifier: &str,
     input: &str,
     debug: bool
@@ -16,7 +16,7 @@ fn process_run(
 }
 
 pub fn process_input_single_chunk(
-    processor: &mut Box<dyn AtpProcessorMethods>,
+    processor: &mut dyn AtpProcessorMethods,
     identifier: &str,
     input: &str,
     debug: bool
@@ -28,7 +28,7 @@ pub fn process_input_single_chunk(
 }
 
 pub fn process_input_line_by_line(
-    processor: &mut Box<dyn AtpProcessorMethods>,
+    processor: &mut dyn AtpProcessorMethods,
     identifier: &str,
     input: &str,
     debug: bool
@@ -49,7 +49,7 @@ pub fn process_input_line_by_line(
 }
 
 pub fn process_input_by_chunks(
-    processor: &mut Box<dyn AtpProcessorMethods>,
+    processor: &mut dyn AtpProcessorMethods,
     identifier: &str,
     input: &str,
     chunk_size: usize,

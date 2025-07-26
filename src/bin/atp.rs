@@ -101,13 +101,15 @@ fn build_cli() -> Command {
         )
 }
 
-fn process_by_mode(
+fn process_by_mode<T>(
     read_mode: &ReadMode,
     id: &str,
     data: &str,
     debug: bool,
-    processor: &mut AtpProcessor
-) -> Result<String, AtpError> {
+    processor: &mut T
+) -> Result<String, AtpError>
+    where T: AtpProcessorMethods + AtpProcessorBytecodeMethods
+{
     match read_mode {
         ReadMode::All => process_input_single_chunk(processor, id, data, debug),
         ReadMode::Line => process_input_line_by_line(processor, id, data, debug),
@@ -124,8 +126,6 @@ fn main() -> Result<(), AtpError> {
     let atp_mode = matches.get_one::<String>("mode").unwrap();
     let read_mode = matches.get_one::<ReadMode>("read_mode").unwrap();
     let debug = matches.get_one::<bool>("debug").unwrap();
-
-    println!("Arquivo Fonte: {}, Existe? {}", file.display().to_string(), file.exists());
 
     if atp_mode == &"b" && file.extension().expect("Could not get input extension") != "atpbc" {
         panic!("You're using mode 'b'(bytecode), so the atp file must have the .atpbc extension!");
@@ -161,15 +161,15 @@ fn main() -> Result<(), AtpError> {
         }
     };
 
-    let mut processor = AtpProcessor::new();
-
     let mut result: String = String::new();
 
     if atp_mode == &"b" {
+        let mut processor = AtpProcessor::new();
         let id = processor.read_from_bytecode_file(file)?;
 
         result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
     } else if atp_mode == &"t" {
+        let mut processor = AtpProcessor::new();
         let id = processor.read_from_text_file(file)?;
 
         result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
