@@ -8,7 +8,7 @@ use atp_project::{
 };
 use clap::{ value_parser, Arg, ArgAction, Command };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum ReadMode {
     All,
     Line,
@@ -201,4 +201,61 @@ fn main() -> Result<(), AtpError> {
     }
 
     Ok(())
+}
+
+#[cfg(feature = "test_access")]
+#[cfg(test)]
+mod atp_tests {
+    mod parser_tests {
+        use std::{ path::PathBuf, str::FromStr };
+        use crate::{ build_cli, ReadMode };
+
+        #[test]
+        fn test_all_with_long_params() {
+            let parser = build_cli();
+            let c =
+                "atp --file ./instructions.atpbc --input ./example.txt --output output.txt --debug --mode b --read-mode line";
+
+            let arg_vec = shell_words::split(c).unwrap();
+
+            let m = parser.try_get_matches_from(arg_vec).unwrap();
+
+            let file = m.get_one::<PathBuf>("file").unwrap();
+            let input = m.get_one::<PathBuf>("input").unwrap();
+            let output = m.get_one::<PathBuf>("output").unwrap();
+            let atp_mode = m.get_one::<String>("mode").unwrap();
+            let read_mode = m.get_one::<ReadMode>("read_mode").unwrap();
+            let debug = m.get_one::<bool>("debug").unwrap();
+
+            assert_eq!(*file, PathBuf::from_str("./instructions.atpbc").unwrap());
+            assert_eq!(*input, PathBuf::from_str("./example.txt").unwrap());
+            assert_eq!(*output, PathBuf::from_str("output.txt").unwrap());
+            assert_eq!(*atp_mode, "b".to_string());
+            assert_eq!(*read_mode, ReadMode::Line);
+            assert_eq!(*debug, true);
+        }
+        #[test]
+        fn test_all_with_short_params() {
+            let parser = build_cli();
+            let c = "atp -f ./instructions.atpbc -i ./example.txt -o output.txt -d -m b -r line";
+
+            let arg_vec = shell_words::split(c).unwrap();
+
+            let m = parser.try_get_matches_from(arg_vec).unwrap();
+
+            let file = m.get_one::<PathBuf>("file").unwrap();
+            let input = m.get_one::<PathBuf>("input").unwrap();
+            let output = m.get_one::<PathBuf>("output").unwrap();
+            let atp_mode = m.get_one::<String>("mode").unwrap();
+            let read_mode = m.get_one::<ReadMode>("read_mode").unwrap();
+            let debug = m.get_one::<bool>("debug").unwrap();
+
+            assert_eq!(*file, PathBuf::from_str("./instructions.atpbc").unwrap());
+            assert_eq!(*input, PathBuf::from_str("./example.txt").unwrap());
+            assert_eq!(*output, PathBuf::from_str("output.txt").unwrap());
+            assert_eq!(*atp_mode, "b".to_string());
+            assert_eq!(*read_mode, ReadMode::Line);
+            assert_eq!(*debug, true);
+        }
+    }
 }
