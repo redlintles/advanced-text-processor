@@ -2,10 +2,9 @@
 pub mod benchmark {
     use std::time::Instant;
     use atp_project::builder::atp_builder::AtpBuilder;
-    #[cfg(feature = "debug")]
+
     use atp_project::utils::errors::AtpError;
 
-    #[cfg(feature = "debug")]
     #[test]
     fn process_sbs_all_tokens() -> Result<(), AtpError> {
         let runs = 100;
