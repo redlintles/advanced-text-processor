@@ -73,6 +73,7 @@ pub enum AtpErrorCode {
     InvalidParameters(String),
     ValidationError(String),
     InvalidArgumentNumber(String),
+    ZeroDivisionError(String),
 }
 
 impl Display for AtpErrorCode {
@@ -99,6 +100,7 @@ impl AtpErrorCode {
             Self::TextParsingError(_) => 300,
             Self::BytecodeParsingError(_) => 301,
             Self::ValidationError(_) => 302,
+            Self::ZeroDivisionError(_) => 303,
         }
     }
 
@@ -118,6 +120,7 @@ impl AtpErrorCode {
             | Self::FileReadingError(x)
             | Self::FileWritingError(x)
             | Self::FileOpeningError(x)
+            | Self::ZeroDivisionError(x)
             | Self::TokenArrayNotFound(x) => x.to_string(),
         }
     }
