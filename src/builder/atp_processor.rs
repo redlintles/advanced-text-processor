@@ -41,7 +41,7 @@ pub trait AtpProcessorMethods {
 #[cfg(feature = "bytecode")]
 pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), AtpError>;
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError>;
 }
 #[cfg(feature = "debug")]
 pub trait AtpProcessorDebugMethods: AtpProcessorMethods {
@@ -163,7 +163,7 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
         };
         write_bytecode_to_file(path, btc_token_vec)
     }
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<(), AtpError> {
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError> {
         let tokens = match read_bytecode_from_file(path) {
             Ok(x) => x,
             Err(e) => {
@@ -180,9 +180,9 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
             }
         };
 
-        self.add_transform(token_vec);
+        let identifier = self.add_transform(token_vec);
 
-        Ok(())
+        Ok(identifier)
     }
 }
 
