@@ -3,7 +3,6 @@ use std::path::Path;
 
 use uuid::Uuid;
 
-#[cfg(any(feature = "debug", feature = "bytecode_debug"))]
 use colored::*;
 
 #[cfg(feature = "bytecode")]
@@ -37,14 +36,6 @@ pub trait AtpProcessorMethods {
         token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError>;
-}
-#[cfg(feature = "bytecode")]
-pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
-    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError>;
-}
-#[cfg(feature = "debug")]
-pub trait AtpProcessorDebugMethods: AtpProcessorMethods {
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError>;
     fn process_single_with_debug(
         &mut self,
@@ -52,9 +43,10 @@ pub trait AtpProcessorDebugMethods: AtpProcessorMethods {
         input: &str
     ) -> Result<String, AtpError>;
 }
-
-#[cfg(feature = "bytecode_debug")]
-pub trait AtpProcessorBytecodeDebugMethods: AtpProcessorBytecodeMethods {
+#[cfg(feature = "bytecode")]
+pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
+    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError>;
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,
@@ -141,53 +133,6 @@ impl AtpProcessorMethods for AtpProcessor {
             }
         }
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl AtpProcessorBytecodeMethods for AtpProcessor {
-    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let btc_token_vec = match token_vec_to_bytecode_token_vec(tokens) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-        write_bytecode_to_file(path, btc_token_vec)
-    }
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError> {
-        let tokens = match read_bytecode_from_file(path) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let token_vec = match bytecode_token_vec_to_token_vec(&tokens) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let identifier = self.add_transform(token_vec);
-
-        Ok(identifier)
-    }
-}
-
-#[cfg(feature = "debug")]
-impl AtpProcessorDebugMethods for AtpProcessor {
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
@@ -249,8 +194,48 @@ impl AtpProcessorDebugMethods for AtpProcessor {
         Ok(output)
     }
 }
-#[cfg(feature = "bytecode_debug")]
-impl AtpProcessorBytecodeDebugMethods for AtpProcessor {
+
+#[cfg(feature = "bytecode")]
+impl AtpProcessorBytecodeMethods for AtpProcessor {
+    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        let btc_token_vec = match token_vec_to_bytecode_token_vec(tokens) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+        write_bytecode_to_file(path, btc_token_vec)
+    }
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError> {
+        let tokens = match read_bytecode_from_file(path) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        let token_vec = match bytecode_token_vec_to_token_vec(&tokens) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        let identifier = self.add_transform(token_vec);
+
+        Ok(identifier)
+    }
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,

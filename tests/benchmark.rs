@@ -63,7 +63,7 @@ pub mod benchmark {
             .pad_left("xy", 12)
             .pad_right("yx", 20)
             .build()
-            .text_debug_processor();
+            .text_processor();
 
         for _ in 0..runs {
             let start = Instant::now();

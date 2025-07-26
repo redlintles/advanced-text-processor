@@ -4,10 +4,7 @@ pub mod processor {
     use std::{ fs::File, io::Read, path::Path };
 
     use atp_project::{
-        builder::{
-            atp_builder::AtpBuilder,
-            atp_processor::{ AtpProcessor, AtpProcessorDebugMethods, AtpProcessorMethods },
-        },
+        builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
         token_data::{ token_defs::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt }, TokenMethods },
     };
     use uuid::Uuid;
@@ -36,7 +33,7 @@ pub mod processor {
             .add_to_end("Laranja")
             .repeat(3 as usize)
             .build()
-            .text_debug_processor();
+            .text_processor();
         let input = "Carimbo verde de deus";
 
         let output = processor.process_all_with_debug(&identifier, input).unwrap();
@@ -62,7 +59,7 @@ pub mod processor {
     }
     #[test]
     fn test_process_single_with_debug() {
-        let mut processor: Box<dyn AtpProcessorDebugMethods> = Box::new(AtpProcessor::new());
+        let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
         let token: Box<dyn TokenMethods> = Box::new(Raw::params("a", "b").unwrap());
 
         let input = "a".repeat(100);

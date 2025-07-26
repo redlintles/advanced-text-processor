@@ -4,12 +4,9 @@ use crate::token_data::token_defs::*;
 use crate::utils::errors::AtpError;
 
 use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };
-#[cfg(feature = "debug")]
-use super::atp_processor::AtpProcessorDebugMethods;
+
 #[cfg(feature = "bytecode")]
 use super::atp_processor::AtpProcessorBytecodeMethods;
-#[cfg(feature = "bytecode_debug")]
-use super::atp_processor::AtpProcessorBytecodeDebugMethods;
 #[derive(Default)]
 pub struct AtpBuilder {
     tokens: Vec<Box<dyn TokenMethods>>,
@@ -25,23 +22,9 @@ impl AtpProcessorBuilder {
         let identifier = processor.add_transform(self.tokens);
         (processor, identifier)
     }
-    #[cfg(feature = "debug")]
-    pub fn text_debug_processor(self) -> (Box<dyn AtpProcessorDebugMethods>, String) {
-        let mut processor: Box<dyn AtpProcessorDebugMethods> = Box::new(AtpProcessor::new());
-        let identifier = processor.add_transform(self.tokens);
-        (processor, identifier)
-    }
     #[cfg(feature = "bytecode")]
     pub fn bytecode_processor(self) -> (Box<dyn AtpProcessorBytecodeMethods>, String) {
         let mut processor: Box<dyn AtpProcessorBytecodeMethods> = Box::new(AtpProcessor::new());
-        let identifier = processor.add_transform(self.tokens);
-        (processor, identifier)
-    }
-    #[cfg(feature = "bytecode_debug")]
-    pub fn bytecode_debug_processor(self) -> (Box<dyn AtpProcessorBytecodeDebugMethods>, String) {
-        let mut processor: Box<dyn AtpProcessorBytecodeDebugMethods> = Box::new(
-            AtpProcessor::new()
-        );
         let identifier = processor.add_transform(self.tokens);
         (processor, identifier)
     }

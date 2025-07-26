@@ -1,5 +1,12 @@
-use std::{ fs::OpenOptions, io::{ self, Error, Read }, path::PathBuf };
-use clap::{ value_parser, Arg, Command };
+use std::{ fs::OpenOptions, io::{ self, Error, Read, Write }, path::PathBuf };
+use atp_project::{
+    builder::atp_processor::{ AtpProcessor, AtpProcessorBytecodeMethods, AtpProcessorMethods },
+    utils::{
+        cli::{ process_input_by_chunks, process_input_line_by_line, process_input_single_chunk },
+        errors::AtpError,
+    },
+};
+use clap::{ value_parser, Arg, ArgAction, Command };
 
 #[derive(Clone, Copy)]
 enum ReadMode {
@@ -75,7 +82,7 @@ fn build_cli() -> Command {
             Arg::new("mode")
                 .short('m')
                 .long("mode")
-                .required(true)
+                .required(false)
                 .value_name("mode")
                 .value_parser(["b", "t"])
                 .default_value("t")
@@ -83,21 +90,49 @@ fn build_cli() -> Command {
                     "The ATP mode that will be used, default is 't', for text mode, you can also use 'b' for bytecode mode"
                 )
         )
+        .arg(
+            Arg::new("debug")
+                .short('d')
+                .long("debug")
+                .required(false)
+                .value_name("debug")
+                .action(ArgAction::SetTrue)
+                .help("Determines whether ATP will run in debug mode or not, default is false")
+        )
 }
 
-fn main() {
+fn process_by_mode(
+    read_mode: &ReadMode,
+    id: &str,
+    data: &str,
+    debug: bool,
+    processor: &mut AtpProcessor
+) -> Result<String, AtpError> {
+    match read_mode {
+        ReadMode::All => process_input_single_chunk(processor, id, data, debug),
+        ReadMode::Line => process_input_line_by_line(processor, id, data, debug),
+        ReadMode::Chunk(s) => process_input_by_chunks(processor, id, data, *s, debug),
+    }
+}
+
+fn main() -> Result<(), AtpError> {
     let matches = build_cli().get_matches();
 
     let file = matches.get_one::<PathBuf>("file").unwrap();
-    let input = matches.get_one::<Option<PathBuf>>("input").unwrap();
-    let output = matches.get_one::<Option<PathBuf>>("output").unwrap();
-    let atp_mode = matches.get_one::<char>("mode").unwrap();
+    let input = matches.get_one::<PathBuf>("input");
+    let output = matches.get_one::<PathBuf>("output");
+    let atp_mode = matches.get_one::<String>("mode").unwrap();
     let read_mode = matches.get_one::<ReadMode>("read_mode").unwrap();
+    let debug = matches.get_one::<bool>("debug").unwrap();
 
     println!("Arquivo Fonte: {}, Existe? {}", file.display().to_string(), file.exists());
 
-    if atp_mode == &'b' && file.extension().expect("Could not get input extension") != "atpbc" {
+    if atp_mode == &"b" && file.extension().expect("Could not get input extension") != "atpbc" {
         panic!("You're using mode 'b'(bytecode), so the atp file must have the .atpbc extension!");
+    }
+
+    if !file.exists() {
+        panic!("ATP file does not exists!");
     }
 
     let data: String = match input {
@@ -125,4 +160,45 @@ fn main() {
             b
         }
     };
+
+    let mut processor = AtpProcessor::new();
+
+    let mut result: String = String::new();
+
+    if atp_mode == &"b" {
+        let id = processor.read_from_bytecode_file(file)?;
+
+        result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
+    } else if atp_mode == &"t" {
+        let id = processor.read_from_text_file(file)?;
+
+        result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
+    }
+
+    match output {
+        Some(p) => {
+            if p.exists() {
+                let mut f = OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(p)
+                    .expect("It was not possible to open the file for writing");
+
+                f.write_all(result.as_bytes()).expect("Failed to write result to file");
+            } else {
+                let mut f = OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .open(p)
+                    .expect("It was not possible to open the file for writing");
+
+                f.write_all(result.as_bytes()).expect("Failed to write result to file");
+            }
+        }
+        None => {
+            println!("Resultado do processamento: {}", result);
+        }
+    }
+
+    Ok(())
 }

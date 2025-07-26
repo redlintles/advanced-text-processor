@@ -3,7 +3,7 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp_project::builder::atp_processor::{ AtpProcessorBytecodeDebugMethods };
+    use atp_project::builder::atp_processor::{ AtpProcessorBytecodeMethods };
 
     use atp_project::utils::transforms::{ bytecode_token_vec_to_token_vec };
 
@@ -59,9 +59,7 @@ pub mod bytecode {
 
         let expected_output = "BananaCoxinhaLaranjaBananaCoxinhaLaranjaBananaCoxinhaLaranja";
 
-        let mut processor: Box<dyn AtpProcessorBytecodeDebugMethods> = Box::new(
-            AtpProcessor::new()
-        );
+        let mut processor: Box<dyn AtpProcessorBytecodeMethods> = Box::new(AtpProcessor::new());
 
         let identifier = processor.add_transform(bytecode_token_vec_to_token_vec(&tokens).unwrap());
 

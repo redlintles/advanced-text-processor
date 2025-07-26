@@ -1,10 +1,9 @@
-use crate::{
-    builder::atp_processor::{ AtpProcessorDebugMethods },
-    utils::{ errors::AtpError, transforms::get_safe_utf8_char_index },
-};
+use crate::{ utils::{ errors::AtpError, transforms::get_safe_utf8_char_index } };
+
+use crate::builder::atp_processor::AtpProcessorMethods;
 
 fn process_run(
-    processor: &mut dyn AtpProcessorDebugMethods,
+    processor: &mut Box<dyn AtpProcessorMethods>,
     identifier: &str,
     input: &str,
     debug: bool
@@ -17,7 +16,7 @@ fn process_run(
 }
 
 pub fn process_input_single_chunk(
-    processor: &mut dyn AtpProcessorDebugMethods,
+    processor: &mut Box<dyn AtpProcessorMethods>,
     identifier: &str,
     input: &str,
     debug: bool
@@ -29,7 +28,7 @@ pub fn process_input_single_chunk(
 }
 
 pub fn process_input_line_by_line(
-    processor: &mut dyn AtpProcessorDebugMethods,
+    processor: &mut Box<dyn AtpProcessorMethods>,
     identifier: &str,
     input: &str,
     debug: bool
@@ -50,7 +49,7 @@ pub fn process_input_line_by_line(
 }
 
 pub fn process_input_by_chunks(
-    processor: &mut dyn AtpProcessorDebugMethods,
+    processor: &mut Box<dyn AtpProcessorMethods>,
     identifier: &str,
     input: &str,
     chunk_size: usize,
@@ -110,7 +109,7 @@ mod cli_tests {
                 .add_to_beginning("b")
                 .add_to_end("l")
                 .build()
-                .text_debug_processor();
+                .text_processor();
 
             let input = "coxinha";
             let expected_output = "bcolbxilbnhlbal".to_string();
@@ -135,7 +134,7 @@ mod cli_tests {
                 .add_to_beginning("b")
                 .add_to_end("l")
                 .build()
-                .text_debug_processor();
+                .text_processor();
 
             let input = "coxinha\nlaranja";
             let expected_output = "bcoxinhal\nblaranjal".to_string();
@@ -160,7 +159,7 @@ mod cli_tests {
                 .add_to_beginning("b")
                 .add_to_end("l")
                 .build()
-                .text_debug_processor();
+                .text_processor();
 
             let input = "coxinha";
             let expected_output = "bcoxinhal".to_string();
