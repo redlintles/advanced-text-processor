@@ -9,6 +9,68 @@ use crate::{
     },
 };
 
+pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpError> {
+    let chunks = match shell_words::split(&token_string) {
+        Ok(x) => x,
+        Err(_) => {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::TextParsingError(
+                        "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                    ),
+                    "shell words split".to_string(),
+                    token_string.to_string()
+                )
+            );
+        }
+    };
+
+    let supported_tokens = get_supported_default_tokens();
+    let token_factory = match supported_tokens.get(&chunks[0]) {
+        Some(x) => x,
+        None => {
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::TokenNotFound(
+                        "Token not recognized".to_string()
+                    ),
+                    "".to_string(),
+                    chunks[0].to_string()
+                )
+            );
+        }
+    };
+
+    let mut token = token_factory();
+
+    match token.from_vec_params(chunks) {
+        Ok(x) => x,
+        Err(_) => {
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::TextParsingError(
+                        "Token not recognized".to_string()
+                    ),
+                    "".to_string(),
+                    "".to_string()
+                )
+            );
+        }
+    }
+
+    Ok(token)
+}
+
+pub fn read_from_text_vec(tokens: Vec<String>) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
+    let mut result: Vec<Box<dyn TokenMethods>> = Vec::new();
+
+    for line_text in tokens.iter() {
+        result.push(read_from_text(&line_text)?);
+    }
+
+    Ok(result)
+}
+
 pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
     check_file_path(path, Some("atp"))?;
     let mut result: Vec<Box<dyn TokenMethods>> = Vec::new();
@@ -48,55 +110,7 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpErro
 
         line_text.pop();
 
-        let chunks = match shell_words::split(&line_text) {
-            Ok(x) => x,
-            Err(_) => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::TextParsingError(
-                            "An ATP Parsing error ocurred: Error splitting file line".to_string()
-                        ),
-                        "shell words split".to_string(),
-                        line_text.to_string()
-                    )
-                );
-            }
-        };
-
-        let supported_tokens = get_supported_default_tokens();
-        let token_factory = match supported_tokens.get(&chunks[0]) {
-            Some(x) => x,
-            None => {
-                return Err(
-                    AtpError::new(
-                        crate::utils::errors::AtpErrorCode::TokenNotFound(
-                            "Token not recognized".to_string()
-                        ),
-                        "".to_string(),
-                        chunks[0].to_string()
-                    )
-                );
-            }
-        };
-
-        let mut token = token_factory();
-
-        match token.from_vec_params(chunks) {
-            Ok(x) => x,
-            Err(_) => {
-                return Err(
-                    AtpError::new(
-                        crate::utils::errors::AtpErrorCode::TextParsingError(
-                            "Token not recognized".to_string()
-                        ),
-                        "".to_string(),
-                        "".to_string()
-                    )
-                );
-            }
-        }
-
-        result.push(token);
+        result.push(read_from_text(&line_text)?);
     }
 
     Ok(result)
