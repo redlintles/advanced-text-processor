@@ -17,6 +17,8 @@ pub mod text_parser;
 
 pub mod builder;
 
+pub mod ffi;
+
 // Bytecode
 #[cfg(feature = "bytecode")]
 pub mod bytecode_parser;
