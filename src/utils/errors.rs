@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::error::Error;
 
 #[derive(Default, Clone)]
 pub struct ErrorManager {
@@ -13,6 +14,8 @@ pub struct AtpError {
     instruction: String,
     input: String,
 }
+
+impl Error for AtpError {}
 
 impl Display for AtpError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
