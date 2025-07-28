@@ -115,7 +115,7 @@ impl AtpProcessorMethods for AtpProcessor {
 
     fn add_transform(&mut self, tokens: Vec<Box<dyn TokenMethods>>) -> String {
         let identifier = Uuid::new_v4();
-        self.transforms.insert(identifier.to_string(), tokens.clone());
+        self.transforms.insert(identifier.to_string(), tokens);
 
         identifier.to_string()
     }
