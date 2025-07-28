@@ -58,17 +58,20 @@ impl ATPProcessorJS {
         Ok(id)
     }
 
+    #[napi]
     pub fn process_all_with_debug(&mut self, id: String, input: String) -> napi::Result<String> {
         Ok(self.inner.process_all_with_debug(&id, &input)?)
     }
 
+    #[napi]
     pub fn write_to_bytecode_file(&mut self, id: String, path: String) -> napi::Result<()> {
         Ok(self.inner.write_to_bytecode_file(&id, Path::new(&path))?)
     }
+    #[napi]
     pub fn read_from_bytecode_file(&mut self, path: String) -> napi::Result<String> {
         Ok(self.inner.read_from_bytecode_file(Path::new(&path))?)
     }
-
+    #[napi]
     pub fn process_all_bytecode_with_debug(
         &mut self,
         id: String,
@@ -76,6 +79,7 @@ impl ATPProcessorJS {
     ) -> napi::Result<String> {
         Ok(self.inner.process_all_bytecode_with_debug(&id, &input)?)
     }
+    #[napi]
     pub fn process_single_bytecode_with_debug(
         &mut self,
         token: String,
