@@ -5,29 +5,9 @@ use crate::utils::errors::AtpError;
 
 use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };
 
-#[cfg(feature = "bytecode")]
-use super::atp_processor::AtpProcessorBytecodeMethods;
 #[derive(Default)]
 pub struct AtpBuilder {
     tokens: Vec<Box<dyn TokenMethods>>,
-}
-#[derive(Default)]
-pub struct AtpProcessorBuilder {
-    tokens: Vec<Box<dyn TokenMethods>>,
-}
-
-impl AtpProcessorBuilder {
-    pub fn text_processor(self) -> (Box<dyn AtpProcessorMethods>, String) {
-        let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
-        let identifier = processor.add_transform(self.tokens);
-        (processor, identifier)
-    }
-    #[cfg(feature = "bytecode")]
-    pub fn bytecode_processor(self) -> (Box<dyn AtpProcessorBytecodeMethods>, String) {
-        let mut processor: Box<dyn AtpProcessorBytecodeMethods> = Box::new(AtpProcessor::new());
-        let identifier = processor.add_transform(self.tokens);
-        (processor, identifier)
-    }
 }
 
 impl AtpBuilder {
@@ -37,10 +17,11 @@ impl AtpBuilder {
         }
     }
 
-    pub fn build(self) -> AtpProcessorBuilder {
-        AtpProcessorBuilder {
-            tokens: self.tokens,
-        }
+    pub fn build(self) -> (AtpProcessor, String) {
+        let mut p = AtpProcessor::new();
+        let id = p.add_transform(self.tokens);
+
+        (p, id)
     }
 }
 
