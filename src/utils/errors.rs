@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::error::Error;
 
+#[cfg(feature = "javascript_ffi")]
 use napi::{ Error as NapiError, Status };
 
 #[derive(Default, Clone)]
@@ -19,6 +20,7 @@ pub struct AtpError {
 
 impl Error for AtpError {}
 
+#[cfg(feature = "javascript_ffi")]
 impl From<AtpError> for NapiError {
     fn from(err: AtpError) -> Self {
         NapiError::new(Status::GenericFailure, format!("{}", err))
