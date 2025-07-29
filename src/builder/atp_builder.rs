@@ -17,9 +17,9 @@ impl AtpBuilder {
         }
     }
 
-    pub fn build(self) -> (AtpProcessor, String) {
+    pub fn build(&self) -> (AtpProcessor, String) {
         let mut p = AtpProcessor::new();
-        let id = p.add_transform(self.tokens);
+        let id = p.add_transform(self.tokens.clone());
 
         (p, id)
     }
