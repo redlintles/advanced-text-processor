@@ -32,6 +32,19 @@ impl ATPProcessorJS {
     }
 
     #[napi]
+    pub fn remove_transform(&mut self, id: String) -> napi::Result<()> {
+        Ok(self.inner.remove_transform(&id)?)
+    }
+    #[napi]
+    pub fn show_transforms(&mut self) -> () {
+        self.inner.show_transforms();
+    }
+    #[napi]
+    pub fn transform_exists(&mut self, id: String) -> bool {
+        self.inner.transform_exists(&id)
+    }
+
+    #[napi]
     pub fn process_all(&mut self, id: String, input: String) -> napi::Result<String> {
         Ok(self.inner.process_all(&id, &input)?)
     }
