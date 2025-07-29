@@ -45,6 +45,8 @@ pub trait AtpProcessorMethods {
     fn remove_transform(&mut self, id: &str) -> Result<(), AtpError>;
     fn show_transforms(&self) -> () {}
     fn transform_exists(&self, id: &str) -> bool;
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError>;
+    fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, AtpError>;
 }
 #[cfg(feature = "bytecode")]
 pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
@@ -154,6 +156,42 @@ impl AtpProcessorMethods for AtpProcessor {
 
     fn transform_exists(&self, id: &str) -> bool {
         self.transforms.contains_key(id)
+    }
+
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
+        Ok(
+            self.transforms
+                .get(id)
+                .ok_or_else(||
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
+                            "Transform not found".to_string()
+                        ),
+                        "get_transform_vec".to_string(),
+                        id.to_string()
+                    )
+                )?
+                .clone()
+        )
+    }
+    fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, AtpError> {
+        Ok(
+            self.transforms
+                .get(id)
+                .ok_or_else(||
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
+                            "Transform not found".to_string()
+                        ),
+                        "get_transform_vec".to_string(),
+                        id.to_string()
+                    )
+                )?
+                .clone()
+                .iter()
+                .map(|t| t.to_atp_line())
+                .collect::<Vec<String>>()
+        )
     }
 
     fn process_single(
