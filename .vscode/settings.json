@@ -1,3 +1,8 @@
 {
-  "rust-analyzer.cargo.features": ["default", "bytecode", "test_access"]
+  "rust-analyzer.cargo.features": [
+    "default",
+    "bytecode",
+    "test_access",
+    "javascript_ffi"
+  ]
 }
