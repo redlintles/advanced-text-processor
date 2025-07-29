@@ -15,8 +15,7 @@ pub mod processor {
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
-            .build()
-            .text_processor();
+            .build();
         let input = "Carimbo verde de deus";
 
         let output = processor.process_all(&identifier, input).unwrap();
@@ -32,8 +31,7 @@ pub mod processor {
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
-            .build()
-            .text_processor();
+            .build();
         let input = "Carimbo verde de deus";
 
         let output = processor.process_all_with_debug(&identifier, input).unwrap();
@@ -97,8 +95,7 @@ pub mod processor {
             .add_to_beginning("Banana")
             .add_to_end("Laranja")
             .repeat(3 as usize)
-            .build()
-            .text_processor();
+            .build();
 
         let _ = processor.write_to_text_file(&identifier, path);
 

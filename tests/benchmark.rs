@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod benchmark {
     use std::time::Instant;
-    use atp_project::builder::atp_builder::AtpBuilder;
+    use atp_project::builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessorMethods } };
 
     use atp_project::utils::errors::AtpError;
 
@@ -61,8 +61,7 @@ pub mod benchmark {
             .join_to_snake_case()
             .pad_left("xy", 12)
             .pad_right("yx", 20)
-            .build()
-            .text_processor();
+            .build();
 
         for _ in 0..runs {
             let start = Instant::now();
@@ -142,8 +141,7 @@ pub mod benchmark {
             .join_to_snake_case()
             .pad_left("xy", 12)
             .pad_right("yx", 20)
-            .build()
-            .text_processor();
+            .build();
 
         for _ in 0..runs {
             let start = Instant::now();

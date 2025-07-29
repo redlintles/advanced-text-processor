@@ -101,15 +101,13 @@ fn build_cli() -> Command {
         )
 }
 
-fn process_by_mode<T>(
+fn process_by_mode(
     read_mode: &ReadMode,
     id: &str,
     data: &str,
     debug: bool,
-    processor: &mut T
-) -> Result<String, AtpError>
-    where T: AtpProcessorMethods + AtpProcessorBytecodeMethods
-{
+    processor: &mut AtpProcessor
+) -> Result<String, AtpError> {
     match read_mode {
         ReadMode::All => process_input_single_chunk(processor, id, data, debug),
         ReadMode::Line => process_input_line_by_line(processor, id, data, debug),

@@ -1,9 +1,10 @@
-use crate::{ utils::{ errors::AtpError, transforms::get_safe_utf8_char_index } };
-
-use crate::builder::atp_processor::AtpProcessorMethods;
+use crate::{
+    builder::atp_processor::{ AtpProcessor, AtpProcessorMethods },
+    utils::{ errors::AtpError, transforms::get_safe_utf8_char_index },
+};
 
 fn process_run(
-    processor: &mut dyn AtpProcessorMethods,
+    processor: &mut AtpProcessor,
     identifier: &str,
     input: &str,
     debug: bool
@@ -16,7 +17,7 @@ fn process_run(
 }
 
 pub fn process_input_single_chunk(
-    processor: &mut dyn AtpProcessorMethods,
+    processor: &mut AtpProcessor,
     identifier: &str,
     input: &str,
     debug: bool
@@ -28,7 +29,7 @@ pub fn process_input_single_chunk(
 }
 
 pub fn process_input_line_by_line(
-    processor: &mut dyn AtpProcessorMethods,
+    processor: &mut AtpProcessor,
     identifier: &str,
     input: &str,
     debug: bool
@@ -49,7 +50,7 @@ pub fn process_input_line_by_line(
 }
 
 pub fn process_input_by_chunks(
-    processor: &mut dyn AtpProcessorMethods,
+    processor: &mut AtpProcessor,
     identifier: &str,
     input: &str,
     chunk_size: usize,
@@ -108,12 +109,11 @@ mod cli_tests {
             let (mut processor, id) = AtpBuilder::new()
                 .add_to_beginning("b")
                 .add_to_end("l")
-                .build()
-                .text_processor();
+                .build();
 
             let input = "coxinha";
             let expected_output = "bcolbxilbnhlbal".to_string();
-            let result = process_input_by_chunks(processor.as_mut(), &id, input, 2, true)?;
+            let result = process_input_by_chunks(&mut processor, &id, input, 2, true)?;
 
             println!("Resultado: {}", result);
 
@@ -133,12 +133,11 @@ mod cli_tests {
             let (mut processor, id) = AtpBuilder::new()
                 .add_to_beginning("b")
                 .add_to_end("l")
-                .build()
-                .text_processor();
+                .build();
 
             let input = "coxinha\nlaranja";
             let expected_output = "bcoxinhal\nblaranjal".to_string();
-            let result = process_input_line_by_line(processor.as_mut(), &id, input, true)?;
+            let result = process_input_line_by_line(&mut processor, &id, input, true)?;
 
             println!("Resultado: {}", result);
 
@@ -158,12 +157,11 @@ mod cli_tests {
             let (mut processor, id) = AtpBuilder::new()
                 .add_to_beginning("b")
                 .add_to_end("l")
-                .build()
-                .text_processor();
+                .build();
 
             let input = "coxinha";
             let expected_output = "bcoxinhal".to_string();
-            let result = process_input_single_chunk(processor.as_mut(), &id, input, true)?;
+            let result = process_input_single_chunk(&mut processor, &id, input, true)?;
 
             println!("Resultado: {}", result);
 
