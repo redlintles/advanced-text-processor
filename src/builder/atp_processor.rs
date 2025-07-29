@@ -43,6 +43,8 @@ pub trait AtpProcessorMethods {
         input: &str
     ) -> Result<String, AtpError>;
     fn remove_transform(&mut self, id: &str) -> Result<(), AtpError>;
+    fn show_transforms(&self) -> () {}
+    fn transform_exists(&self, id: &str) -> bool;
 }
 #[cfg(feature = "bytecode")]
 pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
@@ -142,6 +144,16 @@ impl AtpProcessorMethods for AtpProcessor {
                 return Err(e);
             }
         }
+    }
+
+    fn show_transforms(&self) -> () {
+        for (i, k) in self.transforms.keys().enumerate() {
+            println!("{} - {}", i, k);
+        }
+    }
+
+    fn transform_exists(&self, id: &str) -> bool {
+        self.transforms.contains_key(id)
     }
 
     fn process_single(
