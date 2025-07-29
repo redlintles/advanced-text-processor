@@ -57,7 +57,11 @@ impl ATPProcessorJS {
 
         Ok(id)
     }
+}
 
+#[cfg(feature = "bytecode")]
+#[napi]
+impl ATPProcessorJS {
     #[napi]
     pub fn process_all_with_debug(&mut self, id: String, input: String) -> napi::Result<String> {
         Ok(self.inner.process_all_with_debug(&id, &input)?)
