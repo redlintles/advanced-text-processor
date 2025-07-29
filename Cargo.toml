@@ -28,14 +28,7 @@ crate-type = ["cdylib", "rlib"]
 default = []
 bytecode = []
 javascript_ffi = ["napi", "napi-derive"]
-test_access = [
-  "default",
-  "bytecode",
-  "tempfile",
-  "rand",
-  "random-string",
-  "javascript_ffi",
-]
+test_access = ["default", "bytecode", "tempfile", "rand", "random-string"]
 
 [[bin]]
 name = "atp"
