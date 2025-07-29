@@ -10,7 +10,21 @@ use crate::{
 };
 
 pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpError> {
-    let chunks = match shell_words::split(&token_string) {
+    let chunks = match
+        shell_words::split(
+            &token_string
+                .strip_suffix(";")
+                .ok_or_else(||
+                    AtpError::new(
+                        AtpErrorCode::TextParsingError(
+                            "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                        ),
+                        "shell words split".to_string(),
+                        token_string.to_string()
+                    )
+                )?
+        )
+    {
         Ok(x) => x,
         Err(_) => {
             return Err(
