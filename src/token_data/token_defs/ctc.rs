@@ -3,10 +3,13 @@ use crate::{
     utils::transforms::{ capitalize, string_to_usize },
     utils::validations::check_chunk_bound_indexes,
 };
-use crate::utils::errors::AtpError;
+use crate::utils::errors::{ AtpError };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{
+    bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods },
+    utils::errors::AtpErrorCode,
+};
 /// Token `Ctc` — Capitalize Chunk
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
