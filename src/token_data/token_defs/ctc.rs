@@ -3,7 +3,7 @@ use crate::{
     utils::transforms::{ capitalize, string_to_usize },
     utils::validations::check_chunk_bound_indexes,
 };
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::AtpError;
 
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
