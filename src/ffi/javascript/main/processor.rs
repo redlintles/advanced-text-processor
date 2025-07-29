@@ -4,12 +4,13 @@ use napi_derive::napi;
 
 use crate::{
     builder::atp_processor::{ AtpProcessor, AtpProcessorMethods },
-    bytecode_parser::reader::read_bytecode_from_text,
     text_parser::reader::{ read_from_text, read_from_text_vec },
 };
 
 #[cfg(feature = "bytecode")]
 use crate::builder::atp_processor::AtpProcessorBytecodeMethods;
+#[cfg(feature = "bytecode")]
+use crate::bytecode_parser::reader::read_bytecode_from_text;
 
 #[napi]
 pub struct ATPProcessorJS {
