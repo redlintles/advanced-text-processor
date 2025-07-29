@@ -42,6 +42,7 @@ pub trait AtpProcessorMethods {
         token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError>;
+    fn remove_transform(&mut self, id: &str) -> Result<(), AtpError>;
 }
 #[cfg(feature = "bytecode")]
 pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
@@ -118,6 +119,29 @@ impl AtpProcessorMethods for AtpProcessor {
         self.transforms.insert(identifier.to_string(), tokens);
 
         identifier.to_string()
+    }
+
+    fn remove_transform(&mut self, id: &str) -> Result<(), AtpError> {
+        match
+            self.transforms
+                .remove(id)
+                .ok_or_else(||
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenNotFound(
+                            "Transformation not found".to_string()
+                        ),
+                        "remove_transform".to_string(),
+                        id.to_string()
+                    )
+                )
+        {
+            Ok(_) => {
+                return Ok(());
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
     }
 
     fn process_single(
