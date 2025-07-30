@@ -5,7 +5,7 @@ use crate::utils::errors::AtpError;
 
 use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AtpBuilder {
     tokens: Vec<Box<dyn TokenMethods>>,
 }
