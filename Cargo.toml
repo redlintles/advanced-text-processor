@@ -1,6 +1,3 @@
-[workspace]
-members = ["npm", "."]
-
 [package]
 name = "atp"
 version = "0.1.0"
