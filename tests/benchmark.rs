@@ -1,3 +1,4 @@
+#[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod benchmark {
     use std::time::Instant;

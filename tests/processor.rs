@@ -1,5 +1,5 @@
-#[cfg(test)]
 #[cfg(feature = "test_access")]
+#[cfg(test)]
 pub mod processor {
     use std::{ fs::File, io::Read, path::Path };
 
