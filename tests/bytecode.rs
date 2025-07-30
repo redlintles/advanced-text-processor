@@ -3,15 +3,15 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp_project::builder::atp_processor::{ AtpProcessorBytecodeMethods };
+    use atp::builder::atp_processor::{ AtpProcessorBytecodeMethods };
 
-    use atp_project::utils::transforms::{ bytecode_token_vec_to_token_vec };
+    use atp::utils::transforms::{ bytecode_token_vec_to_token_vec };
 
     #[test]
     fn test_write_bytecode_to_file() {
         use tempfile::Builder;
-        use atp_project::bytecode_parser::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
-        use atp_project::token_data::token_defs::{ atb::Atb, rpt::Rpt, ate::Ate };
+        use atp::bytecode_parser::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
+        use atp::token_data::token_defs::{ atb::Atb, rpt::Rpt, ate::Ate };
         let file = Builder::new().suffix(".atpbc").prefix("output_").tempfile().unwrap();
 
         let path = file.path();
@@ -46,7 +46,7 @@ pub mod bytecode {
 
     #[test]
     fn test_read_bytecode_from_file() {
-        use atp_project::{
+        use atp::{
             builder::atp_processor::{ AtpProcessor },
             bytecode_parser::reader::read_bytecode_from_file,
         };

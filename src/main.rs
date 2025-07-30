@@ -1,5 +1,5 @@
 use std::{ fs::OpenOptions, io::{ self, Error, Read, Write }, path::PathBuf };
-use atp_project::{
+use atp::{
     builder::atp_processor::{ AtpProcessor, AtpProcessorBytecodeMethods, AtpProcessorMethods },
     utils::{
         cli::{ process_input_by_chunks, process_input_line_by_line, process_input_single_chunk },

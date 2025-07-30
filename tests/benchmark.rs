@@ -2,9 +2,9 @@
 #[cfg(test)]
 pub mod benchmark {
     use std::time::Instant;
-    use atp_project::builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessorMethods } };
+    use atp::builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessorMethods } };
 
-    use atp_project::utils::errors::AtpError;
+    use atp::utils::errors::AtpError;
 
     #[test]
     fn process_sbs_all_tokens() -> Result<(), AtpError> {
