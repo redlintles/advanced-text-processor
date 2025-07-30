@@ -19,6 +19,9 @@ clap = "4.5.41"
 napi = { version = "3.1.3", optional = true }
 napi-derive = { version = "3.1.1", optional = true }
 
+[build-dependencies]
+napi-build = { version = "2.2.3", optional = true }
+
 [lib]
 name = "atp_project"
 crate-type = ["cdylib", "rlib"]
@@ -27,7 +30,7 @@ crate-type = ["cdylib", "rlib"]
 
 default = []
 bytecode = []
-javascript_ffi = ["napi", "napi-derive"]
+javascript_ffi = ["napi", "napi-derive", "napi-build"]
 test_access = ["default", "bytecode", "tempfile", "rand", "random-string"]
 
 [[bin]]

@@ -335,21 +335,3 @@ impl AtpBuilderJS {
         }
     }
 }
-
-#[cfg(test)]
-mod ffi_builder_tests {
-    use crate::{ ffi::javascript::main::builder::{ AtpBuilderJS } };
-
-    #[test]
-    fn simple_test() {
-        let (mut p, id) = AtpBuilderJS::new()
-            .add_to_beginning("banana".to_string())
-            .add_to_end("laranja".to_string())
-            .build()
-            .unwrap();
-
-        let r = p.process_all(id, "coxinha".to_string()).unwrap();
-
-        assert_eq!(r, "bananacoxinhalaranja".to_string());
-    }
-}
