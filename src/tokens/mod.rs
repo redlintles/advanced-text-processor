@@ -1,6 +1,7 @@
 use crate::utils::errors::AtpError;
 
 pub mod transforms;
+pub mod instructions;
 
 /// TokenMethods
 ///
