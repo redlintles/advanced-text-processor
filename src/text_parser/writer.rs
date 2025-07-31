@@ -1,6 +1,6 @@
 use std::{ fs::OpenOptions, io::Write, path::Path };
 
-use crate::{ token_data::TokenMethods, utils::{ errors::AtpError, validations::check_file_path } };
+use crate::{ tokens::TokenMethods, utils::{ errors::AtpError, validations::check_file_path } };
 
 pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result<(), AtpError> {
     check_file_path(path, Some("atp"))?;

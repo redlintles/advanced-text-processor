@@ -11,7 +11,7 @@ pub mod bytecode {
     fn test_write_bytecode_to_file() {
         use tempfile::Builder;
         use atp::bytecode_parser::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
-        use atp::token_data::token_defs::{ atb::Atb, rpt::Rpt, ate::Ate };
+        use atp::token_data::transforms::{ atb::Atb, rpt::Rpt, ate::Ate };
         let file = Builder::new().suffix(".atpbc").prefix("output_").tempfile().unwrap();
 
         let path = file.path();

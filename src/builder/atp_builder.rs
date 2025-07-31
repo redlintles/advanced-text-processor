@@ -1,6 +1,6 @@
-use crate::token_data::{ TokenMethods };
+use crate::tokens::{ TokenMethods };
 
-use crate::token_data::token_defs::*;
+use crate::tokens::transforms::*;
 use crate::utils::errors::AtpError;
 
 use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };

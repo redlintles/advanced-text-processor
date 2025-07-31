@@ -32,7 +32,7 @@ use crate::utils::errors::AtpError;
 #[cfg(feature = "bytecode")]
 use crate::{
     bytecode_parser::BytecodeTokenMethods,
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::mapping::get_supported_bytecode_tokens,
 };
 

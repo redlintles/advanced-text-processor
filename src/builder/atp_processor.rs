@@ -11,7 +11,7 @@ use crate::bytecode_parser::{
     writer::write_bytecode_to_file,
     BytecodeTokenMethods,
 };
-use crate::token_data::{ TokenMethods };
+use crate::tokens::{ TokenMethods };
 
 use crate::text_parser::parser::parse_token;
 use crate::text_parser::reader::read_from_file;

@@ -1,7 +1,7 @@
 use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         mapping::get_supported_default_tokens,

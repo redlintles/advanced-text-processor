@@ -1,4 +1,4 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, ErrorManager } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, ErrorManager } };
 
 pub fn parse_token(
     token: &dyn TokenMethods,

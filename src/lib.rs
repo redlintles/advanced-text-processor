@@ -3,7 +3,7 @@
 pub mod utils;
 
 #[cfg(not(feature = "test_access"))]
-mod token_data;
+mod tokens;
 
 #[cfg(feature = "test_access")]
 pub mod token_data;
