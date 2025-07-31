@@ -10,8 +10,8 @@ pub mod bytecode {
     #[test]
     fn test_write_bytecode_to_file() {
         use tempfile::Builder;
-        use atp::bytecode_parser::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
-        use atp::token_data::transforms::{ atb::Atb, rpt::Rpt, ate::Ate };
+        use atp::bytecode::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
+        use atp::tokens::transforms::{ atb::Atb, rpt::Rpt, ate::Ate };
         let file = Builder::new().suffix(".atpbc").prefix("output_").tempfile().unwrap();
 
         let path = file.path();
@@ -48,7 +48,7 @@ pub mod bytecode {
     fn test_read_bytecode_from_file() {
         use atp::{
             builder::atp_processor::{ AtpProcessor },
-            bytecode_parser::reader::read_bytecode_from_file,
+            bytecode::reader::read_bytecode_from_file,
         };
         let tokens = match read_bytecode_from_file(Path::new("./banana.atpbc")) {
             Ok(x) => x,
