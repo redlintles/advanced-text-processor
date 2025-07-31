@@ -9,7 +9,7 @@ mod tokens;
 pub mod token_data;
 
 #[cfg(not(feature = "test_access"))]
-mod text_parser;
+mod text;
 
 #[cfg(feature = "test_access")]
 pub mod text_parser;

@@ -13,9 +13,9 @@ use crate::bytecode_parser::{
 };
 use crate::tokens::{ TokenMethods };
 
-use crate::text_parser::parser::parse_token;
-use crate::text_parser::reader::read_from_file;
-use crate::text_parser::writer::write_to_file;
+use crate::text::parser::parse_token;
+use crate::text::reader::read_from_file;
+use crate::text::writer::write_to_file;
 
 use crate::utils::errors::{ token_array_not_found, AtpError, ErrorManager };
 #[cfg(feature = "bytecode")]
