@@ -1,5 +1,4 @@
-// Internal
-
+#[cfg(not(feature = "test_access"))]
 pub mod utils;
 
 #[cfg(not(feature = "test_access"))]
@@ -16,8 +15,6 @@ pub mod text_parser;
 // Public
 
 pub mod builder;
-
-pub mod ffi;
 
 // Bytecode
 #[cfg(feature = "bytecode")]
