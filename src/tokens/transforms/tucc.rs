@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// TUCC - To uppercase Chunk
 ///
 /// Lowercases every character from a chunk delimited by `start_index` and `end_index`(inclusive) in `input`
@@ -16,7 +16,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tucc::Tucc};
+/// use atp_project::tokens::{TokenMethods, transforms::tucc::Tucc};
 ///
 /// let token = Tucc::params(1,4).unwrap();
 ///
@@ -133,7 +133,7 @@ impl BytecodeTokenMethods for Tucc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tucc_tests {
-    use crate::token_data::{ TokenMethods, transforms::tucc::Tucc };
+    use crate::tokens::{ TokenMethods, transforms::tucc::Tucc };
 
     #[test]
     fn to_uppercase_chunk() {
@@ -192,7 +192,7 @@ mod tucc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_chunk_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tucc::params(1, 4).unwrap();
 

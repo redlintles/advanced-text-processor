@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// Token `Cfw` — Capitalize First Word
 ///
 /// Capitalizes the first word of `input`
@@ -12,7 +12,7 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::cfw::Cfw};
+/// use atp_project::tokens::{TokenMethods, transforms::cfw::Cfw};
 ///
 /// let token = Cfw::default();
 /// assert_eq!(token.parse("foo bar"), Ok("Foo bar".to_string()));
@@ -77,7 +77,7 @@ impl BytecodeTokenMethods for Cfw {
 #[cfg(test)]
 mod cfw_tests {
     use crate::{
-        token_data::{ transforms::cfw::Cfw, TokenMethods },
+        tokens::{ transforms::cfw::Cfw, TokenMethods },
         utils::transforms::capitalize,
     };
 
@@ -112,7 +112,7 @@ mod cfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_first_word_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Cfw::default();
 

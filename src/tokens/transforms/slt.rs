@@ -1,12 +1,12 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::transforms::string_to_usize,
     utils::validations::check_chunk_bound_indexes,
 };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 
 /// Slt - Select
 ///
@@ -16,7 +16,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods,token_defs::slt::Slt};
+/// use atp_project::tokens::{TokenMethods,transforms::slt::Slt};
 ///
 /// let token = Slt::params(1,9999).unwrap();
 ///
@@ -102,7 +102,7 @@ impl BytecodeTokenMethods for Slt {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Slt::default().get_opcode() && instruction.operands.len() == 2 {
             let start_index = string_to_usize(&instruction.operands[0])?;
@@ -123,7 +123,7 @@ impl BytecodeTokenMethods for Slt {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Slt::default().get_opcode(),
             operands: [self.start_index.to_string(), self.end_index.to_string()].to_vec(),
@@ -134,7 +134,7 @@ impl BytecodeTokenMethods for Slt {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod slt_tests {
-    use crate::token_data::{ TokenMethods, transforms::slt::Slt };
+    use crate::tokens::{ TokenMethods, transforms::slt::Slt };
 
     #[test]
     fn select() {
@@ -189,7 +189,7 @@ mod slt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn select_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Slt::params(1, 5).unwrap();
 

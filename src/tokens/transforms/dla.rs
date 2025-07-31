@@ -1,10 +1,10 @@
 use crate::utils::validations::check_index_against_input;
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// Dla - Delete After
 /// Delete all characters after `index` in the specified `input`
 ///
@@ -13,7 +13,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dla::Dla};
+/// use atp_project::tokens::{TokenMethods, transforms::dla::Dla};
 ///
 /// let token = Dla::params(3);
 ///
@@ -136,7 +136,7 @@ impl BytecodeTokenMethods for Dla {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dla_tests {
-    use crate::token_data::{ TokenMethods, transforms::dla::Dla };
+    use crate::tokens::{ TokenMethods, transforms::dla::Dla };
     #[test]
     fn delete_after_test() {
         let mut token = Dla::params(3);
@@ -168,7 +168,7 @@ mod dla_tests {
     }
     #[test]
     fn delete_after_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dla::params(3);
 

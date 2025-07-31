@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 
 /// PADL - Pad Left
 ///
@@ -12,12 +12,12 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 ///
 /// See Also:
 ///
-/// - [`Padr` - Pad Right](crate::token_data::token_defs::padr)
+/// - [`Padr` - Pad Right](crate::tokens::transforms::padr)
 ///
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::padl::Padl};
+/// use atp_project::tokens::{TokenMethods, transforms::padl::Padl};
 ///
 /// let token = Padl::params("xy", 7);
 ///
@@ -106,7 +106,7 @@ impl BytecodeTokenMethods for Padl {
 #[cfg(test)]
 #[cfg(feature = "test_access")]
 mod padl_tests {
-    use crate::token_data::{ TokenMethods, transforms::padl::Padl };
+    use crate::tokens::{ TokenMethods, transforms::padl::Padl };
     #[test]
     fn pad_left_tests() {
         let mut token = Padl::params("xy", 7);
@@ -139,7 +139,7 @@ mod padl_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn pad_left_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Padl::default();
 

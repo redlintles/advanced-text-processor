@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -7,7 +7,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// TLCW - To Lowercase Word
 ///
 /// Lowercase a single word of string
@@ -15,7 +15,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tucw::Tucw};
+/// use atp_project::tokens::{TokenMethods, transforms::tucw::Tucw};
 ///
 /// let token = Tucw::params(1);
 ///
@@ -108,7 +108,7 @@ impl BytecodeTokenMethods for Tucw {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tucw_tests {
-    use crate::token_data::{ TokenMethods, transforms::tucw::Tucw };
+    use crate::tokens::{ TokenMethods, transforms::tucw::Tucw };
     #[test]
     fn to_uppercase_word_tests() {
         let mut token = Tucw::params(1);
@@ -154,7 +154,7 @@ mod tucw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_word_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tucw::params(1);
 

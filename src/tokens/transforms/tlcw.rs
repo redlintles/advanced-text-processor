@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -7,7 +7,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// TLCW - To Lowercase Word
 ///
@@ -16,7 +16,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tlcw::Tlcw};
+/// use atp_project::tokens::{TokenMethods, transforms::tlcw::Tlcw};
 ///
 /// let token = Tlcw::params(1);
 ///
@@ -112,7 +112,7 @@ impl BytecodeTokenMethods for Tlcw {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tlcw_tests {
-    use crate::token_data::{ TokenMethods, transforms::tlcw::Tlcw };
+    use crate::tokens::{ TokenMethods, transforms::tlcw::Tlcw };
     #[test]
     fn to_lowercase_word_tests() {
         let mut token = Tlcw::params(1);
@@ -158,7 +158,7 @@ mod tlcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_word_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tlcw::params(1);
 

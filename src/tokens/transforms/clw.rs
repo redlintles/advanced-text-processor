@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// Token `Clw` — Capitalize Last Word
 ///
 /// Capitalizes the last word of `input`
@@ -15,7 +15,7 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::clw::Clw};
+/// use atp_project::tokens::{TokenMethods, transforms::clw::Clw};
 ///
 /// let token = Clw::default();
 /// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
@@ -91,7 +91,7 @@ impl BytecodeTokenMethods for Clw {
 #[cfg(test)]
 mod clw_tests {
     use crate::{
-        token_data::{ transforms::clw::Clw, TokenMethods },
+        tokens::{ transforms::clw::Clw, TokenMethods },
         utils::transforms::capitalize,
     };
 
@@ -141,7 +141,7 @@ mod clw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_last_word_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Clw::default();
 

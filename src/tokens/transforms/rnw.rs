@@ -1,27 +1,27 @@
 use regex::Regex;
 
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// RLW - Replace Last With
 ///
 /// Replace the `nth`` ocurrency of `pattern` in `input` with `text_to_replace`
 ///
 /// See Also:
 ///
-/// - [`RAW` - Replace All With](crate::token_data::token_defs::raw)
-/// - [`RCW` - Replace Count With](crate::token_data::token_defs::rcw)
-/// - [`RFW` - Replace First With](crate::token_data::token_defs::rfw)
-/// - [`RLW` - Replace Last With](crate::token_data::token_defs::rlw)
+/// - [`RAW` - Replace All With](crate::tokens::transforms::raw)
+/// - [`RCW` - Replace Count With](crate::tokens::transforms::rcw)
+/// - [`RFW` - Replace First With](crate::tokens::transforms::rfw)
+/// - [`RLW` - Replace Last With](crate::tokens::transforms::rlw)
 ///
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rnw::Rnw};
+/// use atp_project::tokens::{TokenMethods, transforms::rnw::Rnw};
 ///
 /// let token = Rnw::params(&"a", "b", 2).unwrap();
 ///
@@ -170,7 +170,7 @@ impl BytecodeTokenMethods for Rnw {
 #[cfg(test)]
 #[cfg(feature = "test_access")]
 mod rnw_tests {
-    use crate::token_data::{ TokenMethods, transforms::rnw::Rnw };
+    use crate::tokens::{ TokenMethods, transforms::rnw::Rnw };
     #[test]
     fn replace_nth_with_tests() {
         let mut token = Rnw::params("a", "b", 2).unwrap();
@@ -199,7 +199,7 @@ mod rnw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_nth_with_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rnw::params("a", "b", 2).unwrap();
 

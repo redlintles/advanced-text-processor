@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// TLA - To Lowercase All
 ///
 /// Lowercases every character from `input`
@@ -9,7 +9,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tla::Tla};
+/// use atp_project::tokens::{TokenMethods, transforms::tla::Tla};
 ///
 /// let token = Tla::default();
 ///
@@ -74,7 +74,7 @@ impl BytecodeTokenMethods for Tla {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tla_tests {
-    use crate::token_data::{ transforms::tla::Tla, TokenMethods };
+    use crate::tokens::{ transforms::tla::Tla, TokenMethods };
     #[test]
     fn test_to_lowercase_all() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
@@ -107,7 +107,7 @@ mod tla_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_to_lowercase_all_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tla::default();
 

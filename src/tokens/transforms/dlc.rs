@@ -1,11 +1,11 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::transforms::string_to_usize,
     utils::validations::check_chunk_bound_indexes,
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// Dlc - Delete Chunk
 ///
@@ -14,7 +14,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dlc::Dlc};
+/// use atp_project::tokens::{TokenMethods, transforms::dlc::Dlc};
 ///
 /// let token = Dlc::params(1,5).unwrap();
 ///
@@ -160,7 +160,7 @@ impl BytecodeTokenMethods for Dlc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dlc_tests {
-    use crate::token_data::{ TokenMethods, transforms::dlc::Dlc };
+    use crate::tokens::{ TokenMethods, transforms::dlc::Dlc };
 
     #[test]
     fn delete_chunk() {
@@ -215,7 +215,7 @@ mod dlc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn delete_chunk_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dlc::params(1, 5).unwrap();
 

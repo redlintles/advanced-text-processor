@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JPSC - Join to PascalCase
 ///
@@ -13,7 +13,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::jpsc::Jpsc};
+/// use atp_project::tokens::{TokenMethods, transforms::jpsc::Jpsc};
 ///
 /// let token = Jpsc::default();
 ///
@@ -92,7 +92,7 @@ impl BytecodeTokenMethods for Jpsc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod jpsc_tests {
-    use crate::token_data::{ TokenMethods, transforms::jpsc::Jpsc };
+    use crate::tokens::{ TokenMethods, transforms::jpsc::Jpsc };
     #[test]
     fn join_to_pascal_case_tests() {
         let mut token = Jpsc::default();
@@ -123,7 +123,7 @@ mod jpsc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_pascal_case_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jpsc::default();
 

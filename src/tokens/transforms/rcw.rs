@@ -1,9 +1,9 @@
 use regex::Regex;
 
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 
 /// RCW - Replace Count With
 ///
@@ -11,15 +11,15 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 ///
 /// See Also:
 ///
-/// - [`RAW` - Replace All With](crate::token_data::token_defs::rcw)
-/// - [`RFW` - Replace First With](crate::token_data::token_defs::rfw)
-/// - [`RLW` - Replace Last With](crate::token_data::token_defs::rlw)
-/// - [`RNW` - Replace Nth With](crate::token_data::token_defs::rnw)
+/// - [`RAW` - Replace All With](crate::tokens::transforms::rcw)
+/// - [`RFW` - Replace First With](crate::tokens::transforms::rfw)
+/// - [`RLW` - Replace Last With](crate::tokens::transforms::rlw)
+/// - [`RNW` - Replace Nth With](crate::tokens::transforms::rnw)
 ///
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rcw::Rcw};
+/// use atp_project::tokens::{TokenMethods, transforms::rcw::Rcw};
 ///
 /// let token = Rcw::params(&"a", "b", 3).unwrap();
 ///
@@ -148,7 +148,7 @@ impl BytecodeTokenMethods for Rcw {
 #[cfg(test)]
 #[cfg(feature = "test_access")]
 mod rcw_tests {
-    use crate::token_data::{ TokenMethods, transforms::rcw::Rcw };
+    use crate::tokens::{ TokenMethods, transforms::rcw::Rcw };
     #[test]
     fn replace_count_with_tests() {
         let mut token = Rcw::params("a", "b", 3).unwrap();
@@ -177,7 +177,7 @@ mod rcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_count_with_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rcw::params("a", "b", 3).unwrap();
 

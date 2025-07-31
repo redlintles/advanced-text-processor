@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// Token `Atb` — Add to Beginning
 ///
@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::atb::Atb};
+/// use atp_project::tokens::{TokenMethods, transforms::atb::Atb};
 ///
 /// let token = Atb::params("foo");
 /// assert_eq!(token.parse(" bar"), Ok("foo bar".to_string()));
@@ -107,7 +107,7 @@ impl BytecodeTokenMethods for Atb {
 #[cfg(test)]
 mod atb_tests {
     mod test_text_version {
-        use crate::{ token_data::TokenMethods, token_data::transforms::atb::Atb };
+        use crate::{ tokens::TokenMethods, tokens::transforms::atb::Atb };
         #[test]
         fn test_with_inputs() {
             let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
@@ -178,8 +178,8 @@ mod atb_tests {
 
     #[cfg(feature = "bytecode")]
     mod test_bytecode_version {
-        use crate::{ token_data::{ TokenMethods, transforms::atb::Atb } };
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ tokens::{ TokenMethods, transforms::atb::Atb } };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         #[test]
         fn test_to_bytecode_instruction() {

@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JKBC - Join to Kebab Case
 ///
@@ -10,13 +10,13 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 ///
 /// See Also:
 ///
-/// - [`Tua` - To Uppercase All](crate::token_data::token_defs::tua)
-/// - [`Tla` - To Lowercase All](crate::token_data::token_defs::tla)
+/// - [`Tua` - To Uppercase All](crate::tokens::transforms::tua)
+/// - [`Tla` - To Lowercase All](crate::tokens::transforms::tla)
 ///
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::jkbc::Jkbc};
+/// use atp_project::tokens::{TokenMethods, transforms::jkbc::Jkbc};
 ///
 /// let token = Jkbc::default();
 ///
@@ -87,7 +87,7 @@ impl BytecodeTokenMethods for Jkbc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod jkbc_tests {
-    use crate::token_data::{ TokenMethods, transforms::jkbc::Jkbc };
+    use crate::tokens::{ TokenMethods, transforms::jkbc::Jkbc };
     #[test]
     fn join_to_kebab_case_tests() {
         let mut token = Jkbc::default();
@@ -118,7 +118,7 @@ mod jkbc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_kebab_case_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jkbc::default();
 

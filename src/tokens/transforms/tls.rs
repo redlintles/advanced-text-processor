@@ -1,9 +1,9 @@
-use crate::token_data::TokenMethods;
+use crate::tokens::TokenMethods;
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// TLS - Trim left sides
 ///
 /// Trim the left Side of `input`, removing all spaces from the beginning
@@ -11,7 +11,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tls::Tls};
+/// use atp_project::tokens::{TokenMethods, transforms::tls::Tls};
 ///
 /// let token = Tls::default();
 ///
@@ -84,7 +84,7 @@ impl BytecodeTokenMethods for Tls {
 mod tls_tests {
     #[test]
     fn test_trim_left_side() {
-        use crate::token_data::{ transforms::tls::Tls, TokenMethods };
+        use crate::tokens::{ transforms::tls::Tls, TokenMethods };
         use rand::Rng;
         let mut token = Tls::default();
 
@@ -117,8 +117,8 @@ mod tls_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_left_side() {
-        use crate::token_data::{ transforms::tls::Tls };
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::tokens::{ transforms::tls::Tls };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tls::default();
 

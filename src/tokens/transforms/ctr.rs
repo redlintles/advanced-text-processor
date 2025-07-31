@@ -1,11 +1,11 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::transforms::{ capitalize, string_to_usize },
     utils::validations::check_chunk_bound_indexes,
 };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -20,7 +20,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods,token_defs::ctr::Ctr};
+/// use atp_project::tokens::{TokenMethods,transforms::ctr::Ctr};
 /// let token = Ctr::params(1,5).unwrap();
 /// assert_eq!(token.parse("foo bar mar"), Ok("foo Bar Mar".to_string()));
 /// ```
@@ -101,7 +101,7 @@ impl BytecodeTokenMethods for Ctr {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Ctr::default().get_opcode() && !instruction.operands.is_empty() {
             let start_index = string_to_usize(&instruction.operands[0])?;
@@ -122,7 +122,7 @@ impl BytecodeTokenMethods for Ctr {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Ctr::default().get_opcode(),
             operands: [self.start_index.to_string(), self.end_index.to_string()].to_vec(),
@@ -133,7 +133,7 @@ impl BytecodeTokenMethods for Ctr {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod ctr_tests {
-    use crate::{ token_data::TokenMethods, token_data::transforms::ctr::Ctr };
+    use crate::{ tokens::TokenMethods, tokens::transforms::ctr::Ctr };
 
     #[test]
     fn test_capitalize_range() {
@@ -194,7 +194,7 @@ mod ctr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_range_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Ctr::params(1, 5).unwrap();
 

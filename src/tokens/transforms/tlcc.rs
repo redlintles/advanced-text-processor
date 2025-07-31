@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// TLCC - To Lowercase Chunk
 ///
@@ -17,7 +17,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tlcc::Tlcc};
+/// use atp_project::tokens::{TokenMethods, transforms::tlcc::Tlcc};
 ///
 /// let token = Tlcc::params(1,4).unwrap();
 ///
@@ -133,7 +133,7 @@ impl BytecodeTokenMethods for Tlcc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tlcc_tests {
-    use crate::token_data::{ TokenMethods, transforms::tlcc::Tlcc };
+    use crate::tokens::{ TokenMethods, transforms::tlcc::Tlcc };
 
     #[test]
     fn to_lowercase_chunk() {
@@ -192,7 +192,7 @@ mod tlcc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_chunk_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tlcc::params(1, 4).unwrap();
 

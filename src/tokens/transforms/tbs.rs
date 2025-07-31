@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// TBS - Trim both sides
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
@@ -9,7 +9,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tbs::Tbs};
+/// use atp_project::tokens::{TokenMethods, transforms::tbs::Tbs};
 ///
 /// let token = Tbs::default();
 ///
@@ -81,7 +81,7 @@ impl BytecodeTokenMethods for Tbs {
 mod tbs_tests {
     #[test]
     fn test_trim_both_sides() {
-        use crate::token_data::{ transforms::tbs::Tbs, TokenMethods };
+        use crate::tokens::{ transforms::tbs::Tbs, TokenMethods };
         use rand::Rng;
         let mut token = Tbs::default();
 
@@ -120,8 +120,8 @@ mod tbs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_both_sides() {
-        use crate::token_data::{ transforms::tbs::Tbs };
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::tokens::{ transforms::tbs::Tbs };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tbs::default();
 

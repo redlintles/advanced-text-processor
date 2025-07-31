@@ -1,11 +1,11 @@
 use regex::Regex;
 
 use crate::utils::validations::check_vec_len;
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 
 /// SSLT - Split Select
 ///
@@ -15,7 +15,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::sslt::Sslt};
+/// use atp_project::tokens::{TokenMethods, transforms::sslt::Sslt};
 ///
 /// let token = Sslt::params("_", 1).unwrap();
 ///
@@ -120,7 +120,7 @@ impl BytecodeTokenMethods for Sslt {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         check_vec_len(&instruction.operands, 2)?;
         if instruction.op_code == Sslt::default().get_opcode() {
@@ -143,7 +143,7 @@ impl BytecodeTokenMethods for Sslt {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Sslt::default().get_opcode(),
             operands: [self.pattern.to_string(), self.index.to_string()].to_vec(),
@@ -154,7 +154,7 @@ impl BytecodeTokenMethods for Sslt {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod sslt_tests {
-    use crate::token_data::{ TokenMethods, transforms::sslt::Sslt };
+    use crate::tokens::{ TokenMethods, transforms::sslt::Sslt };
 
     #[test]
     fn split_select_tests() {
@@ -205,7 +205,7 @@ mod sslt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_select_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Sslt::params("_", 5).unwrap();
 

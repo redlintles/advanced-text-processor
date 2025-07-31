@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// TLCS - To Lowercase Single
 ///
@@ -17,7 +17,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tlcs::Tlcs};
+/// use atp_project::tokens::{TokenMethods, transforms::tlcs::Tlcs};
 ///
 /// let token = Tlcs::params(1);
 ///
@@ -106,7 +106,7 @@ impl BytecodeTokenMethods for Tlcs {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tlcs_tests {
-    use crate::token_data::{ TokenMethods, transforms::tlcs::Tlcs };
+    use crate::tokens::{ TokenMethods, transforms::tlcs::Tlcs };
     #[test]
     fn to_lowercase_single_tests() {
         let mut token = Tlcs::params(1);
@@ -149,7 +149,7 @@ mod tlcs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_single_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tlcs::params(1);
 

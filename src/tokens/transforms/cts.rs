@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         transforms::{ capitalize, string_to_usize },
         validations::{ check_index_against_input, check_vec_len },
@@ -9,7 +9,7 @@ use crate::{
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 
 /// Token `Cts` — Capitalize Single
 ///
@@ -23,7 +23,7 @@ use crate::{ bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::cts::Cts};
+/// use atp_project::tokens::{TokenMethods, transforms::cts::Cts};
 /// let token = Cts::params(1);
 /// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
 /// ```
@@ -89,7 +89,7 @@ impl BytecodeTokenMethods for Cts {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         check_vec_len(&instruction.operands, 1)?;
         if instruction.op_code == Cts::default().get_opcode() {
@@ -105,7 +105,7 @@ impl BytecodeTokenMethods for Cts {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Cts::default().get_opcode(),
             operands: [self.index.to_string()].to_vec(),
@@ -115,7 +115,7 @@ impl BytecodeTokenMethods for Cts {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod cts_tests {
-    use crate::{ token_data::{ TokenMethods, transforms::cts::Cts } };
+    use crate::{ tokens::{ TokenMethods, transforms::cts::Cts } };
 
     #[test]
     fn test_capitalize_single() {
@@ -149,7 +149,7 @@ mod cts_tests {
 
     #[test]
     fn test_capitalize_single_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Cts::params(3);
 

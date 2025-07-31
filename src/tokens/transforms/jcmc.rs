@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JCMC - Join to Camel Case
 ///
@@ -13,7 +13,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::jcmc::Jcmc};
+/// use atp_project::tokens::{TokenMethods, transforms::jcmc::Jcmc};
 ///
 /// let token = Jcmc::default();
 ///
@@ -95,7 +95,7 @@ impl BytecodeTokenMethods for Jcmc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod jcmc_tests {
-    use crate::token_data::{ TokenMethods, transforms::jcmc::Jcmc };
+    use crate::tokens::{ TokenMethods, transforms::jcmc::Jcmc };
     #[test]
     fn join_to_camel_case_tests() {
         let mut token = Jcmc::default();
@@ -126,7 +126,7 @@ mod jcmc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_camel_case_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jcmc::default();
 

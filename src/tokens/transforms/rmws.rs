@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// RMWS - Remove Whitespace
 ///
@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rmws::Rmws};
+/// use atp_project::tokens::{TokenMethods, transforms::rmws::Rmws};
 ///
 /// let token = Rmws::default();
 ///
@@ -74,7 +74,7 @@ impl BytecodeTokenMethods for Rmws {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod rmws_tests {
-    use crate::token_data::{ TokenMethods, transforms::rmws::Rmws };
+    use crate::tokens::{ TokenMethods, transforms::rmws::Rmws };
     #[test]
     fn remove_whitespace_tests() {
         let mut token = Rmws::default();
@@ -106,7 +106,7 @@ mod rmws_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn remove_whitespace_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rmws::default();
 

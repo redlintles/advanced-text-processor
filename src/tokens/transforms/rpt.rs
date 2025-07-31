@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// RPT - Repeat
 ///
@@ -13,7 +13,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rpt::Rpt};
+/// use atp_project::tokens::{TokenMethods, transforms::rpt::Rpt};
 ///
 /// let token = Rpt::params(3);
 ///
@@ -104,7 +104,7 @@ impl BytecodeTokenMethods for Rpt {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod rpt_tests {
-    use crate::token_data::{ TokenMethods, transforms::rpt::Rpt };
+    use crate::tokens::{ TokenMethods, transforms::rpt::Rpt };
     #[test]
     fn repeat_tests() {
         let mut token = Rpt::params(3);
@@ -139,7 +139,7 @@ mod rpt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn repeat_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rpt::params(3);
 

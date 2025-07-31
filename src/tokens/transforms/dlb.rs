@@ -1,9 +1,9 @@
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
-use crate::{ token_data::TokenMethods, utils::transforms::string_to_usize };
+use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// Dlb - Delete Before
 /// Delete all characters before `index` in the specified `input`
 ///
@@ -12,7 +12,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dlb::Dlb};
+/// use atp_project::tokens::{TokenMethods, transforms::dlb::Dlb};
 ///
 /// let token = Dlb::params(3);
 ///
@@ -135,7 +135,7 @@ impl BytecodeTokenMethods for Dlb {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dlb_tests {
-    use crate::token_data::{ TokenMethods, transforms::dlb::Dlb };
+    use crate::tokens::{ TokenMethods, transforms::dlb::Dlb };
     #[test]
     fn delete_before_test() {
         let mut token = Dlb::params(3);
@@ -167,7 +167,7 @@ mod dlb_tests {
     }
     #[test]
     fn delete_before_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dlb::params(3);
 

@@ -1,9 +1,9 @@
-use crate::token_data::TokenMethods;
+use crate::tokens::TokenMethods;
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 
 /// SPLC - Split Characters
 ///
@@ -12,7 +12,7 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::splc::Splc};
+/// use atp_project::tokens::{TokenMethods, transforms::splc::Splc};
 ///
 /// let token = Splc::default();
 ///
@@ -60,7 +60,7 @@ impl BytecodeTokenMethods for Splc {
     }
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Splc::default().get_opcode() {
             return Ok(());
@@ -74,7 +74,7 @@ impl BytecodeTokenMethods for Splc {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Splc::default().get_opcode(),
             operands: [].to_vec(),
@@ -85,7 +85,7 @@ impl BytecodeTokenMethods for Splc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod splc_tests {
-    use crate::token_data::{ TokenMethods, transforms::splc::Splc };
+    use crate::tokens::{ TokenMethods, transforms::splc::Splc };
     #[test]
     fn split_characters_tests() {
         let mut token = Splc::default();
@@ -122,7 +122,7 @@ mod splc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_characters_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Splc::default();
 

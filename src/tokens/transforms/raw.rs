@@ -1,24 +1,24 @@
 use regex::Regex;
 
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// RAW - Replace All With
 ///
 /// Replace all ocurrences of `pattern` in `input` with `text_to_replace`
 ///
 /// See Also:
 ///
-/// - [`RCW` - Replace Count With](crate::token_data::token_defs::rcw)
-/// - [`RFW` - Replace First With](crate::token_data::token_defs::rfw)
-/// - [`RLW` - Replace Last With](crate::token_data::token_defs::rlw)
-/// - [`RNW` - Replace Nth With](crate::token_data::token_defs::rnw)
+/// - [`RCW` - Replace Count With](crate::tokens::transforms::rcw)
+/// - [`RFW` - Replace First With](crate::tokens::transforms::rfw)
+/// - [`RLW` - Replace Last With](crate::tokens::transforms::rlw)
+/// - [`RNW` - Replace Nth With](crate::tokens::transforms::rnw)
 ///
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::raw::Raw};
+/// use atp_project::tokens::{TokenMethods, transforms::raw::Raw};
 ///
 /// let token = Raw::params(&"a", "b").unwrap();
 ///
@@ -138,7 +138,7 @@ impl BytecodeTokenMethods for Raw {
 #[cfg(test)]
 #[cfg(feature = "test_access")]
 mod raw_tests {
-    use crate::token_data::{ TokenMethods, transforms::raw::Raw };
+    use crate::tokens::{ TokenMethods, transforms::raw::Raw };
     #[test]
     fn replace_all_with_tests() {
         let mut token = Raw::params("a", "b").unwrap();
@@ -167,7 +167,7 @@ mod raw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_all_with_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Raw::params("a", "b").unwrap();
 

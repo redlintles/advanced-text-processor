@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// JSNC - Join to Snake Case
 ///
@@ -10,13 +10,13 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 ///
 /// See Also:
 ///
-/// - [`Tua` - To Uppercase All](crate::token_data::token_defs::tua)
-/// - [`Tla` - To Lowercase All](crate::token_data::token_defs::tla)
+/// - [`Tua` - To Uppercase All](crate::tokens::transforms::tua)
+/// - [`Tla` - To Lowercase All](crate::tokens::transforms::tla)
 ///
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::jsnc::Jsnc};
+/// use atp_project::tokens::{TokenMethods, transforms::jsnc::Jsnc};
 ///
 /// let token = Jsnc::default();
 ///
@@ -87,7 +87,7 @@ impl BytecodeTokenMethods for Jsnc {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod jsnc_tests {
-    use crate::token_data::{ TokenMethods, transforms::jsnc::Jsnc };
+    use crate::tokens::{ TokenMethods, transforms::jsnc::Jsnc };
     #[test]
     fn join_to_snake_case_tests() {
         let mut token = Jsnc::default();
@@ -118,7 +118,7 @@ mod jsnc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_snake_case_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jsnc::default();
 

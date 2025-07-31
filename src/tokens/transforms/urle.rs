@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 
 /// URLE - URL Encode
 ///
@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::urle::Urle};
+/// use atp_project::tokens::{TokenMethods, transforms::urle::Urle};
 ///
 /// let token = Urle::default();
 ///
@@ -53,7 +53,7 @@ impl BytecodeTokenMethods for Urle {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Urle::default().get_opcode() {
             return Ok(());
@@ -67,7 +67,7 @@ impl BytecodeTokenMethods for Urle {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Urle::default().get_opcode(),
             operands: [].to_vec(),
@@ -78,7 +78,7 @@ impl BytecodeTokenMethods for Urle {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod urle_tests {
-    use crate::token_data::{ transforms::urle::Urle, TokenMethods };
+    use crate::tokens::{ transforms::urle::Urle, TokenMethods };
     #[test]
     fn test_url_encode() {
         let mut token = Urle::default();
@@ -111,8 +111,8 @@ mod urle_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_url_encode() {
-        use crate::token_data::{ transforms::urle::Urle };
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::tokens::{ transforms::urle::Urle };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Urle::default();
 

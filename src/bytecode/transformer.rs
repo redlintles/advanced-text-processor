@@ -1,8 +1,8 @@
 use std::{ fs::OpenOptions, io::Write, path::Path };
 
 use crate::{
-    text_parser::reader::read_from_file,
-    token_data::TokenMethods,
+    text::reader::read_from_file,
+    tokens::TokenMethods,
     utils::{ errors::AtpError, transforms::token_to_bytecode_token, validations::check_file_path },
 };
 

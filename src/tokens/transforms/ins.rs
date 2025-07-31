@@ -1,8 +1,8 @@
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ transforms::string_to_usize, errors::{ AtpError, AtpErrorCode } },
 };
 /// Ins - Insert
@@ -14,7 +14,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::ins::Ins};
+/// use atp_project::tokens::{TokenMethods, transforms::ins::Ins};
 ///
 /// let token = Ins::params(2,"laranja");
 ///
@@ -92,7 +92,7 @@ impl BytecodeTokenMethods for Ins {
     }
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Ins::default().get_opcode() {
             self.index = string_to_usize(&instruction.operands[0])?;
@@ -108,7 +108,7 @@ impl BytecodeTokenMethods for Ins {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Ins::default().get_opcode(),
             operands: [self.index.to_string(), self.text_to_insert.clone()].to_vec(),
@@ -119,7 +119,7 @@ impl BytecodeTokenMethods for Ins {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod ins_tests {
-    use crate::token_data::{ TokenMethods, transforms::ins::Ins };
+    use crate::tokens::{ TokenMethods, transforms::ins::Ins };
     #[test]
     fn insert_tests() {
         let mut token = Ins::params(2, "laranja");
@@ -152,7 +152,7 @@ mod ins_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn insert_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Ins::params(2, "laranja");
 

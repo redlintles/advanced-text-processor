@@ -1,22 +1,22 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// PADR - Pad Right
 ///
 /// Repeats `text` characters until `max_len` is reached, and then insert the result at the end of `input`
 ///
 /// See Also:
 ///
-/// - [`Padr` - Pad Left](crate::token_data::token_defs::padr)
+/// - [`Padr` - Pad Left](crate::tokens::transforms::padr)
 ///
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::padr::Padr};
+/// use atp_project::tokens::{TokenMethods, transforms::padr::Padr};
 ///
 /// let token = Padr::params("xy", 7);
 ///
@@ -105,7 +105,7 @@ impl BytecodeTokenMethods for Padr {
 #[cfg(test)]
 #[cfg(feature = "test_access")]
 mod padr_tests {
-    use crate::token_data::{ TokenMethods, transforms::padr::Padr };
+    use crate::tokens::{ TokenMethods, transforms::padr::Padr };
     #[test]
     fn pad_right_tests() {
         let mut token = Padr::params("xy", 7);
@@ -138,7 +138,7 @@ mod padr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn pad_right_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Padr::default();
 

@@ -1,4 +1,4 @@
-use crate::{ token_data::TokenMethods, utils::errors::AtpError };
+use crate::{ tokens::TokenMethods, utils::errors::AtpError };
 
 pub mod writer;
 pub mod reader;

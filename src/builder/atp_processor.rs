@@ -6,7 +6,7 @@ use uuid::Uuid;
 use colored::*;
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{
+use crate::bytecode::{
     reader::read_bytecode_from_file,
     writer::write_bytecode_to_file,
     BytecodeTokenMethods,

@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods };
+use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -12,7 +12,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::jsonu::Jsonu};
+/// use atp_project::tokens::{TokenMethods, transforms::jsonu::Jsonu};
 ///
 ///
 /// let token = Jsonu::default();
@@ -67,7 +67,7 @@ impl BytecodeTokenMethods for Jsonu {
     }
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Jsonu::default().get_opcode() {
             return Ok(());
@@ -81,7 +81,7 @@ impl BytecodeTokenMethods for Jsonu {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Jsonu::default().get_opcode(),
             operands: [].to_vec(),
@@ -92,7 +92,7 @@ impl BytecodeTokenMethods for Jsonu {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod jsonu_tests {
-    use crate::{ token_data::{ transforms::jsonu::Jsonu, TokenMethods } };
+    use crate::{ tokens::{ transforms::jsonu::Jsonu, TokenMethods } };
 
     #[test]
     fn test_json_unescape() {
@@ -128,7 +128,7 @@ mod jsonu_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_json_unescape_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Jsonu::default();
 

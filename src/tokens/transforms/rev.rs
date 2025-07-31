@@ -1,7 +1,7 @@
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction } };
+use crate::{ bytecode::{ BytecodeTokenMethods, BytecodeInstruction } };
 
-use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods };
+use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 
 /// Rev - Reverse
 ///
@@ -10,7 +10,7 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, token_data::TokenMethods
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rev::Rev};
+/// use atp_project::tokens::{TokenMethods, transforms::rev::Rev};
 ///
 /// let token = Rev::default();
 /// assert_eq!(token.parse("foobar"), Ok("raboof".to_string()));
@@ -52,7 +52,7 @@ impl BytecodeTokenMethods for Rev {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), crate::utils::errors::AtpError> {
         if instruction.op_code == Rev::default().get_opcode() {
             return Ok(());
@@ -66,7 +66,7 @@ impl BytecodeTokenMethods for Rev {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Rev::default().get_opcode(),
             operands: [].to_vec(),
@@ -77,7 +77,7 @@ impl BytecodeTokenMethods for Rev {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod rev_tests {
-    use crate::{ token_data::{ transforms::rev::Rev, TokenMethods } };
+    use crate::{ tokens::{ transforms::rev::Rev, TokenMethods } };
 
     #[test]
     fn test_reverse() {
@@ -117,7 +117,7 @@ mod rev_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_reverse_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rev::default();
 

@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// DLL - Delete Last
 ///
@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dll::Dll};
+/// use atp_project::tokens::{TokenMethods, transforms::dll::Dll};
 ///
 /// let token = Dll::default();
 ///
@@ -86,7 +86,7 @@ impl BytecodeTokenMethods for Dll {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dll_tests {
-    use crate::token_data::{ transforms::dll::Dll, TokenMethods };
+    use crate::tokens::{ transforms::dll::Dll, TokenMethods };
 
     #[test]
     fn test_delete_last() {
@@ -125,7 +125,7 @@ mod dll_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_delete_last_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dll::default();
 

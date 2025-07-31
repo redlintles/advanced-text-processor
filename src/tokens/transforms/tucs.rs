@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// TUCS - To Uppercase Single
 ///
@@ -17,7 +17,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::tucs::Tucs};
+/// use atp_project::tokens::{TokenMethods, transforms::tucs::Tucs};
 ///
 /// let token = Tucs::params(1);
 ///
@@ -106,7 +106,7 @@ impl BytecodeTokenMethods for Tucs {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tucs_tests {
-    use crate::token_data::{ TokenMethods, transforms::tucs::Tucs };
+    use crate::tokens::{ TokenMethods, transforms::tucs::Tucs };
     #[test]
     fn to_uppercase_single_tests() {
         let mut token = Tucs::params(1);
@@ -149,7 +149,7 @@ mod tucs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_single_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tucs::params(1);
 

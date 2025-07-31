@@ -1,10 +1,10 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// RTR - Rotate Right
 ///
 /// Rotates `input` to the right `n` times
@@ -12,7 +12,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::rtr::Rtr};
+/// use atp_project::tokens::{TokenMethods, transforms::rtr::Rtr};
 ///
 /// let token = Rtr::params(2);
 ///
@@ -123,7 +123,7 @@ impl BytecodeTokenMethods for Rtr {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod rtr_tests {
-    use crate::token_data::{ TokenMethods, transforms::rtr::Rtr };
+    use crate::tokens::{ TokenMethods, transforms::rtr::Rtr };
     #[test]
     fn rotate_right_tests() {
         let mut token = Rtr::params(2);
@@ -154,7 +154,7 @@ mod rtr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn rotate_right_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Rtr::params(2);
 

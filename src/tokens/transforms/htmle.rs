@@ -1,9 +1,9 @@
 use html_escape::encode_text;
 
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 
 /// HTMLE - HTML Escape
 ///
@@ -13,7 +13,7 @@ use crate::bytecode_parser::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::htmle::Htmle};
+/// use atp_project::tokens::{TokenMethods, transforms::htmle::Htmle};
 ///
 /// let token = Htmle::default();
 ///
@@ -56,7 +56,7 @@ impl BytecodeTokenMethods for Htmle {
 
     fn token_from_bytecode_instruction(
         &mut self,
-        instruction: crate::bytecode_parser::BytecodeInstruction
+        instruction: crate::bytecode::BytecodeInstruction
     ) -> Result<(), AtpError> {
         if instruction.op_code == Htmle::default().get_opcode() {
             return Ok(());
@@ -70,7 +70,7 @@ impl BytecodeTokenMethods for Htmle {
         )
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode_parser::BytecodeInstruction {
+    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
         BytecodeInstruction {
             op_code: Htmle::default().get_opcode(),
             operands: [].to_vec(),
@@ -81,7 +81,7 @@ impl BytecodeTokenMethods for Htmle {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod htmle_tests {
-    use crate::token_data::{ TokenMethods, transforms::htmle::Htmle };
+    use crate::tokens::{ TokenMethods, transforms::htmle::Htmle };
     #[test]
     fn html_escape_test() {
         let mut token = Htmle::default();
@@ -114,7 +114,7 @@ mod htmle_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_escape_bytecode_test() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Htmle::default();
 

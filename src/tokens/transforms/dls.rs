@@ -1,5 +1,5 @@
 use crate::{
-    token_data::TokenMethods,
+    tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// DLS - Delete Single
 ///
@@ -19,7 +19,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dls::Dls};
+/// use atp_project::tokens::{TokenMethods, transforms::dls::Dls};
 ///
 /// let token = Dls::params(3);
 ///
@@ -117,7 +117,7 @@ impl BytecodeTokenMethods for Dls {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dls_tests {
-    use crate::token_data::{ TokenMethods, transforms::dls::Dls };
+    use crate::tokens::{ TokenMethods, transforms::dls::Dls };
 
     #[test]
     fn delete_single_tests() {
@@ -149,7 +149,7 @@ mod dls_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn delete_single_bytecode_tests() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dls::params(3);
 

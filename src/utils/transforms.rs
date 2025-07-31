@@ -31,7 +31,7 @@ pub fn token_from_hex_string(s: &str) -> Option<u8> {
 use crate::utils::errors::AtpError;
 #[cfg(feature = "bytecode")]
 use crate::{
-    bytecode_parser::BytecodeTokenMethods,
+    bytecode::BytecodeTokenMethods,
     tokens::TokenMethods,
     utils::mapping::get_supported_bytecode_tokens,
 };

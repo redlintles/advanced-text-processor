@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 /// TLS - Trim left sides
 ///
@@ -10,7 +10,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::trs::Trs};
+/// use atp_project::tokens::{TokenMethods, transforms::trs::Trs};
 ///
 /// let token = Trs::default();
 ///
@@ -84,7 +84,7 @@ impl BytecodeTokenMethods for Trs {
 mod trs_tests {
     #[test]
     fn test_trim_right_side() {
-        use crate::token_data::{ transforms::trs::Trs, TokenMethods };
+        use crate::tokens::{ transforms::trs::Trs, TokenMethods };
         use rand::Rng;
         let mut token = Trs::default();
 
@@ -121,8 +121,8 @@ mod trs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_right_side() {
-        use crate::token_data::{ transforms::trs::Trs };
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::tokens::{ transforms::trs::Trs };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Trs::default();
 

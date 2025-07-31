@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// Token `Ate` — Add to End
 ///
 /// Appends `text` to the end of `input`
@@ -9,7 +9,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::ate::Ate};
+/// use atp_project::tokens::{TokenMethods, transforms::ate::Ate};
 ///
 /// let token = Ate::params(" bar");
 /// assert_eq!(token.parse("foo"), Ok("foo bar".to_string()));
@@ -106,7 +106,7 @@ impl BytecodeTokenMethods for Ate {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod ate_tests {
-    use crate::{ token_data::TokenMethods, token_data::transforms::ate::Ate };
+    use crate::{ tokens::TokenMethods, tokens::transforms::ate::Ate };
 
     #[test]
     fn test_add_to_end() {
@@ -139,7 +139,7 @@ mod ate_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_add_to_end_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Ate::params("banana");
 

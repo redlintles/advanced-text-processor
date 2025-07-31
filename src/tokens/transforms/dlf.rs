@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// DLF - Delete First
 ///
 /// Deletes the first character of `input`
@@ -9,7 +9,7 @@ use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::token_data::{TokenMethods, token_defs::dlf::Dlf};
+/// use atp_project::tokens::{TokenMethods, transforms::dlf::Dlf};
 ///
 /// let token = Dlf::default();
 ///
@@ -81,7 +81,7 @@ impl BytecodeTokenMethods for Dlf {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dlf_tests {
-    use crate::token_data::{ transforms::dlf::Dlf, TokenMethods };
+    use crate::tokens::{ transforms::dlf::Dlf, TokenMethods };
 
     #[test]
     fn test_delete_first() {
@@ -118,7 +118,7 @@ mod dlf_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_delete_first_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Dlf::default();
 

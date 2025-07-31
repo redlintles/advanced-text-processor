@@ -1,7 +1,7 @@
-use crate::{ token_data::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 #[derive(Clone, Copy, Default)]
 pub struct Tua {}
@@ -61,7 +61,7 @@ impl BytecodeTokenMethods for Tua {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tua_tests {
-    use crate::token_data::{ transforms::tua::Tua, TokenMethods };
+    use crate::tokens::{ transforms::tua::Tua, TokenMethods };
     #[test]
     fn test_to_uppercase_all() {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
@@ -90,7 +90,7 @@ mod tua_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_to_uppercase_all_bytecode() {
-        use crate::bytecode_parser::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
         let mut token = Tua::default();
 
