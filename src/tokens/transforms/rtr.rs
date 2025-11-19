@@ -59,8 +59,8 @@ impl TokenMethods for Rtr {
     fn to_atp_line(&self) -> String {
         format!("rtr {};\n", self.times)
     }
-    fn get_string_repr(&self) -> String {
-        "rtr".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rtr"
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

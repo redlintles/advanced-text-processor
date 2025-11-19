@@ -21,8 +21,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Urld {}
 
 impl TokenMethods for Urld {
-    fn get_string_repr(&self) -> String {
-        "urld".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "urld"
     }
 
     fn to_atp_line(&self) -> String {

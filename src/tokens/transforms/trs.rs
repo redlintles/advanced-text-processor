@@ -43,8 +43,8 @@ impl TokenMethods for Trs {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "trs".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "trs"
     }
 }
 #[cfg(feature = "bytecode")]

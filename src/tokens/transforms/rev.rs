@@ -19,8 +19,8 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 pub struct Rev {}
 
 impl TokenMethods for Rev {
-    fn get_string_repr(&self) -> String {
-        "rev".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rev"
     }
     fn to_atp_line(&self) -> String {
         "rev;\n".to_string()

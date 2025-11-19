@@ -1,4 +1,4 @@
-use crate::{ tokens::{ transforms::*, TokenMethods } };
+use crate::{ tokens::{ transforms::*, instructions::*, TokenMethods } };
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode::BytecodeTokenMethods;
@@ -8,9 +8,9 @@ use std::collections::HashMap;
 macro_rules! token_map_string_token_methods {
     ($($key:literal => $val:ty),* $(,)?) => {
         {
-        let mut map: HashMap<String, fn() -> Box<dyn TokenMethods>> = HashMap::new();
+        let mut map: HashMap<&'static str, fn() -> Box<dyn TokenMethods>> = HashMap::new();
         $(
-            map.insert($key.to_string(), || Box::new(<$val as Default>::default()));
+            map.insert($key, || Box::new(<$val as Default>::default()));
         )*
         map
         }
@@ -21,9 +21,9 @@ macro_rules! token_map_string_token_methods {
 macro_rules! token_map_string_bytecode_methods {
     ($($key:literal => $val:ty),* $(,)?) => {
         {
-        let mut map: HashMap<String, fn() -> Box<dyn BytecodeTokenMethods>> = HashMap::new();
+        let mut map: HashMap<&'static str, fn() -> Box<dyn BytecodeTokenMethods>> = HashMap::new();
         $(
-            map.insert($key.to_string(), || Box::new(<$val as Default>::default()));
+            map.insert($key, || Box::new(<$val as Default>::default()));
         )*
         map
         }
@@ -95,6 +95,7 @@ macro_rules! for_each_token_entry {
             "padr" => padr::Padr,
             "rmws" => rmws::Rmws,
             "dls" => dls::Dls,
+            "ifdc" => ifdc::Ifdc,
         }
     };
 }
@@ -152,16 +153,20 @@ macro_rules! for_each_bytecode_entry {
             0x30 => padr::Padr,
             0x31 => rmws::Rmws,
             0x32 => dls::Dls,
+            0x33 => ifdc::Ifdc,
         }
     };
 }
 
-pub fn get_supported_default_tokens() -> HashMap<String, fn() -> Box<dyn TokenMethods>> {
+pub fn get_supported_default_tokens() -> HashMap<&'static str, fn() -> Box<dyn TokenMethods>> {
     for_each_token_entry!(token_map_string_token_methods)
 }
 
 #[cfg(feature = "bytecode")]
-pub fn get_supported_bytecode_tokens() -> HashMap<String, fn() -> Box<dyn BytecodeTokenMethods>> {
+pub fn get_supported_bytecode_tokens() -> HashMap<
+    &'static str,
+    fn() -> Box<dyn BytecodeTokenMethods>
+> {
     for_each_token_entry!(token_map_string_bytecode_methods)
 }
 #[cfg(feature = "bytecode")]

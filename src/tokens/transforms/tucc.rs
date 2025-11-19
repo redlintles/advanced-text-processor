@@ -40,8 +40,8 @@ impl Tucc {
 }
 
 impl TokenMethods for Tucc {
-    fn get_string_repr(&self) -> String {
-        "tucc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tucc"
     }
 
     fn to_atp_line(&self) -> String {

@@ -94,8 +94,8 @@ impl TokenMethods for Rlw {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "rlw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rlw"
     }
 }
 #[cfg(feature = "bytecode")]

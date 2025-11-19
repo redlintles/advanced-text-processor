@@ -21,8 +21,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Rmws {}
 
 impl TokenMethods for Rmws {
-    fn get_string_repr(&self) -> String {
-        "rmws".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rmws"
     }
     fn to_atp_line(&self) -> String {
         "rmws;\n".to_string()

@@ -20,8 +20,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Tla {}
 
 impl TokenMethods for Tla {
-    fn get_string_repr(&self) -> String {
-        "tla".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tla"
     }
 
     fn to_atp_line(&self) -> String {

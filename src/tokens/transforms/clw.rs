@@ -24,8 +24,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Clw {}
 
 impl TokenMethods for Clw {
-    fn get_string_repr(&self) -> String {
-        "clw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "clw"
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "clw" {
@@ -90,10 +90,7 @@ impl BytecodeTokenMethods for Clw {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod clw_tests {
-    use crate::{
-        tokens::{ transforms::clw::Clw, TokenMethods },
-        utils::transforms::capitalize,
-    };
+    use crate::{ tokens::{ transforms::clw::Clw, TokenMethods }, utils::transforms::capitalize };
 
     #[test]
     fn test_capitalize_last_word() {

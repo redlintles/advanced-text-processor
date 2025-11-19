@@ -21,8 +21,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Cfw {}
 
 impl TokenMethods for Cfw {
-    fn get_string_repr(&self) -> String {
-        "cfw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "cfw"
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "cfw" {
@@ -76,10 +76,7 @@ impl BytecodeTokenMethods for Cfw {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod cfw_tests {
-    use crate::{
-        tokens::{ transforms::cfw::Cfw, TokenMethods },
-        utils::transforms::capitalize,
-    };
+    use crate::{ tokens::{ transforms::cfw::Cfw, TokenMethods }, utils::transforms::capitalize };
 
     #[test]
     fn test_capitalize_first_word() {

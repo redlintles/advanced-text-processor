@@ -49,8 +49,8 @@ impl TokenMethods for Dll {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "dll".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dll"
     }
 }
 #[cfg(feature = "bytecode")]

@@ -77,8 +77,8 @@ impl TokenMethods for Dla {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "dla".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dla"
     }
 }
 #[cfg(feature = "bytecode")]

@@ -7,8 +7,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Tua {}
 
 impl TokenMethods for Tua {
-    fn get_string_repr(&self) -> String {
-        "tua".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tua"
     }
 
     fn to_atp_line(&self) -> String {

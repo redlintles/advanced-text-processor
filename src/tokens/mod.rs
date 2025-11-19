@@ -19,7 +19,7 @@ pub trait TokenMethods: TokenMethodsClone {
     /// get_string_repr
     ///
     /// Converts the token to a string representation without parameters, to be used in the mappings
-    fn get_string_repr(&self) -> String;
+    fn get_string_repr(&self) -> &'static str;
 
     /// from_vec_params
     ///

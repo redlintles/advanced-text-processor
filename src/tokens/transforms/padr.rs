@@ -38,8 +38,8 @@ impl Padr {
 }
 
 impl TokenMethods for Padr {
-    fn get_string_repr(&self) -> String {
-        "padr".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "padr"
     }
     fn to_atp_line(&self) -> String {
         format!("padr {} {};\n", self.text, self.max_len)

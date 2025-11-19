@@ -39,8 +39,8 @@ impl Tucs {
 }
 
 impl TokenMethods for Tucs {
-    fn get_string_repr(&self) -> String {
-        "tucs".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tucs"
     }
 
     fn to_atp_line(&self) -> String {

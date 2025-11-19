@@ -39,8 +39,8 @@ impl Tlcs {
 }
 
 impl TokenMethods for Tlcs {
-    fn get_string_repr(&self) -> String {
-        "tlcs".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tlcs"
     }
 
     fn to_atp_line(&self) -> String {

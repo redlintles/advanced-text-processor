@@ -24,8 +24,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Jcmc {}
 
 impl TokenMethods for Jcmc {
-    fn get_string_repr(&self) -> String {
-        "jcmc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jcmc"
     }
 
     fn to_atp_line(&self) -> String {

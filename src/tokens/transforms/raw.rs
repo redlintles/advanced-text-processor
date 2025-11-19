@@ -81,8 +81,8 @@ impl TokenMethods for Raw {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "raw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "raw"
     }
 }
 #[cfg(feature = "bytecode")]

@@ -23,8 +23,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Htmlu {}
 
 impl TokenMethods for Htmlu {
-    fn get_string_repr(&self) -> String {
-        "htmlu".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "htmlu"
     }
 
     fn to_atp_line(&self) -> String {

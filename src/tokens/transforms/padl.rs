@@ -39,8 +39,8 @@ impl Padl {
 }
 
 impl TokenMethods for Padl {
-    fn get_string_repr(&self) -> String {
-        "padl".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "padl"
     }
     fn to_atp_line(&self) -> String {
         format!("padl {} {};\n", self.text, self.max_len)

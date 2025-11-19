@@ -42,8 +42,8 @@ impl Ctr {
 }
 
 impl TokenMethods for Ctr {
-    fn get_string_repr(&self) -> String {
-        "ctr".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "ctr"
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;

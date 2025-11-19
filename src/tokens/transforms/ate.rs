@@ -54,8 +54,8 @@ impl TokenMethods for Ate {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "ate".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "ate"
     }
 }
 #[cfg(feature = "bytecode")]

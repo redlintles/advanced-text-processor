@@ -72,8 +72,8 @@ impl TokenMethods for Rtl {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "rtl".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rtl"
     }
 }
 #[cfg(feature = "bytecode")]

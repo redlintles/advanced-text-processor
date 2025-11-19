@@ -41,8 +41,8 @@ impl Slt {
 }
 
 impl TokenMethods for Slt {
-    fn get_string_repr(&self) -> String {
-        "slt".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "slt"
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let total_chars = input.chars().count();

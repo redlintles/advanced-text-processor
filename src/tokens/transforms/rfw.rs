@@ -81,8 +81,8 @@ impl TokenMethods for Rfw {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "rfw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rfw"
     }
 }
 #[cfg(feature = "bytecode")]

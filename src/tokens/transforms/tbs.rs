@@ -42,8 +42,8 @@ impl TokenMethods for Tbs {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "tbs".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tbs"
     }
 }
 #[cfg(feature = "bytecode")]

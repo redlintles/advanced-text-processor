@@ -33,8 +33,8 @@ impl Tucw {
     }
 }
 impl TokenMethods for Tucw {
-    fn get_string_repr(&self) -> String {
-        "tucw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tucw"
     }
 
     fn to_atp_line(&self) -> String {

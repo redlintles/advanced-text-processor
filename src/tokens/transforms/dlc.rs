@@ -105,8 +105,8 @@ impl TokenMethods for Dlc {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "dlc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dlc"
     }
 }
 #[cfg(feature = "bytecode")]

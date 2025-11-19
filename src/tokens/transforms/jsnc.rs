@@ -27,8 +27,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Jsnc {}
 
 impl TokenMethods for Jsnc {
-    fn get_string_repr(&self) -> String {
-        "jsnc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jsnc"
     }
 
     fn to_atp_line(&self) -> String {

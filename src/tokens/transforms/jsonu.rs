@@ -26,8 +26,8 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 pub struct Jsonu {}
 
 impl TokenMethods for Jsonu {
-    fn get_string_repr(&self) -> String {
-        "jsonu".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jsonu"
     }
     fn to_atp_line(&self) -> String {
         "jsonu;\n".to_string()

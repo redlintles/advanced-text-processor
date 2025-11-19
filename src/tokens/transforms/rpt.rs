@@ -54,8 +54,8 @@ impl TokenMethods for Rpt {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "rpt".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rpt"
     }
 }
 #[cfg(feature = "bytecode")]

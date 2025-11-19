@@ -27,8 +27,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Jkbc {}
 
 impl TokenMethods for Jkbc {
-    fn get_string_repr(&self) -> String {
-        "jkbc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jkbc"
     }
 
     fn to_atp_line(&self) -> String {

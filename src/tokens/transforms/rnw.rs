@@ -109,8 +109,8 @@ impl TokenMethods for Rnw {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "rnw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "rnw"
     }
 }
 #[cfg(feature = "bytecode")]

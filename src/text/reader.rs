@@ -40,7 +40,7 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
     };
 
     let supported_tokens = get_supported_default_tokens();
-    let token_factory = match supported_tokens.get(&chunks[0]) {
+    let token_factory = match supported_tokens.get(chunks[0].as_str()) {
         Some(x) => x,
         None => {
             return Err(

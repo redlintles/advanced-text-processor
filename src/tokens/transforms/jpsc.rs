@@ -24,8 +24,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Jpsc {}
 
 impl TokenMethods for Jpsc {
-    fn get_string_repr(&self) -> String {
-        "jpsc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jpsc"
     }
 
     fn to_atp_line(&self) -> String {

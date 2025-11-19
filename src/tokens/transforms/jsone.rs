@@ -25,8 +25,8 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 pub struct Jsone {}
 
 impl TokenMethods for Jsone {
-    fn get_string_repr(&self) -> String {
-        "jsone".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "jsone"
     }
     fn to_atp_line(&self) -> String {
         "jsone;\n".to_string()

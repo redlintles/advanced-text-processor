@@ -42,8 +42,8 @@ impl Cts {
 }
 
 impl TokenMethods for Cts {
-    fn get_string_repr(&self) -> String {
-        "cts".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "cts"
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;

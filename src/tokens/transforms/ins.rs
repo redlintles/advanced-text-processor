@@ -35,8 +35,8 @@ impl Ins {
     }
 }
 impl TokenMethods for Ins {
-    fn get_string_repr(&self) -> String {
-        "ins".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "ins"
     }
     fn to_atp_line(&self) -> String {
         format!("ins {} {};\n", self.index, self.text_to_insert)

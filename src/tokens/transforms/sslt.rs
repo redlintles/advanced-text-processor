@@ -48,8 +48,8 @@ impl Default for Sslt {
 }
 
 impl TokenMethods for Sslt {
-    fn get_string_repr(&self) -> String {
-        "sslt".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "sslt"
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let s = self.pattern

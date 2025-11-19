@@ -39,8 +39,8 @@ impl Dls {
 }
 
 impl TokenMethods for Dls {
-    fn get_string_repr(&self) -> String {
-        "dls".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dls"
     }
     fn to_atp_line(&self) -> String {
         format!("dls {};\n", self.index)

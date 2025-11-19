@@ -6,10 +6,7 @@ use crate::{
 use crate::utils::errors::{ AtpError };
 
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode::{ BytecodeInstruction, BytecodeTokenMethods },
-    utils::errors::AtpErrorCode,
-};
+use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods }, utils::errors::AtpErrorCode };
 /// Token `Ctc` — Capitalize Chunk
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
@@ -45,8 +42,8 @@ impl Ctc {
 }
 
 impl TokenMethods for Ctc {
-    fn get_string_repr(&self) -> String {
-        "ctc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "ctc"
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let total_chars = input.chars().count();

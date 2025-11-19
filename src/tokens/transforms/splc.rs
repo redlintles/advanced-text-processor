@@ -23,8 +23,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Splc {}
 
 impl TokenMethods for Splc {
-    fn get_string_repr(&self) -> String {
-        "splc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "splc"
     }
     fn to_atp_line(&self) -> String {
         "splc;\n".to_string()

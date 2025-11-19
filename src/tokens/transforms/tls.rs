@@ -43,8 +43,8 @@ impl TokenMethods for Tls {
             )
         )
     }
-    fn get_string_repr(&self) -> String {
-        "tls".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tls"
     }
 }
 #[cfg(feature = "bytecode")]

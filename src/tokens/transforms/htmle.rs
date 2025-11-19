@@ -24,8 +24,8 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 pub struct Htmle {}
 
 impl TokenMethods for Htmle {
-    fn get_string_repr(&self) -> String {
-        "htmle".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "htmle"
     }
 
     fn to_atp_line(&self) -> String {

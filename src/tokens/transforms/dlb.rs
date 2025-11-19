@@ -84,8 +84,8 @@ impl TokenMethods for Dlb {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "dlb".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dlb"
     }
 }
 #[cfg(feature = "bytecode")]

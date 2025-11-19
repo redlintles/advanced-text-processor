@@ -44,8 +44,8 @@ impl TokenMethods for Dlf {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "dlf".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "dlf"
     }
 }
 #[cfg(feature = "bytecode")]

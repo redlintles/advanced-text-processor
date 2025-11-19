@@ -54,8 +54,8 @@ impl TokenMethods for Atb {
         )
     }
 
-    fn get_string_repr(&self) -> String {
-        "atb".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "atb"
     }
 }
 

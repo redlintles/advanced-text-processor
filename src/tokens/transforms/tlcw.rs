@@ -34,8 +34,8 @@ impl Tlcw {
     }
 }
 impl TokenMethods for Tlcw {
-    fn get_string_repr(&self) -> String {
-        "tlcw".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tlcw"
     }
 
     fn to_atp_line(&self) -> String {

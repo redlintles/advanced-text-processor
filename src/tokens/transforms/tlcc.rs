@@ -41,8 +41,8 @@ impl Tlcc {
 }
 
 impl TokenMethods for Tlcc {
-    fn get_string_repr(&self) -> String {
-        "tlcc".to_string()
+    fn get_string_repr(&self) -> &'static str {
+        "tlcc"
     }
 
     fn to_atp_line(&self) -> String {
