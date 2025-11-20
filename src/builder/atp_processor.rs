@@ -189,7 +189,7 @@ impl AtpProcessorMethods for AtpProcessor {
                 )?
                 .clone()
                 .iter()
-                .map(|t| t.to_atp_line())
+                .map(|t| t.to_atp_line().to_string())
                 .collect::<Vec<String>>()
         )
     }
