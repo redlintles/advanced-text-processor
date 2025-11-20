@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use regex::Regex;
 
 use crate::{
@@ -57,8 +59,8 @@ impl Default for Rnw {
 }
 
 impl TokenMethods for Rnw {
-    fn to_atp_line(&self) -> String {
-        format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

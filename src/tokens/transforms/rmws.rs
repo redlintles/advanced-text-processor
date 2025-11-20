@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -24,8 +26,8 @@ impl TokenMethods for Rmws {
     fn get_string_repr(&self) -> &'static str {
         "rmws"
     }
-    fn to_atp_line(&self) -> String {
-        "rmws;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("rmws;\n")
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join(""))

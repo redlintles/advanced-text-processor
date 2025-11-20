@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use html_escape::encode_text;
 
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
@@ -28,8 +30,8 @@ impl TokenMethods for Htmle {
         "htmle"
     }
 
-    fn to_atp_line(&self) -> String {
-        "htmle;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("htmle;\n")
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(encode_text(input).to_string())

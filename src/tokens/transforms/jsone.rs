@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
@@ -28,8 +30,8 @@ impl TokenMethods for Jsone {
     fn get_string_repr(&self) -> &'static str {
         "jsone"
     }
-    fn to_atp_line(&self) -> String {
-        "jsone;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("jsone;\n")
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "jsone" {

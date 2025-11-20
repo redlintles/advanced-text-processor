@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -33,8 +35,8 @@ impl Dlb {
 }
 
 impl TokenMethods for Dlb {
-    fn to_atp_line(&self) -> String {
-        format!("dlb {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("dlb {};\n", self.index))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

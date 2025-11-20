@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
@@ -40,8 +42,8 @@ impl TokenMethods for Cfw {
         Ok(capitalize(input))
     }
 
-    fn to_atp_line(&self) -> String {
-        "cfw;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("cfw;\n")
     }
 }
 

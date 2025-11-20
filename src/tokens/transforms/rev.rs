@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 #[cfg(feature = "bytecode")]
 use crate::{ bytecode::{ BytecodeTokenMethods, BytecodeInstruction } };
 
@@ -22,8 +24,8 @@ impl TokenMethods for Rev {
     fn get_string_repr(&self) -> &'static str {
         "rev"
     }
-    fn to_atp_line(&self) -> String {
-        "rev;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("rev;\n")
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

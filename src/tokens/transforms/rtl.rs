@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -55,8 +57,8 @@ impl TokenMethods for Rtl {
         )
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("rtl {};\n", self.times)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rtl {};\n", self.times))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "rtl" {

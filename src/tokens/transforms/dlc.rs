@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::transforms::string_to_usize,
@@ -38,8 +40,8 @@ impl Dlc {
 }
 
 impl TokenMethods for Dlc {
-    fn to_atp_line(&self) -> String {
-        format!("dlc {} {};\n", self.start_index, self.end_index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("dlc {} {};\n", self.start_index, self.end_index))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

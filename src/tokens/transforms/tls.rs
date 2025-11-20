@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::tokens::TokenMethods;
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -22,8 +24,8 @@ use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 pub struct Tls {}
 
 impl TokenMethods for Tls {
-    fn to_atp_line(&self) -> String {
-        "tls;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("tls;\n")
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

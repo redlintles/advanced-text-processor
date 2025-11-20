@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{
@@ -43,8 +45,8 @@ impl TokenMethods for Tucs {
         "tucs"
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("tucs {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("tucs {};\n", self.index))
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;

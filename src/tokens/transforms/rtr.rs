@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
@@ -56,8 +58,8 @@ impl TokenMethods for Rtr {
         )
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("rtr {};\n", self.times)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rtr {};\n", self.times))
     }
     fn get_string_repr(&self) -> &'static str {
         "rtr"

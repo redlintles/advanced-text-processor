@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -29,8 +31,8 @@ impl Atb {
 }
 
 impl TokenMethods for Atb {
-    fn to_atp_line(&self) -> String {
-        format!("atb {};\n", self.text)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("atb {};\n", self.text))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

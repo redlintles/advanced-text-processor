@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::tokens::TokenMethods;
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -26,8 +28,8 @@ impl TokenMethods for Splc {
     fn get_string_repr(&self) -> &'static str {
         "splc"
     }
-    fn to_atp_line(&self) -> String {
-        "splc;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("splc;\n")
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

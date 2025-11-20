@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{
@@ -38,8 +40,8 @@ impl TokenMethods for Tlcw {
         "tlcw"
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("tlcw {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("tlcw {};\n", self.index))
     }
 
     fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {

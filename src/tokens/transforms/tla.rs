@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -24,8 +26,8 @@ impl TokenMethods for Tla {
         "tla"
     }
 
-    fn to_atp_line(&self) -> String {
-        "tla;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("tla;\n")
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_lowercase())

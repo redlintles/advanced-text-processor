@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{
@@ -45,8 +47,8 @@ impl TokenMethods for Tlcc {
         "tlcc"
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("tlcc {} {};\n", self.start_index, self.end_index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("tlcc {} {};\n", self.start_index, self.end_index))
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;

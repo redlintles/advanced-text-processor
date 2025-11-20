@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{
@@ -76,8 +78,8 @@ impl TokenMethods for Cts {
         )
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("cts {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("cts {};\n", self.index))
     }
 }
 

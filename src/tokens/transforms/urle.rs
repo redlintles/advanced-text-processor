@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -25,8 +27,8 @@ impl TokenMethods for Urle {
         "urle"
     }
 
-    fn to_atp_line(&self) -> String {
-        "urle;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("urle;\n")
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(urlencoding::encode(input).to_string())
@@ -58,10 +60,11 @@ impl BytecodeTokenMethods for Urle {
         if instruction.op_code == Urle::default().get_opcode() {
             return Ok(());
         }
+        let code = instruction.op_code.to_string();
         Err(
             AtpError::new(
                 AtpErrorCode::BytecodeNotFound("".to_string()),
-                instruction.op_code.to_string(),
+                code,
                 instruction.operands.join(" ")
             )
         )

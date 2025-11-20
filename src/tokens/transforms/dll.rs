@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -21,8 +23,8 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 pub struct Dll {}
 
 impl TokenMethods for Dll {
-    fn to_atp_line(&self) -> String {
-        "dll;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("dll;\n")
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use regex::Regex;
 
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
@@ -55,8 +57,8 @@ impl Default for Rcw {
 }
 
 impl TokenMethods for Rcw {
-    fn to_atp_line(&self) -> String {
-        format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

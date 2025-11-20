@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::transforms::{ capitalize, string_to_usize },
@@ -88,8 +90,8 @@ impl TokenMethods for Ctr {
         )
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("ctr {} {};\n", self.start_index, self.end_index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("ctr {} {};\n", self.start_index, self.end_index))
     }
 }
 

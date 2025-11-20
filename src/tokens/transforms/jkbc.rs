@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
@@ -31,8 +33,8 @@ impl TokenMethods for Jkbc {
         "jkbc"
     }
 
-    fn to_atp_line(&self) -> String {
-        "jkbc;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("jkbc;\n")
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

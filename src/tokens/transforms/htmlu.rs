@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use html_escape::decode_html_entities;
 
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
@@ -27,8 +29,8 @@ impl TokenMethods for Htmlu {
         "htmlu"
     }
 
-    fn to_atp_line(&self) -> String {
-        "htmlu;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("htmlu;\n")
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(decode_html_entities(input).to_string())

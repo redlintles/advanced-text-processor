@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::utils::errors::AtpError;
 
 pub mod transforms;
@@ -10,7 +12,7 @@ pub trait TokenMethods: TokenMethodsClone {
     /// to_atp_line
     ///
     /// Converts the token to an ATP line to be written in an .atp file
-    fn to_atp_line(&self) -> String;
+    fn to_atp_line(&self) -> Cow<'static, str>;
     /// parse
     ///
     /// Responsible for applying the respective token transformation to `input`

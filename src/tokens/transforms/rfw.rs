@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use regex::Regex;
 
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
@@ -51,8 +53,8 @@ impl Default for Rfw {
 }
 
 impl TokenMethods for Rfw {
-    fn to_atp_line(&self) -> String {
-        format!("rfw {} {};\n", self.pattern, self.text_to_replace)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rfw {} {};\n", self.pattern, self.text_to_replace))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use regex::Regex;
 
 use crate::utils::validations::check_vec_len;
@@ -107,8 +109,8 @@ impl TokenMethods for Sslt {
         )
     }
 
-    fn to_atp_line(&self) -> String {
-        format!("sslt {} {};\n", self.pattern, self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("sslt {} {};\n", self.pattern, self.index))
     }
 }
 

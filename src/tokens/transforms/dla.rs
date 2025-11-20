@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::utils::validations::check_index_against_input;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
@@ -34,8 +36,8 @@ impl Dla {
 }
 
 impl TokenMethods for Dla {
-    fn to_atp_line(&self) -> String {
-        format!("dla {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("dla {};\n", self.index))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

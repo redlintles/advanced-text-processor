@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
@@ -32,8 +34,8 @@ impl Rpt {
 }
 
 impl TokenMethods for Rpt {
-    fn to_atp_line(&self) -> String {
-        format!("rpt {};\n", self.times)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("rpt {};\n", self.times))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

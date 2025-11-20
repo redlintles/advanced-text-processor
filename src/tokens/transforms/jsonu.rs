@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
@@ -29,8 +31,8 @@ impl TokenMethods for Jsonu {
     fn get_string_repr(&self) -> &'static str {
         "jsonu"
     }
-    fn to_atp_line(&self) -> String {
-        "jsonu;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("jsonu;\n")
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "jsonu" {

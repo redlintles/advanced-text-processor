@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
@@ -38,8 +40,8 @@ impl TokenMethods for Ins {
     fn get_string_repr(&self) -> &'static str {
         "ins"
     }
-    fn to_atp_line(&self) -> String {
-        format!("ins {} {};\n", self.index, self.text_to_insert)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("ins {} {};\n", self.index, self.text_to_insert))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "ins" {

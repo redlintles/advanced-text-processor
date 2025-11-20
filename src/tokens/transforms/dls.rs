@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{
@@ -42,8 +44,8 @@ impl TokenMethods for Dls {
     fn get_string_repr(&self) -> &'static str {
         "dls"
     }
-    fn to_atp_line(&self) -> String {
-        format!("dls {};\n", self.index)
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Owned(format!("dls {};\n", self.index))
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

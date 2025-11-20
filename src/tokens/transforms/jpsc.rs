@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
@@ -28,8 +30,8 @@ impl TokenMethods for Jpsc {
         "jpsc"
     }
 
-    fn to_atp_line(&self) -> String {
-        "jpsc;\n".to_string()
+    fn to_atp_line(&self) -> Cow<'static, str> {
+        Cow::Borrowed("jpsc;\n")
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
