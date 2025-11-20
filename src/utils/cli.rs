@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     builder::atp_processor::{ AtpProcessor, AtpProcessorMethods },
     utils::{ errors::AtpError, transforms::get_safe_utf8_char_index },
@@ -63,8 +65,8 @@ pub fn process_input_by_chunks(
         return Err(
             AtpError::new(
                 super::errors::AtpErrorCode::ZeroDivisionError("chunk size == 0".to_string()),
-                "process_input_by_chunks".to_string(),
-                input.to_string()
+                Cow::Borrowed("process_input_by_chunks"),
+                Cow::Owned(input.to_string())
             )
         );
     }

@@ -7,12 +7,13 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
     match parsed_chunk.parse() {
         Ok(v) => Ok(v),
         Err(_) => {
+            let str_chunk = chunk.to_string();
             Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TextParsingError(
                         "String to usize Parsing failed".to_string()
                     ),
-                    chunk.to_string(),
+                    Cow::Owned(str_chunk),
                     chunk.to_string()
                 )
             )
@@ -28,6 +29,8 @@ pub fn token_from_hex_string(s: &str) -> Option<u8> {
 
     Some(byte)
 }
+use std::borrow::Cow;
+
 use crate::utils::errors::AtpError;
 #[cfg(feature = "bytecode")]
 use crate::{
@@ -78,7 +81,7 @@ pub fn token_to_bytecode_token(
                     super::errors::AtpErrorCode::TextParsingError(
                         "Shell words split failed".to_string()
                     ),
-                    "shell_words::split()".to_string(),
+                    Cow::Borrowed("shell_words::split()"),
                     token.to_atp_line()
                 )
             );
@@ -131,7 +134,7 @@ pub fn bytecode_token_to_token(
                     super::errors::AtpErrorCode::TextParsingError(
                         "Shell words split failed".to_string()
                     ),
-                    "shell_words::split()".to_string(),
+                    Cow::Borrowed("shell_words::split()"),
                     token.to_atp_line()
                 )
             );
@@ -198,7 +201,7 @@ pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, AtpE
             .ok_or_else(||
                 AtpError::new(
                     super::errors::AtpErrorCode::IndexOutOfRange("".to_string()),
-                    "Get safe utf-8 char index".to_string(),
+                    Cow::Borrowed("Get safe utf-8 char index"),
                     input.to_string()
                 )
             )?

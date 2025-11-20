@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::Display;
 use std::error::Error;
 
@@ -11,8 +12,8 @@ pub struct ErrorManager {
 #[derive(Clone, Debug, PartialEq)]
 pub struct AtpError {
     error_code: AtpErrorCode,
-    instruction: String,
-    input: String,
+    instruction: Cow<'static, str>,
+    input: Cow<'static, str>,
 }
 
 impl Error for AtpError {}
@@ -30,8 +31,14 @@ impl Display for AtpError {
 }
 
 impl AtpError {
-    pub fn new(error_code: AtpErrorCode, instruction: String, input: String) -> Self {
-        AtpError { error_code, instruction, input }
+    pub fn new<I, T>(error_code: AtpErrorCode, instruction: I, input: T) -> Self
+        where I: Into<Cow<'static, str>>, T: Into<Cow<'static, str>>
+    {
+        AtpError {
+            error_code,
+            instruction: instruction.into(),
+            input: input.into(),
+        }
     }
 }
 
@@ -134,8 +141,8 @@ pub fn token_array_not_found(identifier: &str) -> impl Fn() -> AtpError {
         AtpErrorCode::TokenArrayNotFound(
             format!("Token array not found, is {} a valid identifier for this processor?", identifier)
         ),
-        "get identifier".to_string(),
-        "".to_string()
+        Cow::Borrowed("get identifier"),
+        Cow::Borrowed("")
     );
     move || message.clone()
 }
