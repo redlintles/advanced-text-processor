@@ -68,22 +68,22 @@ impl ErrorManager {
 }
 #[derive(Clone, Debug, PartialEq)]
 pub enum AtpErrorCode {
-    FileNotFound(String),
-    TokenNotFound(String),
-    TokenArrayNotFound(String),
-    FileReadingError(String),
-    FileWritingError(String),
-    FileOpeningError(String),
-    BytecodeNotFound(String),
-    TextParsingError(String),
-    BytecodeParsingError(String),
-    InvalidIndex(String),
-    IndexOutOfRange(String),
-    InvalidOperands(String),
-    InvalidParameters(String),
-    ValidationError(String),
-    InvalidArgumentNumber(String),
-    ZeroDivisionError(String),
+    FileNotFound(Cow<'static, str>),
+    TokenNotFound(Cow<'static, str>),
+    TokenArrayNotFound(Cow<'static, str>),
+    FileReadingError(Cow<'static, str>),
+    FileWritingError(Cow<'static, str>),
+    FileOpeningError(Cow<'static, str>),
+    BytecodeNotFound(Cow<'static, str>),
+    TextParsingError(Cow<'static, str>),
+    BytecodeParsingError(Cow<'static, str>),
+    InvalidIndex(Cow<'static, str>),
+    IndexOutOfRange(Cow<'static, str>),
+    InvalidOperands(Cow<'static, str>),
+    InvalidParameters(Cow<'static, str>),
+    ValidationError(Cow<'static, str>),
+    InvalidArgumentNumber(Cow<'static, str>),
+    ZeroDivisionError(Cow<'static, str>),
 }
 
 impl Display for AtpErrorCode {
@@ -139,7 +139,7 @@ impl AtpErrorCode {
 pub fn token_array_not_found(identifier: &str) -> impl Fn() -> AtpError {
     let message = AtpError::new(
         AtpErrorCode::TokenArrayNotFound(
-            format!("Token array not found, is {} a valid identifier for this processor?", identifier)
+            format!("Token array not found, is {} a valid identifier for this processor?", identifier).into()
         ),
         Cow::Borrowed("get identifier"),
         Cow::Borrowed("")

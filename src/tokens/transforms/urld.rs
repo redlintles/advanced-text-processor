@@ -36,7 +36,7 @@ impl TokenMethods for Urld {
                 ::decode(input)
                 .map_err(|_|
                     AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed parsing URL string".to_string()),
+                        AtpErrorCode::TextParsingError("Failed parsing URL string".into()),
                         "urld".to_string(),
                         input.to_string()
                     )
@@ -50,7 +50,7 @@ impl TokenMethods for Urld {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -73,7 +73,7 @@ impl BytecodeTokenMethods for Urld {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

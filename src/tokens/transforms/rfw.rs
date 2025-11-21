@@ -66,7 +66,7 @@ impl TokenMethods for Rfw {
         if line[0] == "rfw" {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
+                    AtpErrorCode::TextParsingError("Failed creating regex".into()),
                     line[0].to_string(),
                     line.join(" ")
                 )
@@ -76,7 +76,7 @@ impl TokenMethods for Rfw {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -97,7 +97,7 @@ impl BytecodeTokenMethods for Rfw {
             if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
                 self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|_|
                     AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed creating regex".to_string()),
+                        AtpErrorCode::TextParsingError("Failed creating regex".into()),
                         instruction.op_code.to_string(),
                         instruction.operands.join(" ")
                     )
@@ -108,9 +108,7 @@ impl BytecodeTokenMethods for Rfw {
 
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands(
-                        "Invalid operands for this instruction".to_string()
-                    ),
+                    AtpErrorCode::InvalidOperands("Invalid operands for this instruction".into()),
                     instruction.op_code.to_string(),
                     instruction.operands.join(" ")
                 )
@@ -119,7 +117,7 @@ impl BytecodeTokenMethods for Rfw {
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

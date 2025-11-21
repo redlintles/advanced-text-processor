@@ -44,7 +44,7 @@ impl TokenMethods for Dll {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -67,7 +67,7 @@ impl BytecodeTokenMethods for Dll {
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

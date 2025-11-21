@@ -49,7 +49,7 @@ impl TokenMethods for Ate {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line.join(" "),
                 line.join(" ")
             )
@@ -75,7 +75,7 @@ impl BytecodeTokenMethods for Ate {
             return Err(
                 AtpError::new(
                     AtpErrorCode::InvalidOperands(
-                        "An ATP Bytecode parsing error ocurred: Invalid Operands".to_string()
+                        "An ATP Bytecode parsing error ocurred: Invalid Operands".into()
                     ),
                     instruction.to_bytecode_line(),
                     instruction.operands.join(" ")
@@ -86,7 +86,7 @@ impl BytecodeTokenMethods for Ate {
         Err(
             AtpError::new(
                 AtpErrorCode::TokenNotFound(
-                    "An ATP Bytecode parsing error ocurred: Invalid Token".to_string()
+                    "An ATP Bytecode parsing error ocurred: Invalid Token".into()
                 ),
                 instruction.to_bytecode_line(),
                 instruction.operands.join("")

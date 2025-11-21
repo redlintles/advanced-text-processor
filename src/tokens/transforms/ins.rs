@@ -51,7 +51,7 @@ impl TokenMethods for Ins {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 "ins".to_string(),
                 line.join(" ")
             )
@@ -66,7 +66,7 @@ impl TokenMethods for Ins {
                             "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
                             input,
                             input.len().saturating_sub(1)
-                        )
+                        ).into()
                     ),
                     self.to_atp_line(),
                     input.to_string()
@@ -103,7 +103,7 @@ impl BytecodeTokenMethods for Ins {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

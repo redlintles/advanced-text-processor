@@ -9,9 +9,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
         .canonicalize()
         .map_err(|e| {
             AtpError::new(
-                super::errors::AtpErrorCode::ValidationError(
-                    "Path canonicalization failed".to_string()
-                ),
+                super::errors::AtpErrorCode::ValidationError("Path canonicalization failed".into()),
                 Cow::Borrowed("canonicalize"),
                 format!("{:?} - {}", path, e)
             )
@@ -22,9 +20,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
         if os_ext != parsed_ext {
             return Err(
                 AtpError::new(
-                    super::errors::AtpErrorCode::ValidationError(
-                        "Wrong file extension".to_string()
-                    ),
+                    super::errors::AtpErrorCode::ValidationError("Wrong file extension".into()),
                     Cow::Borrowed("check_file_path"),
                     path.to_string_lossy().to_string()
                 )
@@ -33,7 +29,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     } else {
         return Err(
             AtpError::new(
-                super::errors::AtpErrorCode::ValidationError("No file extension found".to_string()),
+                super::errors::AtpErrorCode::ValidationError("No file extension found".into()),
                 Cow::Borrowed("check_file_path"),
                 path.to_string_lossy().to_string()
             )
@@ -45,9 +41,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
         .parent()
         .ok_or_else(|| {
             AtpError::new(
-                super::errors::AtpErrorCode::ValidationError(
-                    "Path has no parent directory".to_string()
-                ),
+                super::errors::AtpErrorCode::ValidationError("Path has no parent directory".into()),
                 Cow::Borrowed("check_file_path"),
                 path.to_string_lossy().to_string()
             )
@@ -57,7 +51,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
         return Err(
             AtpError::new(
                 super::errors::AtpErrorCode::ValidationError(
-                    "Parent directory does not exist".to_string()
+                    "Parent directory does not exist".into()
                 ),
                 Cow::Borrowed("check_file_path"),
                 parent.to_string_lossy().to_string()
@@ -69,7 +63,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
         return Err(
             AtpError::new(
                 super::errors::AtpErrorCode::ValidationError(
-                    "Path is a directory, not a file".to_string()
+                    "Path is a directory, not a file".into()
                 ),
                 Cow::Borrowed("check_file_path"),
                 path.to_string_lossy().to_string()
@@ -91,7 +85,7 @@ pub fn check_chunk_bound_indexes(
                 return Err(
                     AtpError::new(
                         AtpErrorCode::IndexOutOfRange(
-                            "Start index does not exist in current string!".to_string()
+                            "Start index does not exist in current string!".into()
                         ),
                         Cow::Borrowed("check_chunk_bound_indexes"),
                         text.to_string()
@@ -107,9 +101,7 @@ pub fn check_chunk_bound_indexes(
         let fmt_err = format!("dlc {} {};", start_index, end_index);
         return Err(
             AtpError::new(
-                AtpErrorCode::InvalidIndex(
-                    "Start index must be smaller than end index".to_string()
-                ),
+                AtpErrorCode::InvalidIndex("Start index must be smaller than end index".into()),
                 Cow::Owned(fmt_err),
                 format!("Start Index: {}, End Index: {}", start_index, end_index)
             )
@@ -130,7 +122,7 @@ pub fn check_index_against_input(index: usize, input: &str) -> Result<(), AtpErr
                         index,
                         input,
                         character_count.saturating_sub(1)
-                    )
+                    ).into()
                 ),
                 Cow::Borrowed("Check index against input"),
                 input.to_string()
@@ -152,7 +144,7 @@ pub fn check_vec_len(v: &Vec<String>, max_size: usize) -> Result<(), AtpError> {
                             "Only {} arguments are allowed for this instruction, passed {}",
                             max_size,
                             v.len()
-                        )
+                        ).into()
                     ),
                     Cow::Borrowed("check_vec_len"),
                     v.join(" ")

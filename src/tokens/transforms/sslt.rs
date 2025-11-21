@@ -63,7 +63,7 @@ impl TokenMethods for Sslt {
             return Err(
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
-                        "Index does not exist in the splitted vec".to_string()
+                        "Index does not exist in the splitted vec".into()
                     ),
                     self.to_atp_line(),
                     input.to_string()
@@ -79,7 +79,7 @@ impl TokenMethods for Sslt {
             .get(i)
             .ok_or_else(||
                 AtpError::new(
-                    AtpErrorCode::IndexOutOfRange("Item not found".to_string()),
+                    AtpErrorCode::IndexOutOfRange("Item not found".into()),
                     "sslt".to_string(),
                     input.to_string()
                 )
@@ -92,7 +92,7 @@ impl TokenMethods for Sslt {
         if line[0] == "sslt" {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to create regex".to_string()),
+                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
                     "sslt".to_string(),
                     String::from(&line[1])
                 )
@@ -102,7 +102,7 @@ impl TokenMethods for Sslt {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -128,7 +128,7 @@ impl BytecodeTokenMethods for Sslt {
         if instruction.op_code == Sslt::default().get_opcode() {
             self.pattern = Regex::new(&instruction.operands[0]).map_err(|_|
                 AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to create regex".to_string()),
+                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
                     "sslt".to_string(),
                     String::from(&instruction.operands[0])
                 )
@@ -138,7 +138,7 @@ impl BytecodeTokenMethods for Sslt {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

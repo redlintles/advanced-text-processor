@@ -38,7 +38,7 @@ impl TokenMethods for Rtl {
         if input.is_empty() {
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidParameters("Input is empty".to_string()),
+                    AtpErrorCode::InvalidParameters("Input is empty".into()),
                     self.to_atp_line(),
                     "\" \"".to_string()
                 )
@@ -67,7 +67,7 @@ impl TokenMethods for Rtl {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -92,9 +92,7 @@ impl BytecodeTokenMethods for Rtl {
 
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands(
-                        "Invalid operands for this instruction".to_string()
-                    ),
+                    AtpErrorCode::InvalidOperands("Invalid operands for this instruction".into()),
                     instruction.op_code.to_string(),
                     instruction.operands.join(" ")
                 )
@@ -103,7 +101,7 @@ impl BytecodeTokenMethods for Rtl {
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

@@ -40,7 +40,7 @@ impl TokenMethods for Jsonu {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -53,7 +53,7 @@ impl TokenMethods for Jsonu {
                 ::from_str::<String>(input)
                 .map_err(|_|
                     AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed to deserialize to JSON".to_string()),
+                        AtpErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
                         "serde_json::from_str".to_string(),
                         input.to_string()
                     )
@@ -76,7 +76,7 @@ impl BytecodeTokenMethods for Jsonu {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

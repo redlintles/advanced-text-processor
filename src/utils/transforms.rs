@@ -11,7 +11,7 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
             Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TextParsingError(
-                        "String to usize Parsing failed".to_string()
+                        "String to usize Parsing failed".into()
                     ),
                     Cow::Owned(str_chunk),
                     chunk.to_string()
@@ -79,7 +79,7 @@ pub fn token_to_bytecode_token(
             return Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TextParsingError(
-                        "Shell words split failed".to_string()
+                        "Shell words split failed".into()
                     ),
                     Cow::Borrowed("shell_words::split()"),
                     token.to_atp_line()
@@ -96,7 +96,7 @@ pub fn token_to_bytecode_token(
             return Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TokenNotFound(
-                        "Token not found in the token map".to_string()
+                        "Token not found in the token map".into()
                     ),
                     token.to_atp_line(),
                     token.to_atp_line()
@@ -132,7 +132,7 @@ pub fn bytecode_token_to_token(
             return Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TextParsingError(
-                        "Shell words split failed".to_string()
+                        "Shell words split failed".into()
                     ),
                     Cow::Borrowed("shell_words::split()"),
                     token.to_atp_line()
@@ -148,7 +148,7 @@ pub fn bytecode_token_to_token(
             return Err(
                 AtpError::new(
                     super::errors::AtpErrorCode::TokenNotFound(
-                        "Token not found in the token map".to_string()
+                        "Token not found in the token map".into()
                     ),
                     token.to_atp_line(),
                     token.to_atp_line()
@@ -200,7 +200,7 @@ pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, AtpE
             .map(|(i, _)| i)
             .ok_or_else(||
                 AtpError::new(
-                    super::errors::AtpErrorCode::IndexOutOfRange("".to_string()),
+                    super::errors::AtpErrorCode::IndexOutOfRange("".into()),
                     Cow::Borrowed("Get safe utf-8 char index"),
                     input.to_string()
                 )

@@ -103,7 +103,7 @@ impl TokenMethods for Ctc {
         Err(
             AtpError::new(
                 crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Invalid parser for this token".to_string()
+                    "Invalid parser for this token".into()
                 ),
                 line[0].to_string(),
                 line.join(" ")
@@ -137,7 +137,7 @@ impl BytecodeTokenMethods for Ctc {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

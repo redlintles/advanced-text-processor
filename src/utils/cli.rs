@@ -64,7 +64,7 @@ pub fn process_input_by_chunks(
     if chunk_size == 0 {
         return Err(
             AtpError::new(
-                super::errors::AtpErrorCode::ZeroDivisionError("chunk size == 0".to_string()),
+                super::errors::AtpErrorCode::ZeroDivisionError("chunk size == 0".into()),
                 Cow::Borrowed("process_input_by_chunks"),
                 Cow::Owned(input.to_string())
             )

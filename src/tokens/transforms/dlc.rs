@@ -57,7 +57,7 @@ impl TokenMethods for Dlc {
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
                             input.char_indices().count().saturating_sub(1),
                             self.start_index
-                        )
+                        ).into()
                     ),
                     self.to_atp_line(),
                     input.to_string()
@@ -74,7 +74,7 @@ impl TokenMethods for Dlc {
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
                             input.chars().count().saturating_sub(1),
                             self.end_index
-                        )
+                        ).into()
                     ),
                     self.to_atp_line(),
                     input.to_string()
@@ -100,7 +100,7 @@ impl TokenMethods for Dlc {
         }
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -131,9 +131,7 @@ impl BytecodeTokenMethods for Dlc {
 
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands(
-                        "Invalid operands for this instruction".to_string()
-                    ),
+                    AtpErrorCode::InvalidOperands("Invalid operands for this instruction".into()),
                     instruction.op_code.to_string(),
                     instruction.operands.join(" ")
                 )
@@ -142,7 +140,7 @@ impl BytecodeTokenMethods for Dlc {
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".to_string()),
+                AtpErrorCode::BytecodeNotFound("".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )

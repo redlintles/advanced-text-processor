@@ -68,7 +68,7 @@ impl TokenMethods for Tlcw {
 
         Err(
             AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".to_string()),
+                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
                 line[0].to_string(),
                 line.join(" ")
             )
@@ -97,7 +97,7 @@ impl BytecodeTokenMethods for Tlcw {
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".to_string()),
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
                 instruction.op_code.to_string(),
                 instruction.operands.join(" ")
             )
