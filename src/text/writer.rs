@@ -11,10 +11,8 @@ pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result
         .open(path)
         .map_err(|_|
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::FileOpeningError(
-                    "Failed opening File".to_string()
-                ),
-                "".to_string(),
+                crate::utils::errors::AtpErrorCode::FileOpeningError("Failed opening File".into()),
+                "",
                 format!("{:?}", path)
             )
         )?;
@@ -38,10 +36,10 @@ pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result
             Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::FileWritingError(
-                        "Failed writing text to atp file".to_string()
+                        "Failed writing text to atp file".into()
                     ),
-                    "".to_string(),
-                    "".to_string()
+                    "",
+                    ""
                 )
             ),
     }

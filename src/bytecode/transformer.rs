@@ -21,10 +21,8 @@ pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Resul
         .open(output_file)
         .map_err(|_|
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::FileOpeningError(
-                    "Failed opening File".to_string()
-                ),
-                "".to_string(),
+                crate::utils::errors::AtpErrorCode::FileOpeningError("Failed opening File".into()),
+                "",
                 format!("{:?}", output_file)
             )
         )?;
@@ -40,10 +38,10 @@ pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Resul
                 return Err(
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::FileWritingError(
-                            "Failed writing text to atp file".to_string()
+                            "Failed writing text to atp file".into()
                         ),
-                        "".to_string(),
-                        line.to_string()
+                        "",
+                        line
                     )
                 );
             }
@@ -65,10 +63,8 @@ pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result
         .open(output_file)
         .map_err(|_|
             AtpError::new(
-                crate::utils::errors::AtpErrorCode::FileOpeningError(
-                    "Failed opening File".to_string()
-                ),
-                "".to_string(),
+                crate::utils::errors::AtpErrorCode::FileOpeningError("Failed opening File".into()),
+                "",
                 format!("{:?}", output_file)
             )
         )?;
@@ -82,10 +78,10 @@ pub fn atp_bytecode_to_atp_file(input_file: &Path, output_file: &Path) -> Result
                 return Err(
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::FileWritingError(
-                            "Failed writing text to atp file".to_string()
+                            "Failed writing text to atp file".into()
                         ),
-                        "".to_string(),
-                        line.to_string()
+                        "",
+                        line
                     )
                 );
             }

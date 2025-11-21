@@ -132,9 +132,9 @@ impl AtpProcessorMethods for AtpProcessor {
                 .ok_or_else(||
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::TokenNotFound(
-                            "Transformation not found".to_string()
+                            "Transformation not found".into()
                         ),
-                        "remove_transform".to_string(),
+                        "remove_transform",
                         id.to_string()
                     )
                 )
@@ -165,7 +165,7 @@ impl AtpProcessorMethods for AtpProcessor {
                 .ok_or_else(||
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
-                            "Transform not found".to_string()
+                            "Transform not found".into()
                         ),
                         "get_transform_vec".to_string(),
                         id.to_string()
@@ -181,9 +181,9 @@ impl AtpProcessorMethods for AtpProcessor {
                 .ok_or_else(||
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
-                            "Transform not found".to_string()
+                            "Transform not found".into()
                         ),
-                        "get_transform_vec".to_string(),
+                        "get_transform_vec",
                         id.to_string()
                     )
                 )?

@@ -16,9 +16,9 @@ pub fn write_bytecode_to_file(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::FileOpeningError(
-                        "Failed opening File".to_string()
+                        "Failed opening File".into()
                     ),
-                    "".to_string(),
+                    "",
                     format!("{:?}", path)
                 )
             );
@@ -34,10 +34,10 @@ pub fn write_bytecode_to_file(
                 return Err(
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::FileWritingError(
-                            "Failed writing text to atp file".to_string()
+                            "Failed writing text to atp file".into()
                         ),
-                        "".to_string(),
-                        line.to_string()
+                        "",
+                        line
                     )
                 );
             }

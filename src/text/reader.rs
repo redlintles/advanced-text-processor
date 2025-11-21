@@ -17,9 +17,9 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
                 .ok_or_else(||
                     AtpError::new(
                         AtpErrorCode::TextParsingError(
-                            "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                            "An ATP Parsing error ocurred: Error splitting file line".into()
                         ),
-                        "shell words split".to_string(),
+                        "shell words split",
                         token_string.to_string()
                     )
                 )?
@@ -30,9 +30,9 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
             return Err(
                 AtpError::new(
                     AtpErrorCode::TextParsingError(
-                        "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                        "An ATP Parsing error ocurred: Error splitting file line".into()
                     ),
-                    "shell words split".to_string(),
+                    "shell words split",
                     token_string.to_string()
                 )
             );
@@ -46,9 +46,9 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::TokenNotFound(
-                        "Token not recognized".to_string()
+                        "Token not recognized".into()
                     ),
-                    "".to_string(),
+                    "",
                     chunks[0].to_string()
                 )
             );
@@ -63,10 +63,10 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::TextParsingError(
-                        "Token not recognized".to_string()
+                        "Token not recognized".into()
                     ),
-                    "".to_string(),
-                    "".to_string()
+                    "",
+                    ""
                 )
             );
         }
@@ -95,9 +95,9 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpErro
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::FileOpeningError(
-                        "Failed opening File".to_string()
+                        "Failed opening File".into()
                     ),
-                    "".to_string(),
+                    "",
                     format!("{:?}", path)
                 )
             );
@@ -113,10 +113,10 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpErro
                 return Err(
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::FileReadingError(
-                            "Failed reading file line".to_string()
+                            "Failed reading file line".into()
                         ),
-                        "".to_string(),
-                        "".to_string()
+                        "",
+                        ""
                     )
                 );
             }

@@ -18,9 +18,9 @@ pub fn read_bytecode_from_text(
             return Err(
                 AtpError::new(
                     AtpErrorCode::TextParsingError(
-                        "An ATP Parsing error ocurred: Error splitting file line".to_string()
+                        "An ATP Parsing error ocurred: Error splitting file line".into()
                     ),
-                    "shell words split".to_string(),
+                    "shell words split",
                     token_string.to_string()
                 )
             );
@@ -33,9 +33,9 @@ pub fn read_bytecode_from_text(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::BytecodeParsingError(
-                        "Failed Parsing op_code".to_string()
+                        "Failed Parsing op_code".into()
                     ),
-                    "".to_string(),
+                    "",
                     chunks.join(" ")
                 )
             );
@@ -48,9 +48,9 @@ pub fn read_bytecode_from_text(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::BytecodeParsingError(
-                        "Failed Parsing op_code".to_string()
+                        "Failed Parsing op_code".into()
                     ),
-                    "".to_string(),
+                    "",
                     chunks.join(" ")
                 )
             );
@@ -70,9 +70,9 @@ pub fn read_bytecode_from_text(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::TokenNotFound(
-                        "Token not recognized".to_string()
+                        "Token not recognized".into()
                     ),
-                    "".to_string(),
+                    "",
                     parsed_op_code.to_string()
                 )
             );
@@ -89,9 +89,9 @@ pub fn read_bytecode_from_text(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::BytecodeParsingError(
-                        "Token not recognized".to_string()
+                        "Token not recognized".into()
                     ),
-                    "".to_string(),
+                    "",
                     parsed_op_code.to_string()
                 )
             );
@@ -123,9 +123,9 @@ pub fn read_bytecode_from_file(
             return Err(
                 AtpError::new(
                     crate::utils::errors::AtpErrorCode::FileOpeningError(
-                        "Failed opening File".to_string()
+                        "Failed opening File".into()
                     ),
-                    "".to_string(),
+                    "",
                     format!("{:?}", path)
                 )
             );
@@ -141,10 +141,10 @@ pub fn read_bytecode_from_file(
                 return Err(
                     AtpError::new(
                         crate::utils::errors::AtpErrorCode::FileReadingError(
-                            "Failed reading file line".to_string()
+                            "Failed reading file line".into()
                         ),
-                        "".to_string(),
-                        "".to_string()
+                        "",
+                        ""
                     )
                 );
             }
