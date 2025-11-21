@@ -47,7 +47,7 @@ impl TokenMethods for Tucc {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("tucc {} {};\n", self.start_index, self.end_index))
+        format!("tucc {} {};\n", self.start_index, self.end_index).into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;

@@ -40,7 +40,7 @@ impl TokenMethods for Tucw {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("tucw {};\n", self.index))
+        format!("tucw {};\n", self.index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {

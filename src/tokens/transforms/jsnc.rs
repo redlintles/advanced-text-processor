@@ -34,7 +34,7 @@ impl TokenMethods for Jsnc {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("jsnc;\n")
+        "jsnc;\n".into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

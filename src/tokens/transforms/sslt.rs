@@ -110,7 +110,7 @@ impl TokenMethods for Sslt {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("sslt {} {};\n", self.pattern, self.index))
+        format!("sslt {} {};\n", self.pattern, self.index).into()
     }
 }
 

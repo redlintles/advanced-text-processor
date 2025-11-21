@@ -14,7 +14,7 @@ impl TokenMethods for Tua {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("tua;\n")
+        "tua;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_uppercase())

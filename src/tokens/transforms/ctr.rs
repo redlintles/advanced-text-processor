@@ -91,7 +91,7 @@ impl TokenMethods for Ctr {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("ctr {} {};\n", self.start_index, self.end_index))
+        format!("ctr {} {};\n", self.start_index, self.end_index).into()
     }
 }
 

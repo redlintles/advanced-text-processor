@@ -29,7 +29,7 @@ impl TokenMethods for Splc {
         "splc"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("splc;\n")
+        "splc;\n".into()
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

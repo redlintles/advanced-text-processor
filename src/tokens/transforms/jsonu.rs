@@ -32,7 +32,7 @@ impl TokenMethods for Jsonu {
         "jsonu"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("jsonu;\n")
+        "jsonu;\n".into()
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "jsonu" {

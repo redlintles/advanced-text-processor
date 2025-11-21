@@ -54,7 +54,7 @@ impl Default for Rlw {
 
 impl TokenMethods for Rlw {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("rlw {} {};\n", self.pattern, self.text_to_replace))
+        format!("rlw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

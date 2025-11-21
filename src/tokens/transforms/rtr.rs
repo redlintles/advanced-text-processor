@@ -59,7 +59,7 @@ impl TokenMethods for Rtr {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("rtr {};\n", self.times))
+        format!("rtr {};\n", self.times).into()
     }
     fn get_string_repr(&self) -> &'static str {
         "rtr"

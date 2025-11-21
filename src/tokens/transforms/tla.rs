@@ -27,7 +27,7 @@ impl TokenMethods for Tla {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("tla;\n")
+        "tla;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_lowercase())

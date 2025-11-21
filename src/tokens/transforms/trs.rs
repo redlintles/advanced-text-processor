@@ -24,7 +24,7 @@ pub struct Trs {}
 
 impl TokenMethods for Trs {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("trs;\n")
+        "trs;\n".into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

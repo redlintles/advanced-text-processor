@@ -32,7 +32,7 @@ impl Ate {
 
 impl TokenMethods for Ate {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("ate {};\n", self.text))
+        format!("ate {};\n", self.text).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

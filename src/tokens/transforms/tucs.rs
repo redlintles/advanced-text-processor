@@ -46,7 +46,7 @@ impl TokenMethods for Tucs {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("tucs {};\n", self.index))
+        format!("tucs {};\n", self.index).into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;

@@ -54,7 +54,7 @@ impl Default for Raw {
 
 impl TokenMethods for Raw {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("raw {} {};\n", self.pattern, self.text_to_replace))
+        format!("raw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

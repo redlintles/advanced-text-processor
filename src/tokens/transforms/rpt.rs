@@ -35,7 +35,7 @@ impl Rpt {
 
 impl TokenMethods for Rpt {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("rpt {};\n", self.times))
+        format!("rpt {};\n", self.times).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

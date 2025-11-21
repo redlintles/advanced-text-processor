@@ -60,7 +60,7 @@ impl Default for Rnw {
 
 impl TokenMethods for Rnw {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index))
+        format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

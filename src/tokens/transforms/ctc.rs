@@ -112,7 +112,7 @@ impl TokenMethods for Ctc {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("ctc {} {};\n", self.start_index, self.end_index))
+        format!("ctc {} {};\n", self.start_index, self.end_index).into()
     }
 }
 

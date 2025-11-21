@@ -28,7 +28,7 @@ impl TokenMethods for Urld {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("urld;\n")
+        "urld;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(

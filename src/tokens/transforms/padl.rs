@@ -45,7 +45,7 @@ impl TokenMethods for Padl {
         "padl"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("padl {} {};\n", self.text, self.max_len))
+        format!("padl {} {};\n", self.text, self.max_len).into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         let character_count = input.chars().count();

@@ -28,7 +28,7 @@ impl TokenMethods for Urle {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("urle;\n")
+        "urle;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(urlencoding::encode(input).to_string())

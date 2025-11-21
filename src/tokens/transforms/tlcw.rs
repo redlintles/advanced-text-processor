@@ -41,7 +41,7 @@ impl TokenMethods for Tlcw {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("tlcw {};\n", self.index))
+        format!("tlcw {};\n", self.index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {

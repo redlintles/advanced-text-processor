@@ -41,7 +41,7 @@ impl Dlc {
 
 impl TokenMethods for Dlc {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("dlc {} {};\n", self.start_index, self.end_index))
+        format!("dlc {} {};\n", self.start_index, self.end_index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

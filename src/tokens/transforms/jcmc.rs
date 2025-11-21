@@ -31,7 +31,7 @@ impl TokenMethods for Jcmc {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("jcmc;\n")
+        "jcmc;\n".into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

@@ -25,7 +25,7 @@ pub struct Tls {}
 
 impl TokenMethods for Tls {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("tls;\n")
+        "tls;\n".into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

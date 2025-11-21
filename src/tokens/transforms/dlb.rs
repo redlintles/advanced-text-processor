@@ -36,7 +36,7 @@ impl Dlb {
 
 impl TokenMethods for Dlb {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("dlb {};\n", self.index))
+        format!("dlb {};\n", self.index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

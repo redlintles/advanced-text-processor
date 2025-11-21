@@ -57,7 +57,7 @@ impl TokenMethods for Clw {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("clw;\n")
+        "clw;\n".into()
     }
 }
 

@@ -25,7 +25,7 @@ impl TokenMethods for Rev {
         "rev"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("rev;\n")
+        "rev;\n".into()
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

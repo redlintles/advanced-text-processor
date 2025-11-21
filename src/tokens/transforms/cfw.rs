@@ -43,7 +43,7 @@ impl TokenMethods for Cfw {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("cfw;\n")
+        "cfw;\n".into()
     }
 }
 

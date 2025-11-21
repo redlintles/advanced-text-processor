@@ -45,7 +45,7 @@ impl TokenMethods for Dls {
         "dls"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("dls {};\n", self.index))
+        format!("dls {};\n", self.index).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

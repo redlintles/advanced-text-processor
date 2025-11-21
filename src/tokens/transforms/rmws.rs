@@ -27,7 +27,7 @@ impl TokenMethods for Rmws {
         "rmws"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("rmws;\n")
+        "rmws;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join(""))

@@ -31,7 +31,7 @@ impl TokenMethods for Jsone {
         "jsone"
     }
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("jsone;\n")
+        "jsone;\n".into()
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "jsone" {

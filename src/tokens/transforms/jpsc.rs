@@ -31,7 +31,7 @@ impl TokenMethods for Jpsc {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("jpsc;\n")
+        "jpsc;\n".into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

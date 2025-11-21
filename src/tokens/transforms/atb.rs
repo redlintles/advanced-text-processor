@@ -32,7 +32,7 @@ impl Atb {
 
 impl TokenMethods for Atb {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Owned(format!("atb {};\n", self.text))
+        format!("atb {};\n", self.text).into()
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {

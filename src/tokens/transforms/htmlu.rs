@@ -30,7 +30,7 @@ impl TokenMethods for Htmlu {
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
-        Cow::Borrowed("htmlu;\n")
+        "htmlu;\n".into()
     }
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(decode_html_entities(input).to_string())
