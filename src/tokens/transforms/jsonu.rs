@@ -54,7 +54,7 @@ impl TokenMethods for Jsonu {
                 .map_err(|_|
                     AtpError::new(
                         AtpErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
-                        "serde_json::from_str".to_string(),
+                        "serde_json::from_str",
                         input.to_string()
                     )
                 )?

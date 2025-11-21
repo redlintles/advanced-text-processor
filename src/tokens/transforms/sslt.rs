@@ -93,8 +93,8 @@ impl TokenMethods for Sslt {
             self.pattern = Regex::new(&line[1]).map_err(|_|
                 AtpError::new(
                     AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                    "sslt".to_string(),
-                    String::from(&line[1])
+                    "sslt",
+                    line[1].to_string()
                 )
             )?;
             self.index = string_to_usize(&line[2])?;

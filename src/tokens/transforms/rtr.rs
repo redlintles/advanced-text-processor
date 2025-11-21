@@ -41,7 +41,7 @@ impl TokenMethods for Rtr {
                 AtpError::new(
                     AtpErrorCode::InvalidParameters("Input is empty".into()),
                     self.to_atp_line(),
-                    "\" \"".to_string()
+                    "\" \""
                 )
             );
         }

@@ -37,7 +37,7 @@ impl TokenMethods for Urld {
                 .map_err(|_|
                     AtpError::new(
                         AtpErrorCode::TextParsingError("Failed parsing URL string".into()),
-                        "urld".to_string(),
+                        "urld",
                         input.to_string()
                     )
                 )?
