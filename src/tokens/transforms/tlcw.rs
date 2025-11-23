@@ -18,7 +18,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::tlcw::Tlcw};
+/// use atp::tokens::{TokenMethods, transforms::tlcw::Tlcw};
 ///
 /// let token = Tlcw::params(1);
 ///

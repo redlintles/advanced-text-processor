@@ -14,7 +14,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::jsonu::Jsonu};
+/// use atp::tokens::{TokenMethods, transforms::jsonu::Jsonu};
 ///
 ///
 /// let token = Jsonu::default();

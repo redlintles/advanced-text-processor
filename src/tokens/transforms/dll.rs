@@ -12,7 +12,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dll::Dll};
+/// use atp::tokens::{TokenMethods, transforms::dll::Dll};
 ///
 /// let token = Dll::default();
 ///

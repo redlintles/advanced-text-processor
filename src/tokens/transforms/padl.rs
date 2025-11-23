@@ -19,7 +19,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::padl::Padl};
+/// use atp::tokens::{TokenMethods, transforms::padl::Padl};
 ///
 /// let token = Padl::params("xy", 7);
 ///

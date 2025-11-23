@@ -23,7 +23,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::rnw::Rnw};
+/// use atp::tokens::{TokenMethods, transforms::rnw::Rnw};
 ///
 /// let token = Rnw::params(&"a", "b", 2).unwrap();
 ///

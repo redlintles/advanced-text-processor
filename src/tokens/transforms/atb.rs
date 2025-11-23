@@ -12,7 +12,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::atb::Atb};
+/// use atp::tokens::{TokenMethods, transforms::atb::Atb};
 ///
 /// let token = Atb::params("foo");
 /// assert_eq!(token.parse(" bar"), Ok("foo bar".to_string()));

@@ -16,7 +16,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::ins::Ins};
+/// use atp::tokens::{TokenMethods, transforms::ins::Ins};
 ///
 /// let token = Ins::params(2,"laranja");
 ///

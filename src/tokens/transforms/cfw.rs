@@ -14,7 +14,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::cfw::Cfw};
+/// use atp::tokens::{TokenMethods, transforms::cfw::Cfw};
 ///
 /// let token = Cfw::default();
 /// assert_eq!(token.parse("foo bar"), Ok("Foo bar".to_string()));

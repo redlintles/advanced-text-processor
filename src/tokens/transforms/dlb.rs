@@ -14,7 +14,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dlb::Dlb};
+/// use atp::tokens::{TokenMethods, transforms::dlb::Dlb};
 ///
 /// let token = Dlb::params(3);
 ///

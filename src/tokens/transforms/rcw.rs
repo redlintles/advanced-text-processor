@@ -21,7 +21,7 @@ use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::rcw::Rcw};
+/// use atp::tokens::{TokenMethods, transforms::rcw::Rcw};
 ///
 /// let token = Rcw::params(&"a", "b", 3).unwrap();
 ///

@@ -18,7 +18,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::jsnc::Jsnc};
+/// use atp::tokens::{TokenMethods, transforms::jsnc::Jsnc};
 ///
 /// let token = Jsnc::default();
 ///

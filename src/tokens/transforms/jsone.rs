@@ -14,7 +14,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::jsone::Jsone};
+/// use atp::tokens::{TokenMethods, transforms::jsone::Jsone};
 ///
 ///
 /// let token = Jsone::default();

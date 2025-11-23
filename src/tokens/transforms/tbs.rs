@@ -11,7 +11,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::tbs::Tbs};
+/// use atp::tokens::{TokenMethods, transforms::tbs::Tbs};
 ///
 /// let token = Tbs::default();
 ///

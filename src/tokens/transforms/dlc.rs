@@ -16,7 +16,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dlc::Dlc};
+/// use atp::tokens::{TokenMethods, transforms::dlc::Dlc};
 ///
 /// let token = Dlc::params(1,5).unwrap();
 ///

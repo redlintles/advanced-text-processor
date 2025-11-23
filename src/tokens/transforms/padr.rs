@@ -18,7 +18,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::padr::Padr};
+/// use atp::tokens::{TokenMethods, transforms::padr::Padr};
 ///
 /// let token = Padr::params("xy", 7);
 ///

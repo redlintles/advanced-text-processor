@@ -12,7 +12,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::rmws::Rmws};
+/// use atp::tokens::{TokenMethods, transforms::rmws::Rmws};
 ///
 /// let token = Rmws::default();
 ///

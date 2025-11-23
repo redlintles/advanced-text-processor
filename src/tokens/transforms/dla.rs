@@ -15,7 +15,7 @@ use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dla::Dla};
+/// use atp::tokens::{TokenMethods, transforms::dla::Dla};
 ///
 /// let token = Dla::params(3);
 ///

@@ -18,7 +18,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::jkbc::Jkbc};
+/// use atp::tokens::{TokenMethods, transforms::jkbc::Jkbc};
 ///
 /// let token = Jkbc::default();
 ///

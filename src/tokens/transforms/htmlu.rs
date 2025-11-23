@@ -15,7 +15,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::htmlu::Htmlu};
+/// use atp::tokens::{TokenMethods, transforms::htmlu::Htmlu};
 ///
 /// let token = Htmlu::default();
 ///

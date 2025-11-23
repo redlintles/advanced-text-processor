@@ -22,7 +22,7 @@ use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods }, utils::err
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::ctc::Ctc};
+/// use atp::tokens::{TokenMethods, transforms::ctc::Ctc};
 ///
 /// let token = Ctc::params(1, 5).unwrap();
 /// assert_eq!(token.parse("bananabananosa"), Ok("bAnanabananosa".to_string()));

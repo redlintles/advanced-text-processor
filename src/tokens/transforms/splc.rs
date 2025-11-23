@@ -14,7 +14,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::splc::Splc};
+/// use atp::tokens::{TokenMethods, transforms::splc::Splc};
 ///
 /// let token = Splc::default();
 ///

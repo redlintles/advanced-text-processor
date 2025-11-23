@@ -21,7 +21,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dls::Dls};
+/// use atp::tokens::{TokenMethods, transforms::dls::Dls};
 ///
 /// let token = Dls::params(3);
 ///

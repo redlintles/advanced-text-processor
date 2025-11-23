@@ -19,7 +19,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::tlcc::Tlcc};
+/// use atp::tokens::{TokenMethods, transforms::tlcc::Tlcc};
 ///
 /// let token = Tlcc::params(1,4).unwrap();
 ///

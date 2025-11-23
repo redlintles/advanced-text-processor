@@ -12,7 +12,7 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::rev::Rev};
+/// use atp::tokens::{TokenMethods, transforms::rev::Rev};
 ///
 /// let token = Rev::default();
 /// assert_eq!(token.parse("foobar"), Ok("raboof".to_string()));

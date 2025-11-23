@@ -11,7 +11,7 @@ use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::urld::Urld};
+/// use atp::tokens::{TokenMethods, transforms::urld::Urld};
 ///
 /// let token = Urld::default();
 ///

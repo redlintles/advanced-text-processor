@@ -11,7 +11,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::dlf::Dlf};
+/// use atp::tokens::{TokenMethods, transforms::dlf::Dlf};
 ///
 /// let token = Dlf::default();
 ///

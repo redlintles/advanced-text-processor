@@ -13,7 +13,7 @@ use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
 /// # Example
 ///
 /// ```rust
-/// use atp_project::tokens::{TokenMethods, transforms::rtl::Rtl};
+/// use atp::tokens::{TokenMethods, transforms::rtl::Rtl};
 ///
 /// let token = Rtl::params(3);
 ///
