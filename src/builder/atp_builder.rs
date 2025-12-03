@@ -10,6 +10,59 @@ pub struct AtpBuilder {
     tokens: Vec<Box<dyn TokenMethods>>,
 }
 
+pub trait AtpBuilderDocs: Sized {
+    fn trim_both_sides(self) -> Self;
+    fn trim_left_side(self) -> Self;
+    fn trim_right_side(self) -> Self;
+    fn add_to_end(self, text: &str) -> Self;
+    fn add_to_beginning(self, text: &str) -> Self;
+    fn delete_first(self) -> Self;
+    fn delete_last(self) -> Self;
+    fn delete_after(self, index: usize) -> Self;
+    fn delete_before(self, index: usize) -> Self;
+    fn delete_chunk(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn replace_all_with(self, pattern: &str, text_to_replace: &str) -> Self;
+    fn replace_first_with(self, pattern: &str, text_to_replace: &str) -> Self;
+    fn replace_last_with(self, pattern: &str, text_to_replace: &str) -> Self;
+    fn replace_nth_with(self, pattern: &str, text_to_replace: &str, index: usize) -> Self;
+    fn replace_count_with(self, pattern: &str, text_to_replace: &str, count: usize) -> Self;
+    fn rotate_left(self, times: usize) -> Self;
+    fn rotate_right(self, times: usize) -> Self;
+    fn repeat(self, times: usize) -> Self;
+    fn select(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn to_uppercase_all(self) -> Self;
+    fn to_lowercase_all(self) -> Self;
+    fn to_uppercase_single(self, index: usize) -> Self;
+    fn to_lowercase_single(self, index: usize) -> Self;
+    fn to_uppercase_chunk(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn to_lowercase_chunk(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn capitalize_first_word(self) -> Self;
+    fn capitalize_last_word(self) -> Self;
+    fn split_select(self, pattern: &str, index: usize) -> Self;
+    fn capitalize_chunk(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn capitalize_range(self, start_index: usize, end_index: usize) -> Result<Self, AtpError>;
+    fn capitalize_single_word(self, index: usize) -> Self;
+    fn to_url_encoded(self) -> Self;
+    fn to_url_decoded(self) -> Self;
+    fn to_reverse(self) -> Self;
+    fn split_characters(self) -> Self;
+    fn to_html_escaped(self) -> Self;
+    fn to_html_unescaped(self) -> Self;
+    fn to_json_escaped(self) -> Self;
+    fn to_json_unescaped(self) -> Self;
+    fn insert(self, index: usize, text_to_insert: &str) -> Self;
+    fn to_lowercase_word(self, index: usize) -> Self;
+    fn to_uppercase_word(self, index: usize) -> Self;
+    fn join_to_kebab_case(self) -> Self;
+    fn join_to_snake_case(self) -> Self;
+    fn join_to_camel_case(self) -> Self;
+    fn join_to_pascal_case(self) -> Self;
+    fn pad_left(self, text: &str, times: usize) -> Self;
+    fn pad_right(self, text: &str, times: usize) -> Self;
+    fn remove_whitespace(self) -> Self;
+    fn delete_single(self, index: usize) -> Self;
+}
+
 impl AtpBuilder {
     pub fn new() -> AtpBuilder {
         AtpBuilder {
@@ -25,7 +78,7 @@ impl AtpBuilder {
     }
 }
 
-impl AtpBuilder {
+impl AtpBuilderDocs for AtpBuilder {
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.
@@ -45,7 +98,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana".to_string()));
     /// ```
-    pub fn trim_both_sides(mut self) -> Self {
+    fn trim_both_sides(mut self) -> Self {
         self.tokens.push(Box::new(tbs::Tbs::default()));
         self
     }
@@ -69,7 +122,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana  ".to_string()));
     /// ```
-    pub fn trim_left_side(mut self) -> Self {
+    fn trim_left_side(mut self) -> Self {
         self.tokens.push(Box::new(tls::Tls::default()));
         self
     }
@@ -92,7 +145,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("  banana".to_string()));
     /// ```
-    pub fn trim_right_side(mut self) -> Self {
+    fn trim_right_side(mut self) -> Self {
         self.tokens.push(Box::new(trs::Trs::default()));
         self
     }
@@ -114,7 +167,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana!".to_string()));
     /// ```
-    pub fn add_to_end(mut self, text: &str) -> Self {
+    fn add_to_end(mut self, text: &str) -> Self {
         self.tokens.push(Box::new(ate::Ate::params(text)));
         self
     }
@@ -137,7 +190,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("xbanana".to_string()));
     /// ```
 
-    pub fn add_to_beginning(mut self, text: &str) -> Self {
+    fn add_to_beginning(mut self, text: &str) -> Self {
         self.tokens.push(Box::new(atb::Atb::params(text)));
         self
     }
@@ -160,7 +213,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("anana".to_string()));
     /// ```
 
-    pub fn delete_first(mut self) -> Self {
+    fn delete_first(mut self) -> Self {
         self.tokens.push(Box::new(dlf::Dlf::default()));
         self
     }
@@ -183,7 +236,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("banan".to_string()));
     /// ```
 
-    pub fn delete_last(mut self) -> Self {
+    fn delete_last(mut self) -> Self {
         self.tokens.push(Box::new(dll::Dll::default()));
         self
     }
@@ -207,7 +260,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("ban".to_string()));
     /// ```
 
-    pub fn delete_after(mut self, index: usize) -> Self {
+    fn delete_after(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(dla::Dla::params(index)));
         self
     }
@@ -231,7 +284,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("ana".to_string()));
     /// ```
 
-    pub fn delete_before(mut self, index: usize) -> Self {
+    fn delete_before(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(dlb::Dlb::params(index)));
         self
     }
@@ -256,7 +309,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id, input), Ok("bna".to_string()));
     /// ```
 
-    pub fn delete_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    fn delete_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         self.tokens.push(Box::new(dlc::Dlc::params(start_index, end_index)?));
         Ok(self)
     }
@@ -286,7 +339,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn replace_all_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
+    fn replace_all_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(
             Box::new(match raw::Raw::params(pattern, text_to_replace) {
                 Ok(x) => x,
@@ -322,7 +375,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn replace_first_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
+    fn replace_first_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(
             Box::new(match rfw::Rfw::params(pattern, text_to_replace) {
                 Ok(x) => x,
@@ -356,7 +409,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn replace_last_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
+    fn replace_last_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
         self.tokens.push(
             Box::new(match rlw::Rlw::params(pattern, text_to_replace) {
                 Ok(x) => x,
@@ -392,7 +445,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn replace_nth_with(mut self, pattern: &str, text_to_replace: &str, index: usize) -> Self {
+    fn replace_nth_with(mut self, pattern: &str, text_to_replace: &str, index: usize) -> Self {
         self.tokens.push(
             Box::new(match rnw::Rnw::params(pattern, text_to_replace, index) {
                 Ok(x) => x,
@@ -427,12 +480,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn replace_count_with(
-        mut self,
-        pattern: &str,
-        text_to_replace: &str,
-        count: usize
-    ) -> Self {
+    fn replace_count_with(mut self, pattern: &str, text_to_replace: &str, count: usize) -> Self {
         self.tokens.push(
             Box::new(match rcw::Rcw::params(pattern, text_to_replace, count) {
                 Ok(x) => x,
@@ -467,7 +515,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn rotate_left(mut self, times: usize) -> Self {
+    fn rotate_left(mut self, times: usize) -> Self {
         self.tokens.push(Box::new(rtl::Rtl::params(times)));
         self
     }
@@ -496,7 +544,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn rotate_right(mut self, times: usize) -> Self {
+    fn rotate_right(mut self, times: usize) -> Self {
         self.tokens.push(Box::new(rtr::Rtr::params(times)));
         self
     }
@@ -524,7 +572,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn repeat(mut self, times: usize) -> Self {
+    fn repeat(mut self, times: usize) -> Self {
         self.tokens.push(Box::new(rpt::Rpt::params(times)));
         self
     }
@@ -553,7 +601,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn select(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    fn select(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)?));
         Ok(self)
     }
@@ -582,7 +630,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_uppercase_all(mut self) -> Self {
+    fn to_uppercase_all(mut self) -> Self {
         self.tokens.push(Box::new(tua::Tua::default()));
         self
     }
@@ -610,7 +658,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_lowercase_all(mut self) -> Self {
+    fn to_lowercase_all(mut self) -> Self {
         self.tokens.push(Box::new(tla::Tla::default()));
         self
     }
@@ -640,7 +688,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_uppercase_single(mut self, index: usize) -> Self {
+    fn to_uppercase_single(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(tucs::Tucs::params(index)));
         self
     }
@@ -670,7 +718,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_lowercase_single(mut self, index: usize) -> Self {
+    fn to_lowercase_single(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(tlcs::Tlcs::params(index)));
         self
     }
@@ -704,7 +752,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_uppercase_chunk(
+    fn to_uppercase_chunk(
         mut self,
         start_index: usize,
         end_index: usize
@@ -742,7 +790,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_lowercase_chunk(
+    fn to_lowercase_chunk(
         mut self,
         start_index: usize,
         end_index: usize
@@ -777,7 +825,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn capitalize_first_word(mut self) -> Self {
+    fn capitalize_first_word(mut self) -> Self {
         self.tokens.push(Box::new(cfw::Cfw::default()));
         self
     }
@@ -806,7 +854,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn capitalize_last_word(mut self) -> Self {
+    fn capitalize_last_word(mut self) -> Self {
         self.tokens.push(Box::new(clw::Clw::default()));
         self
     }
@@ -837,7 +885,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn split_select(mut self, pattern: &str, index: usize) -> Self {
+    fn split_select(mut self, pattern: &str, index: usize) -> Self {
         self.tokens.push(
             Box::new(match sslt::Sslt::params(pattern, index) {
                 Ok(x) => x,
@@ -875,11 +923,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn capitalize_chunk(
-        mut self,
-        start_index: usize,
-        end_index: usize
-    ) -> Result<Self, AtpError> {
+    fn capitalize_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)?));
         Ok(self)
     }
@@ -911,11 +955,7 @@ impl AtpBuilder {
     ///     Ok("aBCDef".to_string())
     /// );
     /// ```
-    pub fn capitalize_range(
-        mut self,
-        start_index: usize,
-        end_index: usize
-    ) -> Result<Self, AtpError> {
+    fn capitalize_range(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)?));
         Ok(self)
     }
@@ -944,7 +984,7 @@ impl AtpBuilder {
     ///     Ok("hello brave World".to_string())
     /// );
     /// ```
-    pub fn capitalize_single_word(mut self, index: usize) -> Self {
+    fn capitalize_single_word(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(cts::Cts::params(index)));
         self
     }
@@ -973,7 +1013,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_url_encoded(mut self) -> Self {
+    fn to_url_encoded(mut self) -> Self {
         self.tokens.push(Box::new(urle::Urle::default()));
         self
     }
@@ -1002,7 +1042,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_url_decoded(mut self) -> Self {
+    fn to_url_decoded(mut self) -> Self {
         self.tokens.push(Box::new(urld::Urld::default()));
         self
     }
@@ -1028,7 +1068,7 @@ impl AtpBuilder {
     ///     Ok("cba".to_string())
     /// );
     /// ```
-    pub fn to_reverse(mut self) -> Self {
+    fn to_reverse(mut self) -> Self {
         self.tokens.push(Box::new(rev::Rev::default()));
         self
     }
@@ -1055,7 +1095,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn split_characters(mut self) -> Self {
+    fn split_characters(mut self) -> Self {
         self.tokens.push(Box::new(splc::Splc::default()));
         self
     }
@@ -1085,7 +1125,7 @@ impl AtpBuilder {
     /// );
     /// ```
 
-    pub fn to_html_escaped(mut self) -> Self {
+    fn to_html_escaped(mut self) -> Self {
         self.tokens.push(Box::new(htmle::Htmle::default()));
         self
     }
@@ -1113,7 +1153,7 @@ impl AtpBuilder {
     ///     Ok("<b>Hi</b>".to_string())
     /// );
     /// ```
-    pub fn to_html_unescaped(mut self) -> Self {
+    fn to_html_unescaped(mut self) -> Self {
         self.tokens.push(Box::new(htmlu::Htmlu::default()));
         self
     }
@@ -1138,7 +1178,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id,&input), Ok("\"{banana: '10'}\"".to_string()));
     /// ```
 
-    pub fn to_json_escaped(mut self) -> Self {
+    fn to_json_escaped(mut self) -> Self {
         self.tokens.push(Box::new(jsone::Jsone::default()));
         self
     }
@@ -1161,7 +1201,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("{banana: '10'}".to_string()));
     /// ```
-    pub fn to_json_unescaped(mut self) -> Self {
+    fn to_json_unescaped(mut self) -> Self {
         self.tokens.push(Box::new(jsonu::Jsonu::default()));
         self
     }
@@ -1186,7 +1226,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("ba laranjanana".to_string()));
     /// ```
-    pub fn insert(mut self, index: usize, text_to_insert: &str) -> Self {
+    fn insert(mut self, index: usize, text_to_insert: &str) -> Self {
         self.tokens.push(Box::new(ins::Ins::params(index, text_to_insert)));
         self
     }
@@ -1210,7 +1250,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BANANA laranja CHEIA DE CANJA".to_string()));
     /// ```
-    pub fn to_lowercase_word(mut self, index: usize) -> Self {
+    fn to_lowercase_word(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(tlcw::Tlcw::params(index)));
         self
     }
@@ -1233,7 +1273,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana LARANJA cheia de canja".to_string()));
     /// ```
-    pub fn to_uppercase_word(mut self, index: usize) -> Self {
+    fn to_uppercase_word(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(tucw::Tucw::params(index)));
         self
     }
@@ -1259,7 +1299,7 @@ impl AtpBuilder {
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana-laranja-cheia-de-canja".to_string()));
     ///
 
-    pub fn join_to_kebab_case(mut self) -> Self {
+    fn join_to_kebab_case(mut self) -> Self {
         self.tokens.push(Box::new(jkbc::Jkbc::default()));
         self
     }
@@ -1283,7 +1323,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana_laranja_cheia_de_canja".to_string()));
     ///
-    pub fn join_to_snake_case(mut self) -> Self {
+    fn join_to_snake_case(mut self) -> Self {
         self.tokens.push(Box::new(jsnc::Jsnc::default()));
         self
     }
@@ -1307,7 +1347,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananaLaranjaCheiaDeCanja".to_string()));
     /// ```
-    pub fn join_to_camel_case(mut self) -> Self {
+    fn join_to_camel_case(mut self) -> Self {
         self.tokens.push(Box::new(jcmc::Jcmc::default()));
         self
     }
@@ -1331,7 +1371,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BananaLaranjaCheiaDeCanja".to_string()));
     /// ```
-    pub fn join_to_pascal_case(mut self) -> Self {
+    fn join_to_pascal_case(mut self) -> Self {
         self.tokens.push(Box::new(jpsc::Jpsc::default()));
         self
     }
@@ -1354,7 +1394,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("xbanana".to_string()));
     /// ```
-    pub fn pad_left(mut self, text: &str, times: usize) -> Self {
+    fn pad_left(mut self, text: &str, times: usize) -> Self {
         self.tokens.push(Box::new(padl::Padl::params(text, times)));
         self
     }
@@ -1377,7 +1417,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananax".to_string()));
     /// ```
-    pub fn pad_right(mut self, text: &str, times: usize) -> Self {
+    fn pad_right(mut self, text: &str, times: usize) -> Self {
         self.tokens.push(Box::new(padr::Padr::params(text, times)));
         self
     }
@@ -1396,7 +1436,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananalaranjacheiadecanja".to_string()));
     /// ```
-    pub fn remove_whitespace(mut self) -> Self {
+    fn remove_whitespace(mut self) -> Self {
         self.tokens.push(Box::new(rmws::Rmws::default()));
         self
     }
@@ -1418,7 +1458,7 @@ impl AtpBuilder {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
     /// ```
-    pub fn delete_single(mut self, index: usize) -> Self {
+    fn delete_single(mut self, index: usize) -> Self {
         self.tokens.push(Box::new(dls::Dls::params(index)));
         self
     }

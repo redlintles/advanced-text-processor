@@ -102,7 +102,7 @@ pub fn process_input_by_chunks(
 mod cli_tests {
     mod process_input_by_chunks_tests {
         use crate::{
-            builder::atp_builder::AtpBuilder,
+            builder::atp_builder::{ AtpBuilder, AtpBuilderDocs },
             utils::{ cli::process_input_by_chunks, errors::AtpError },
         };
 
@@ -126,7 +126,7 @@ mod cli_tests {
 
     mod process_input_line_by_line_tests {
         use crate::{
-            builder::atp_builder::AtpBuilder,
+            builder::atp_builder::{ AtpBuilder, AtpBuilderDocs },
             utils::{ cli::process_input_line_by_line, errors::AtpError },
         };
 
@@ -150,7 +150,7 @@ mod cli_tests {
 
     mod process_input_single_chunk_tests {
         use crate::{
-            builder::atp_builder::AtpBuilder,
+            builder::atp_builder::{ AtpBuilder, AtpBuilderDocs },
             utils::{ cli::process_input_single_chunk, errors::AtpError },
         };
 

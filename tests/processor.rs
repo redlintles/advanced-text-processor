@@ -4,7 +4,10 @@ pub mod processor {
     use std::{ fs::File, io::Read, path::Path };
 
     use atp::{
-        builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
+        builder::{
+            atp_builder::{ AtpBuilder, AtpBuilderDocs },
+            atp_processor::{ AtpProcessor, AtpProcessorMethods },
+        },
         tokens::{ transforms::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt }, TokenMethods },
     };
     use uuid::Uuid;

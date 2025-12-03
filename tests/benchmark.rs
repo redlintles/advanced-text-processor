@@ -2,7 +2,10 @@
 #[cfg(test)]
 pub mod benchmark {
     use std::time::Instant;
-    use atp::builder::{ atp_builder::AtpBuilder, atp_processor::{ AtpProcessorMethods } };
+    use atp::builder::{
+        atp_builder::{ AtpBuilder, AtpBuilderDocs },
+        atp_processor::{ AtpProcessorMethods },
+    };
 
     use atp::utils::errors::AtpError;
 
