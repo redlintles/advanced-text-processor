@@ -807,8 +807,7 @@ impl AtpBuilder {
     /// ```
 
     pub fn capitalize_last_word(mut self) -> Self {
-        // BUG AQUI: Corrigir depois em outro commit
-        self.tokens.push(Box::new(cfw::Cfw::default()));
+        self.tokens.push(Box::new(clw::Clw::default()));
         self
     }
 
