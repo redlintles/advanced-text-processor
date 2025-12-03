@@ -10,9 +10,9 @@ use crate::{
 };
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
-/// TLCW - To Lowercase Word
+/// TUCW - To Uppercase Word
 ///
-/// Lowercase a single word of string
+/// Uppercase a single word of string
 ///
 /// # Example:
 ///

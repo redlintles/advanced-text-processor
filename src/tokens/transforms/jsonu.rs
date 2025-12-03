@@ -7,7 +7,7 @@ use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-/// Jsone - Json Unescape
+/// Jsonu - Json Unescape
 ///
 /// Unescapes JSON Special Characters in `input` with serde_json::from_str
 ///
