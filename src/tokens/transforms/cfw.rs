@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods };
 /// Token `Cfw` — Capitalize First Word
 ///
 /// Capitalizes the first word of `input`
@@ -53,25 +53,25 @@ impl BytecodeTokenMethods for Cfw {
         0x18
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Cfw::default().get_opcode() {
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Cfw::default().get_opcode() {
             return Ok(());
         }
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction { op_code: Cfw::default().get_opcode(), operands: [].to_vec() }
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Cfw::default().get_opcode(), 0]
     }
 }
 
@@ -111,14 +111,11 @@ mod cfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_first_word_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Cfw::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x18,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x18, 0];
 
         assert_eq!(token.get_opcode(), 0x18, "get_opcode does not disrepect ATP token mapping");
 
