@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeTokenMethods };
 
 /// JPSC - Join to PascalCase
 ///
@@ -67,27 +67,25 @@ impl BytecodeTokenMethods for Jpsc {
         0x2e
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Jpsc::default().get_opcode() {
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Jpsc::default().get_opcode() {
             return Ok(());
         }
 
         Err(
             AtpError::new(
                 AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Jpsc::default().get_opcode(),
-            operands: [].to_vec(),
-        }
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Jpsc::default().get_opcode(), 0]
     }
 }
 
@@ -125,14 +123,11 @@ mod jpsc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_pascal_case_bytecode_tests() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Jpsc::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x2e,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x2e, 0];
 
         assert_eq!(token.get_opcode(), 0x2e, "get_opcode does not disrepect ATP token mapping");
 
