@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeTokenMethods };
 /// TBS - Trim both sides
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
@@ -50,31 +50,29 @@ impl TokenMethods for Tbs {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tbs {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Tbs::default().get_opcode() {
+    fn get_opcode(&self) -> u8 {
+        0x05
+    }
+
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Tbs::default().get_opcode() {
             return Ok(());
         }
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Tbs::default().get_opcode(),
-            operands: [].to_vec(),
-        }
-    }
-    fn get_opcode(&self) -> u8 {
-        0x05
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Tbs::default().get_opcode(), 0]
     }
 }
 
@@ -123,14 +121,11 @@ mod tbs_tests {
     #[test]
     fn test_bytecode_trim_both_sides() {
         use crate::tokens::{ transforms::tbs::Tbs };
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Tbs::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x05,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x05, 0];
 
         assert_eq!(token.get_opcode(), 0x05, "get_opcode does not disrepect ATP token mapping");
 
