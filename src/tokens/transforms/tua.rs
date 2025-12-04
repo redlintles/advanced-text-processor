@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeTokenMethods };
 
 #[derive(Clone, Copy, Default)]
 pub struct Tua {}
@@ -38,25 +38,40 @@ impl BytecodeTokenMethods for Tua {
         0x12
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Tua::default().get_opcode() {
-            return Ok(());
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] != Tua::default().get_opcode() {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Bytecode Not Found".into()),
+                    instruction[0].to_string(),
+                    instruction
+                        .iter()
+                        .map(|b| b.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                )
+            );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
+        if instruction[1] != 0 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidArgumentNumber("Tua has no arguments".into()),
+                    instruction[1].to_string(),
+                    instruction
+                        .iter()
+                        .map(|b| b.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                )
+            );
+        }
+
+        Ok(())
     }
 
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction { op_code: Tua::default().get_opcode(), operands: [].to_vec() }
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Tua::default().get_opcode(), 0]
     }
 }
 
@@ -92,14 +107,11 @@ mod tua_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_to_uppercase_all_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Tua::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x12,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x12, 0];
 
         assert_eq!(token.get_opcode(), 0x12, "get_opcode does not disrepect ATP token mapping");
 
