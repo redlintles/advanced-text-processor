@@ -5,7 +5,7 @@ use crate::tokens::TokenMethods;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeTokenMethods } };
 /// TLS - Trim left sides
 ///
 /// Trim the left Side of `input`, removing all spaces from the beginning
@@ -51,33 +51,29 @@ impl TokenMethods for Tls {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tls {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        use crate::utils::errors::AtpErrorCode;
+    fn get_opcode(&self) -> u8 {
+        0x06
+    }
 
-        if instruction.op_code == Tls::default().get_opcode() {
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Tls::default().get_opcode() {
             return Ok(());
         }
 
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Tls::default().get_opcode(),
-            operands: [].to_vec(),
-        }
-    }
-    fn get_opcode(&self) -> u8 {
-        0x06
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Tls::default().get_opcode(), 0]
     }
 }
 
@@ -120,14 +116,11 @@ mod tls_tests {
     #[test]
     fn test_bytecode_trim_left_side() {
         use crate::tokens::{ transforms::tls::Tls };
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Tls::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x06,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x06, 0];
 
         assert_eq!(token.get_opcode(), 0x06, "get_opcode does not disrepect ATP token mapping");
 
