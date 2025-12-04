@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeTokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -66,27 +66,26 @@ impl BytecodeTokenMethods for Jsone {
     fn get_opcode(&self) -> u8 {
         0x26
     }
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Jsone::default().get_opcode() {
+
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Jsone::default().get_opcode() {
             return Ok(());
         }
+
         Err(
             AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Jsone::default().get_opcode(),
-            operands: [].to_vec(),
-        }
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Jsone::default().get_opcode(), 0]
     }
 }
 
@@ -129,14 +128,11 @@ mod jsone_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_json_escape_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Jsone::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x26,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x26, 0];
 
         assert_eq!(token.get_opcode(), 0x26, "get_opcode does not disrepect ATP token mapping");
 
