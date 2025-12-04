@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::bytecode::{ BytecodeTokenMethods };
 
 /// RMWS - Remove Whitespace
 ///
@@ -52,25 +52,25 @@ impl BytecodeTokenMethods for Rmws {
         0x31
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == self.get_opcode() {
+    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+        if instruction[0] == Rmws::default().get_opcode() {
             return Ok(());
         }
 
         Err(
             AtpError::new(
                 AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
+                instruction[0].to_string(),
+                instruction
+                    .iter()
+                    .map(|b| b.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")
             )
         )
     }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction { op_code: self.get_opcode(), operands: [].to_vec() }
+    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
+        vec![Rmws::default().get_opcode(), 0]
     }
 }
 #[cfg(feature = "test_access")]
@@ -108,14 +108,11 @@ mod rmws_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn remove_whitespace_bytecode_tests() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Rmws::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x31,
-            operands: [].to_vec(),
-        };
+        let instruction = vec![0x31, 0];
 
         assert_eq!(token.get_opcode(), 0x31, "get_opcode does not disrepect ATP token mapping");
 
