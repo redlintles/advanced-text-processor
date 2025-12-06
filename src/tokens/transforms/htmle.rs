@@ -5,7 +5,7 @@ use html_escape::encode_text;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
+use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
 /// HTMLE - HTML Escape
 ///
@@ -56,25 +56,31 @@ impl BytecodeTokenMethods for Htmle {
         0x24
     }
 
-    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
-        if instruction[0] == Htmle::default().get_opcode() {
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() == 0 {
             return Ok(());
+        } else {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                instruction[0].to_string(),
-                instruction
-                    .iter()
-                    .map(|b| b.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            )
-        )
     }
-    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
-        vec![Htmle::default().get_opcode(), 0]
+    fn to_bytecode(&self) -> Vec<u8> {
+        let opcode = self.get_opcode();
+
+        let size: u16 = 13; // tamanho total, incluindo header
+        let size_bytes = size.to_be_bytes(); // big-endian
+
+        let mut v = Vec::with_capacity(13);
+        v.push(opcode);
+        v.extend_from_slice(&size_bytes);
+        v.extend_from_slice(&[0u8; 10]); // payload vazio/padding
+
+        v
     }
 }
 
@@ -114,23 +120,40 @@ mod htmle_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_escape_bytecode_test() {
-        use crate::bytecode::{ BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Htmle::default();
 
-        let instruction = vec![0x24, 0];
+        let instruction: Vec<AtpParamTypes> = vec![];
 
         assert_eq!(token.get_opcode(), 0x24, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            vec![
+                // Token total size
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0d,
+                // Token Type
+                0x00,
+                0x00,
+                0x00,
+                0x24,
+                // Token Params
+                0x00
+            ],
             "Conversion to bytecode instruction works perfectly!"
         );
     }
