@@ -52,7 +52,7 @@ impl BytecodeTokenMethods for Rmws {
         0x31
     }
 
-    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction[0] == Rmws::default().get_opcode() {
             return Ok(());
         }
