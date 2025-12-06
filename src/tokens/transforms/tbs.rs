@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
+use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 /// TBS - Trim both sides
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
@@ -54,25 +54,34 @@ impl BytecodeTokenMethods for Tbs {
         0x05
     }
 
-    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
-        if instruction[0] == Tbs::default().get_opcode() {
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() == 0 {
             return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                instruction[0].to_string(),
-                instruction
-                    .iter()
-                    .map(|b| b.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" ")
+        } else {
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
             )
-        )
+        }
     }
-    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
-        vec![Tbs::default().get_opcode(), 0]
+
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        // tamanho total = opcode (4) + param_count (1) + header (8)
+        let instruction_size: u64 = 13;
+
+        result.extend_from_slice(&instruction_size.to_be_bytes());
+
+        let opcode: u32 = self.get_opcode() as u32;
+        result.extend_from_slice(&opcode.to_be_bytes());
+
+        result.push(0); // número de parâmetros
+
+        result
     }
 }
 
@@ -122,22 +131,40 @@ mod tbs_tests {
     fn test_bytecode_trim_both_sides() {
         use crate::tokens::{ transforms::tbs::Tbs };
         use crate::bytecode::{ BytecodeTokenMethods };
+        use crate::utils::bytecode_utils::AtpParamTypes;
 
         let mut token = Tbs::default();
 
-        let instruction = vec![0x05, 0];
+        let instruction: Vec<AtpParamTypes> = vec![];
 
         assert_eq!(token.get_opcode(), 0x05, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            vec![
+                // tamanho total da instrução (8 bytes)
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0d,
+                // opcode (4 bytes)
+                0x00,
+                0x00,
+                0x00,
+                0x05,
+                // número de parâmetros
+                0x00
+            ],
             "Conversion to bytecode instruction works perfectly!"
         );
     }
