@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
 /// Token `Ate` — Add to End
 ///
 /// Appends `text` to the end of `input`
@@ -62,49 +62,70 @@ impl TokenMethods for Ate {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Ate {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Ate::default().get_opcode() {
-            if !instruction.operands.is_empty() {
-                self.text = instruction.operands[0].clone();
-                return Ok(());
-            }
+    fn get_opcode(&self) -> u8 {
+        0x02
+    }
 
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 1 {
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands(
-                        "An ATP Bytecode parsing error ocurred: Invalid Operands".into()
-                    ),
-                    instruction.to_bytecode_line(),
-                    instruction.operands.join(" ")
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
             );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound(
-                    "An ATP Bytecode parsing error ocurred: Invalid Token".into()
-                ),
-                instruction.to_bytecode_line(),
-                instruction.operands.join("")
-            )
-        )
-    }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Ate::default().get_opcode(),
-            operands: [self.text.clone()].to_vec(),
+        match &instruction[0] {
+            AtpParamTypes::String(payload) => {
+                self.text = payload.to_string();
+                return Ok(());
+            }
+            _ => {
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single string as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                )
+            }
         }
     }
-    fn get_opcode(&self) -> u8 {
-        0x02
+
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x01;
+        let first_param_payload = self.text.as_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(1);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        result
     }
 }
-
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod ate_tests {
@@ -139,29 +160,81 @@ mod ate_tests {
     }
 
     #[cfg(feature = "bytecode")]
-    #[test]
-    fn test_add_to_end_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
-
-        let mut token = Ate::params("banana");
-
-        let instruction = BytecodeInstruction {
-            op_code: 0x02,
-            operands: ["banana".to_string()].to_vec(),
+    mod test_bytecode_version {
+        use crate::{
+            tokens::{ TokenMethods, transforms::ate::Ate },
+            utils::bytecode_utils::AtpParamTypes,
         };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
-        assert_eq!(token.get_opcode(), 0x02, "get_opcode does not disrepect ATP token mapping");
+        #[test]
+        fn test_to_bytecode_instruction() {
+            let token = Ate::params("banana");
 
-        assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
-        );
+            let first_param_type: u32 = 0x01;
+            let first_param_payload = "banana".as_bytes();
+            let first_param_payload_size = first_param_payload.len() as u32;
+            let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
 
-        assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
-            "Conversion to bytecode instruction works perfectly!"
-        );
+            let instruction_type: u32 = 0x02;
+            let param_count: u8 = 0x01;
+
+            let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+            let mut expected_output: Vec<u8> = vec![];
+
+            expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+            expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+            expected_output.push(param_count);
+            expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_payload);
+
+            assert_eq!(
+                token.to_bytecode(),
+                expected_output,
+                "Conversion to bytecode instruction works perfectly!"
+            );
+        }
+
+        #[test]
+        fn test_get_op_code() {
+            let token = Ate::default();
+            assert_eq!(token.get_opcode(), 0x02, "get_opcode does not disrepect ATP token mapping");
+        }
+
+        #[test]
+        fn test_from_bytecode_instruction() {
+            let mut token = Ate::params("laranja");
+
+            let instruction: Vec<AtpParamTypes> = vec![
+                AtpParamTypes::String("laranja".to_string())
+            ];
+
+            assert_eq!(
+                token.from_params(instruction),
+                Ok(()),
+                "Parsing from bytecode to token works correctly!"
+            );
+            assert_eq!(
+                token.parse("coxinha"),
+                Ok("bananacoxinha".to_string()),
+                "from_bytecode_instruction fills token params correctly"
+            );
+
+            // assert!(
+            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            //     "Throws an error for invalid op_code"
+            // );
+
+            // instruction.op_code = 0x01;
+            // instruction.operands = [].to_vec();
+
+            // assert!(
+            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            //     "Throws an error for invalid operands"
+            // );
+        }
     }
 }
