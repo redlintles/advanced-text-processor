@@ -69,6 +69,7 @@ impl ErrorManager {
 #[derive(Clone, Debug, PartialEq)]
 pub enum AtpErrorCode {
     FileNotFound(Cow<'static, str>),
+    BytecodeParamNotRecognized(Cow<'static, str>),
     TokenNotFound(Cow<'static, str>),
     TokenArrayNotFound(Cow<'static, str>),
     FileReadingError(Cow<'static, str>),
@@ -107,6 +108,7 @@ impl AtpErrorCode {
             Self::InvalidIndex(_) => 202,
             Self::InvalidParameters(_) => 203,
             Self::InvalidArgumentNumber(_) => 204,
+            Self::BytecodeParamNotRecognized(_) => 205,
             Self::TextParsingError(_) => 300,
             Self::BytecodeParsingError(_) => 301,
             Self::ValidationError(_) => 302,
@@ -131,7 +133,8 @@ impl AtpErrorCode {
             | Self::FileWritingError(x)
             | Self::FileOpeningError(x)
             | Self::ZeroDivisionError(x)
-            | Self::TokenArrayNotFound(x) => x.to_string(),
+            | Self::TokenArrayNotFound(x)
+            | Self::BytecodeParamNotRecognized(x) => x.to_string(),
         }
     }
 }
