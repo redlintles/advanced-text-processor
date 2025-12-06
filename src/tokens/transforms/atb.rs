@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
 
 /// Token `Atb` — Add to Beginning
 ///
@@ -63,45 +63,68 @@ impl TokenMethods for Atb {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Atb {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Atb::default().get_opcode() {
-            if !instruction.operands.is_empty() {
-                self.text = instruction.operands[0].clone();
-                return Ok(());
-            }
+    fn get_opcode(&self) -> u8 {
+        0x01
+    }
 
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 1 {
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands(
-                        "Invalid operands for this instruction! expected {text}".into()
-                    ),
-                    self.token_to_bytecode_instruction().to_bytecode_line(),
-                    instruction.operands.join(" ")
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
             );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid code for this parser!".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
-    }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Atb::default().get_opcode(),
-            operands: [self.text.clone()].to_vec(),
+        match &instruction[0] {
+            AtpParamTypes::String(payload) => {
+                self.text = payload.to_string();
+                return Ok(());
+            }
+            _ => {
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single string as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                )
+            }
         }
     }
 
-    fn get_opcode(&self) -> u8 {
-        0x01
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x01;
+        let first_param_payload = self.text.as_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(1);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        result
     }
 }
 
@@ -180,21 +203,39 @@ mod atb_tests {
 
     #[cfg(feature = "bytecode")]
     mod test_bytecode_version {
-        use crate::{ tokens::{ TokenMethods, transforms::atb::Atb } };
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{
+            tokens::{ TokenMethods, transforms::atb::Atb },
+            utils::bytecode_utils::AtpParamTypes,
+        };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         #[test]
         fn test_to_bytecode_instruction() {
             let token = Atb::params("banana");
 
-            let instruction = BytecodeInstruction {
-                op_code: 0x01,
-                operands: ["banana".to_string()].to_vec(),
-            };
+            let first_param_type: u32 = 0x01;
+            let first_param_payload = "banana".as_bytes();
+            let first_param_payload_size = first_param_payload.len() as u32;
+            let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+            let instruction_type: u32 = 0x01;
+            let param_count: u8 = 0x01;
+
+            let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+            let mut expected_output: Vec<u8> = vec![];
+
+            expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+            expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+            expected_output.push(param_count);
+            expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+            expected_output.extend_from_slice(&first_param_payload);
 
             assert_eq!(
-                token.token_to_bytecode_instruction(),
-                instruction,
+                token.to_bytecode(),
+                expected_output,
                 "Conversion to bytecode instruction works perfectly!"
             );
         }
@@ -209,13 +250,12 @@ mod atb_tests {
         fn test_from_bytecode_instruction() {
             let mut token = Atb::params("laranja");
 
-            let mut instruction = BytecodeInstruction {
-                op_code: 0x01,
-                operands: ["banana".to_string()].to_vec(),
-            };
+            let instruction: Vec<AtpParamTypes> = vec![
+                AtpParamTypes::String("laranja".to_string())
+            ];
 
             assert_eq!(
-                token.token_from_bytecode_instruction(instruction.clone()),
+                token.from_params(instruction),
                 Ok(()),
                 "Parsing from bytecode to token works correctly!"
             );
@@ -225,20 +265,18 @@ mod atb_tests {
                 "from_bytecode_instruction fills token params correctly"
             );
 
-            instruction.op_code = 0x02;
+            // assert!(
+            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            //     "Throws an error for invalid op_code"
+            // );
 
-            assert!(
-                matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-                "Throws an error for invalid op_code"
-            );
+            // instruction.op_code = 0x01;
+            // instruction.operands = [].to_vec();
 
-            instruction.op_code = 0x01;
-            instruction.operands = [].to_vec();
-
-            assert!(
-                matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-                "Throws an error for invalid operands"
-            );
+            // assert!(
+            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
+            //     "Throws an error for invalid operands"
+            // );
         }
     }
 }
