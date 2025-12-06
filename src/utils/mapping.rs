@@ -33,7 +33,7 @@ macro_rules! token_map_string_bytecode_methods {
 macro_rules! token_map_bytecode_token {
     ($($key:literal => $val:ty),* $(,)?) => {
         {
-        let mut map: HashMap<u8, fn() -> Box<dyn BytecodeTokenMethods>> = HashMap::new();
+        let mut map: HashMap<u32, fn() -> Box<dyn BytecodeTokenMethods>> = HashMap::new();
         $(
             map.insert($key, || Box::new(<$val as Default>::default()));
         )*
@@ -170,6 +170,6 @@ pub fn get_supported_bytecode_tokens() -> HashMap<
     for_each_token_entry!(token_map_string_bytecode_methods)
 }
 #[cfg(feature = "bytecode")]
-pub fn get_mapping_bytecode_to_token() -> HashMap<u8, fn() -> Box<dyn BytecodeTokenMethods>> {
+pub fn get_mapping_bytecode_to_token() -> HashMap<u32, fn() -> Box<dyn BytecodeTokenMethods>> {
     for_each_bytecode_entry!(token_map_bytecode_token)
 }
