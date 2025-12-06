@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods, BytecodeInstruction } };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
 
 use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 
@@ -52,27 +52,31 @@ impl BytecodeTokenMethods for Rev {
         0x22
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), crate::utils::errors::AtpError> {
-        if instruction.op_code == Rev::default().get_opcode() {
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() == 0 {
             return Ok(());
+        } else {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
     }
+    fn to_bytecode(&self) -> Vec<u8> {
+        let opcode = self.get_opcode();
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Rev::default().get_opcode(),
-            operands: [].to_vec(),
-        }
+        let size: u16 = 13; // tamanho total, incluindo header
+        let size_bytes = size.to_be_bytes(); // big-endian
+
+        let mut v = Vec::with_capacity(13);
+        v.push(opcode);
+        v.extend_from_slice(&size_bytes);
+        v.extend_from_slice(&[0u8; 10]); // payload vazio/padding
+
+        v
     }
 }
 
@@ -119,26 +123,40 @@ mod rev_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_reverse_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Rev::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x22,
-            operands: [].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![];
 
         assert_eq!(token.get_opcode(), 0x22, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            vec![
+                // Instruction Total Size
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0d,
+                // Instruction Type
+                0x00,
+                0x00,
+                0x00,
+                0x22,
+                // Param Count
+                0x00
+            ],
             "Conversion to bytecode instruction works perfectly!"
         );
     }
