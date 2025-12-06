@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
+use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 /// TLA - To Lowercase All
 ///
 /// Lowercases every character from `input`
@@ -51,43 +51,36 @@ impl BytecodeTokenMethods for Tla {
         0x13
     }
 
-    fn token_from_bytecode_instruction(&mut self, instruction: Vec<u8>) -> Result<(), AtpError> {
-        if instruction[0] != Tla::default().get_opcode() {
-            return Err(
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() == 0 {
+            return Ok(());
+        } else {
+            Err(
                 AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Bytecode Not Found".into()),
-                    instruction[0].to_string(),
-                    instruction
-                        .iter()
-                        .map(|b| b.to_string())
-                        .collect::<Vec<String>>()
-                        .join(" ")
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
-            );
+            )
         }
-
-        if instruction[1] != 0 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidArgumentNumber("Tua has no arguments".into()),
-                    instruction[1].to_string(),
-                    instruction
-                        .iter()
-                        .map(|b| b.to_string())
-                        .collect::<Vec<String>>()
-                        .join(" ")
-                )
-            );
-        }
-
-        Ok(())
     }
 
-    fn token_to_bytecode_instruction(&self) -> Vec<u8> {
-        vec![Tla::default().get_opcode(), 0]
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        // tamanho total = opcode (4) + param_count (1) + header (8)
+        let instruction_size: u64 = 13;
+
+        result.extend_from_slice(&instruction_size.to_be_bytes());
+
+        let opcode: u32 = self.get_opcode() as u32;
+        result.extend_from_slice(&opcode.to_be_bytes());
+
+        result.push(0); // número de parâmetros
+
+        result
     }
 }
-
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod tla_tests {
@@ -124,23 +117,41 @@ mod tla_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_to_lowercase_all_bytecode() {
-        use crate::bytecode::{ BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Tla::default();
 
-        let instruction = vec![0x13, 0];
+        let instruction: Vec<AtpParamTypes> = vec![];
 
         assert_eq!(token.get_opcode(), 0x13, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+
+            vec![
+                // Instruction Total Size
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0d,
+                // Instruction Type
+                0x00,
+                0x00,
+                0x00,
+                0x13,
+                // Param Count
+                0x00
+            ],
             "Conversion to bytecode instruction works perfectly!"
         );
     }
