@@ -2,10 +2,12 @@ use std::borrow::Cow;
 
 use crate::tokens::TokenMethods;
 
+#[cfg(feature = "bytecode")]
+use crate::utils::bytecode_utils::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
+use crate::bytecode::{ BytecodeTokenMethods };
 
 /// SPLC - Split Characters
 ///
@@ -60,27 +62,32 @@ impl BytecodeTokenMethods for Splc {
     fn get_opcode(&self) -> u8 {
         0x23
     }
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Splc::default().get_opcode() {
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
-    }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Splc::default().get_opcode(),
-            operands: [].to_vec(),
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() == 0 {
+            return Ok(());
+        } else {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
+    }
+    fn to_bytecode(&self) -> Vec<u8> {
+        let opcode = self.get_opcode();
+
+        let size: u16 = 13; // tamanho total, incluindo header
+        let size_bytes = size.to_be_bytes(); // big-endian
+
+        let mut v = Vec::with_capacity(13);
+        v.push(opcode);
+        v.extend_from_slice(&size_bytes);
+        v.extend_from_slice(&[0u8; 10]); // payload vazio/padding
+
+        v
     }
 }
 
@@ -124,26 +131,40 @@ mod splc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_characters_bytecode_tests() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Splc::default();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x23,
-            operands: [].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![];
 
         assert_eq!(token.get_opcode(), 0x23, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            vec![
+                // Instruction total size
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0d,
+                // Instruction Type
+                0x00,
+                0x00,
+                0x00,
+                0x23,
+                // Param Count
+                0x00
+            ],
             "Conversion to bytecode instruction works perfectly!"
         );
     }
