@@ -11,7 +11,7 @@ use crate::{
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
 
 /// Token `Cts` — Capitalize Single
 ///
@@ -89,29 +89,64 @@ impl BytecodeTokenMethods for Cts {
         0x1d
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        check_vec_len(&instruction.operands, 1)?;
-        if instruction.op_code == Cts::default().get_opcode() {
-            self.index = string_to_usize(&instruction.operands[0])?;
-            return Ok(());
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 1 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
+
+        match &instruction[0] {
+            AtpParamTypes::Usize(payload) => {
+                self.index = payload.clone();
+                return Ok(());
+            }
+            _ => {
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single usize as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                )
+            }
+        }
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Cts::default().get_opcode(),
-            operands: [self.index.to_string()].to_vec(),
-        }
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = (self.index as u32).to_be_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(1);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        result
     }
 }
 #[cfg(feature = "test_access")]
@@ -151,26 +186,42 @@ mod cts_tests {
 
     #[test]
     fn test_capitalize_single_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Cts::params(3);
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x1d,
-            operands: [(3).to_string()].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
 
         assert_eq!(token.get_opcode(), 0x1d, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = vec![0x03];
+        let first_param_payload_size = first_param_payload.len() as u32;
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let instruction_type: u32 = 0x1d;
+        let param_count: u8 = 0x01;
+
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        let mut expected_output: Vec<u8> = vec![];
+
+        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+        expected_output.push(param_count);
+        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload);
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            expected_output,
             "Conversion to bytecode instruction works perfectly!"
         );
     }
