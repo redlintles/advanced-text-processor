@@ -1,12 +1,14 @@
 use std::borrow::Cow;
 
+#[cfg(feature = "bytecode")]
+use crate::utils::bytecode_utils::AtpParamTypes;
 use crate::utils::validations::check_index_against_input;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeTokenMethods } };
 /// Dla - Delete After
 /// Delete all characters after `index` in the specified `input`
 ///
@@ -85,58 +87,77 @@ impl TokenMethods for Dla {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dla {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        use AtpErrorCode;
+    fn get_opcode(&self) -> u8 {
+        0x09
+    }
 
-        use crate::utils::validations::check_vec_len;
-
-        check_vec_len(&instruction.operands, 1)?;
-
-        if instruction.op_code == Dla::default().get_opcode() {
-            use AtpErrorCode;
-
-            if !instruction.operands[0].is_empty() {
-                self.index = string_to_usize(&instruction.operands[0])?;
-                return Ok(());
-            }
-
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 1 {
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands("Invalid operands for this instruction".into()),
-                    instruction.op_code.to_string(),
-                    instruction.operands.join(" ")
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
             );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
-    }
-
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Dla::default().get_opcode(),
-            operands: [self.index.to_string()].to_vec(),
+        match &instruction[0] {
+            AtpParamTypes::Usize(payload) => {
+                self.index = payload.clone();
+                return Ok(());
+            }
+            _ => {
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single usize as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                )
+            }
         }
     }
 
-    fn get_opcode(&self) -> u8 {
-        0x09
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = (self.index as u32).to_be_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(1);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        result
     }
 }
-
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dla_tests {
-    use crate::tokens::{ TokenMethods, transforms::dla::Dla };
+    use crate::{
+        tokens::{ TokenMethods, transforms::dla::Dla },
+        utils::bytecode_utils::AtpParamTypes,
+    };
     #[test]
     fn delete_after_test() {
         let mut token = Dla::params(3);
@@ -168,26 +189,42 @@ mod dla_tests {
     }
     #[test]
     fn delete_after_bytecode() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::bytecode::{ BytecodeTokenMethods };
 
         let mut token = Dla::params(3);
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x09,
-            operands: [(3).to_string()].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
 
         assert_eq!(token.get_opcode(), 0x09, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = vec![0x03];
+        let first_param_payload_size = first_param_payload.len() as u32;
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let instruction_type: u32 = 0x09;
+        let param_count: u8 = 0x01;
+
+        let instruction_total_size: u64 = 8 + 4 + 1 + first_param_total_size;
+
+        let mut expected_output: Vec<u8> = vec![];
+
+        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+        expected_output.push(param_count);
+        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload);
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            expected_output,
             "Conversion to bytecode instruction works perfectly!"
         );
     }
