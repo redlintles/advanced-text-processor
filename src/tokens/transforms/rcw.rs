@@ -2,10 +2,12 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
+#[cfg(feature = "bytecode")]
+use crate::utils::bytecode_utils::AtpParamTypes;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeTokenMethods } };
 
 /// RCW - Replace Count With
 ///
@@ -94,54 +96,139 @@ impl TokenMethods for Rcw {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rcw {
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == Rcw::default().get_opcode() {
-            if !(instruction.operands[0].is_empty() || instruction.operands[1].is_empty()) {
-                self.pattern = Regex::new(&instruction.operands[0].clone()).map_err(|_|
-                    AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed creating regex".into()),
-                        instruction.op_code.to_string(),
-                        instruction.operands.join(" ")
-                    )
-                )?;
-                self.text_to_replace = instruction.operands[1].clone();
-                self.count = string_to_usize(&instruction.operands[2])?;
-                return Ok(());
-            }
+    fn get_opcode(&self) -> u8 {
+        0x10
+    }
 
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 3 {
             return Err(
                 AtpError::new(
-                    AtpErrorCode::InvalidOperands("Invalid operands for this instruction".into()),
-                    instruction.op_code.to_string(),
-                    instruction.operands.join(" ")
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
             );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
+        match &instruction[0] {
+            AtpParamTypes::String(payload) => {
+                self.pattern = Regex::new(&payload.clone()).map_err(|_|
+                    AtpError::new(
+                        AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                        "sslt",
+                        payload.clone()
+                    )
+                )?;
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single String as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                );
+            }
+        }
+        match &instruction[1] {
+            AtpParamTypes::String(payload) => {
+                self.text_to_replace = payload.to_string();
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single String as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                );
+            }
+        }
+        match &instruction[2] {
+            AtpParamTypes::Usize(payload) => {
+                self.count = payload.clone();
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single usize as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                );
+            }
+        }
+
+        return Ok(());
     }
 
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Rcw::default().get_opcode(),
-            operands: [
-                self.pattern.to_string(),
-                self.text_to_replace.to_string(),
-                self.count.to_string(),
-            ].to_vec(),
-        }
-    }
-    fn get_opcode(&self) -> u8 {
-        0x10
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x01;
+        let first_param_payload = self.pattern.as_str().as_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let second_param_type: u32 = 0x01;
+        let second_param_payload = self.text_to_replace.as_bytes();
+        let second_param_payload_size: u32 = second_param_payload.len() as u32;
+
+        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+
+        let third_param_type: u32 = 0x02;
+        let third_param_payload = (self.count as u32).to_be_bytes();
+        let third_param_payload_size: u32 = third_param_payload.len() as u32;
+
+        let third_param_total_size: u64 = 8 + 4 + 4 + (third_param_payload_size as u64);
+
+        let instruction_total_size: u64 =
+            8 + 4 + 1 + first_param_total_size + second_param_total_size + third_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(2);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        // Second Param Total Size
+        result.extend_from_slice(&second_param_total_size.to_be_bytes());
+        // Second Param Type
+        result.extend_from_slice(&second_param_type.to_be_bytes());
+        // Second Param Payload Size
+        result.extend_from_slice(&second_param_payload_size.to_be_bytes());
+        // Second Param Payload
+        result.extend_from_slice(&second_param_payload);
+
+        // Third Param Total Size
+        result.extend_from_slice(&third_param_total_size.to_be_bytes());
+        // Third Param Type
+        result.extend_from_slice(&third_param_type.to_be_bytes());
+        // Third Param Payload Size
+        result.extend_from_slice(&third_param_payload_size.to_be_bytes());
+        // Third Param Payload
+        result.extend_from_slice(&third_param_payload);
+
+        result
     }
 }
 
@@ -177,26 +264,71 @@ mod rcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_count_with_bytecode_tests() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
-        let mut token = Rcw::params("a", "b", 3).unwrap();
+        let mut token = Rcw::params("banana", "laranja", 3).unwrap();
 
-        let instruction = BytecodeInstruction {
-            op_code: 0x10,
-            operands: ["a".to_string(), "b".to_string(), (3).to_string()].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
 
-        assert_eq!(token.get_opcode(), 0x10, "get_opcode does not disrepect ATP token mapping");
+        assert_eq!(token.get_opcode(), 0x0b, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
+        let first_param_type: u32 = AtpParamTypes::get_param_type_code(
+            AtpParamTypes::String("".to_string())
+        );
+        let first_param_payload = "banana".as_bytes();
+        let first_param_payload_size = first_param_payload.len() as u32;
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let second_param_type: u32 = AtpParamTypes::get_param_type_code(
+            AtpParamTypes::String("".to_string())
+        );
+        let second_param_payload = "laranja".as_bytes();
+        let second_param_payload_size = second_param_payload.len() as u32;
+        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+
+        let third_param_type: u32 = AtpParamTypes::get_param_type_code(AtpParamTypes::Usize(0));
+        let third_param_payload = (3 as usize).to_be_bytes();
+        let third_param_payload_size = third_param_payload.len() as u32;
+        let third_param_total_size: u64 = 8 + 4 + 4 + (third_param_payload_size as u64);
+
+        let instruction_type: u32 = 0x0b;
+        let param_count: u8 = 0x02;
+
+        let instruction_total_size: u64 =
+            8 + 4 + 1 + first_param_total_size + second_param_total_size + third_param_total_size;
+
+        let mut expected_output: Vec<u8> = vec![];
+
+        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+
+        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+
+        expected_output.push(param_count);
+
+        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload);
+
+        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_payload);
+
+        expected_output.extend_from_slice(&third_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&third_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&third_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&third_param_payload);
+
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            expected_output,
             "Conversion to bytecode instruction works perfectly!"
         );
     }
