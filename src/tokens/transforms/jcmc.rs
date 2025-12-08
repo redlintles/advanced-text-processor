@@ -84,17 +84,15 @@ impl BytecodeTokenMethods for Jcmc {
         }
     }
     fn to_bytecode(&self) -> Vec<u8> {
-        let opcode = self.get_opcode();
+        let mut result = Vec::with_capacity(13);
+        // Tamanho total da instrução
+        result.extend_from_slice(&(0x0d as u64).to_be_bytes());
+        // Código da instrução
+        result.extend_from_slice(&self.get_opcode().to_be_bytes());
+        // Número de parâmetros
+        result.push(0);
 
-        let size: u16 = 13; // tamanho total, incluindo header
-        let size_bytes = size.to_be_bytes(); // big-endian
-
-        let mut v = Vec::with_capacity(13);
-        v.push(opcode);
-        v.extend_from_slice(&size_bytes);
-        v.extend_from_slice(&[0u8; 10]); // payload vazio/padding
-
-        v
+        result
     }
 }
 
