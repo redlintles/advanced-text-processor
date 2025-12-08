@@ -73,7 +73,7 @@ impl TokenMethods for Padr {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Padr {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x30
     }
 

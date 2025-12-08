@@ -75,7 +75,7 @@ impl TokenMethods for Tlcs {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tlcs {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x15
     }
 

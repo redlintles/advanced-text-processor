@@ -51,7 +51,7 @@ impl TokenMethods for Htmlu {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Htmlu {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x25
     }
 

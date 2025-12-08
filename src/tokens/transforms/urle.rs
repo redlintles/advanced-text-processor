@@ -49,7 +49,7 @@ impl TokenMethods for Urle {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Urle {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x20
     }
 

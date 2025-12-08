@@ -48,7 +48,7 @@ impl TokenMethods for Rev {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rev {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x22
     }
 

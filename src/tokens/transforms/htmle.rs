@@ -52,7 +52,7 @@ impl TokenMethods for Htmle {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Htmle {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x24
     }
 

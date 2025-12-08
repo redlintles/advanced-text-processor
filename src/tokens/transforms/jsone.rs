@@ -63,7 +63,7 @@ impl TokenMethods for Jsone {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Jsone {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x26
     }
 

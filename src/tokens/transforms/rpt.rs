@@ -62,7 +62,7 @@ impl TokenMethods for Rpt {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rpt {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x0d
     }
 

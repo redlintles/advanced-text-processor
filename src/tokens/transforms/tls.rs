@@ -53,7 +53,7 @@ impl TokenMethods for Tls {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tls {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x06
     }
 

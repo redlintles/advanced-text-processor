@@ -113,7 +113,7 @@ impl TokenMethods for Dlc {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dlc {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x08
     }
 

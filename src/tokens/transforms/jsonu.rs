@@ -64,7 +64,7 @@ impl TokenMethods for Jsonu {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Jsonu {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x27
     }
 

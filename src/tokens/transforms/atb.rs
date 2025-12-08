@@ -63,7 +63,7 @@ impl TokenMethods for Atb {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Atb {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x01
     }
 

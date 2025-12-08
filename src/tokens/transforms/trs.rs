@@ -51,7 +51,7 @@ impl TokenMethods for Trs {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Trs {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x07
     }
 

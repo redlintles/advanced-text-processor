@@ -58,7 +58,7 @@ impl TokenMethods for Jkbc {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Jkbc {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x2b
     }
 

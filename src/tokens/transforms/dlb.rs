@@ -94,7 +94,7 @@ impl TokenMethods for Dlb {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dlb {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x0a
     }
 

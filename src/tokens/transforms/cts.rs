@@ -85,7 +85,7 @@ impl TokenMethods for Cts {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Cts {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x1d
     }
 

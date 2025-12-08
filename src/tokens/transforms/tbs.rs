@@ -50,7 +50,7 @@ impl TokenMethods for Tbs {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Tbs {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x05
     }
 

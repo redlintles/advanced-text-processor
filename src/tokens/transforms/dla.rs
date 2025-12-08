@@ -87,7 +87,7 @@ impl TokenMethods for Dla {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dla {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x09
     }
 

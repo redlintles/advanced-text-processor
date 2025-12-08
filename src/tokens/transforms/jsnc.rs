@@ -58,7 +58,7 @@ impl TokenMethods for Jsnc {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Jsnc {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x2c
     }
 

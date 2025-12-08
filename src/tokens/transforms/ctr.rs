@@ -97,7 +97,7 @@ impl TokenMethods for Ctr {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Ctr {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x1c
     }
 

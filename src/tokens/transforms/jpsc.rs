@@ -63,7 +63,7 @@ impl TokenMethods for Jpsc {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Jpsc {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x2e
     }
 

@@ -89,7 +89,7 @@ impl TokenMethods for Ins {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Ins {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x28
     }
 

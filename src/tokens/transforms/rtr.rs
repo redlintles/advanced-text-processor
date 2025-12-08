@@ -81,7 +81,7 @@ impl TokenMethods for Rtr {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Rtr {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x0f
     }
 

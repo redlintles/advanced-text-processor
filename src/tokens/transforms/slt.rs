@@ -100,7 +100,7 @@ impl TokenMethods for Slt {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Slt {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x11
     }
 

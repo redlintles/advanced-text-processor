@@ -74,7 +74,7 @@ impl TokenMethods for Padl {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Padl {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x2f
     }
 

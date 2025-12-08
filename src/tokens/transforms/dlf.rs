@@ -52,7 +52,7 @@ impl TokenMethods for Dlf {
 }
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dlf {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x03
     }
 

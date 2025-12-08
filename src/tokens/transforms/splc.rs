@@ -59,7 +59,7 @@ impl TokenMethods for Splc {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Splc {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x23
     }
 

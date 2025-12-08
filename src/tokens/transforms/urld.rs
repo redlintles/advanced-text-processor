@@ -60,7 +60,7 @@ impl TokenMethods for Urld {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Urld {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x21
     }
 

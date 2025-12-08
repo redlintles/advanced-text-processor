@@ -83,7 +83,7 @@ impl TokenMethods for Dls {
 
 #[cfg(feature = "bytecode")]
 impl BytecodeTokenMethods for Dls {
-    fn get_opcode(&self) -> u8 {
+    fn get_opcode(&self) -> u32 {
         0x32
     }
 
