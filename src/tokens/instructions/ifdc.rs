@@ -1,12 +1,13 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods, BytecodeInstruction };
-use crate::tokens::TokenMethods;
+use crate::bytecode::{ BytecodeTokenMethods };
+use crate::tokens::{ TokenMethods, transforms::dlf::Dlf };
 
-use crate::text::reader::read_from_text;
-
+#[cfg(feature = "bytecode")]
+use crate::utils::bytecode_utils::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::mapping::get_supported_default_tokens;
 
 /// Ifdc - If Do Contains
 ///
@@ -23,32 +24,50 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// assert_eq!(token.parse("banana"), Ok("banana".to_string())); // Does nothing
 ///
 /// ```
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Ifdc {
     text: String,
-    inner: String,
+    inner: Box<dyn TokenMethods>,
+}
+
+impl Default for Ifdc {
+    fn default() -> Self {
+        Ifdc { text: "teste".to_string(), inner: Box::new(Dlf::default()) }
+    }
 }
 
 impl Ifdc {
-    pub fn params(text: &str, inner: &str) -> Self {
+    pub fn params(text: &str, inner: Box<dyn TokenMethods>) -> Self {
         Ifdc {
             text: text.to_string(),
-            inner: inner.to_string(),
+            inner,
         }
     }
 }
 
 impl TokenMethods for Ifdc {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        format!("ifdc {} do {}", self.text, self.inner).into()
+        format!("ifdc {} do {}", self.text, self.inner.to_atp_line()).into()
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), crate::utils::errors::AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "ifdc" {
             self.text = line[1].clone();
-            self.inner = line[3..].join(" ");
 
-            return Ok(());
+            let inner_token_text = line[3..].to_vec();
+
+            let mut inner_token = get_supported_default_tokens()
+                .get(inner_token_text[0].as_str())
+                .ok_or_else(||
+                    AtpError::new(
+                        AtpErrorCode::TokenNotFound("Token Not Found".into()),
+                        self.to_atp_line(),
+                        inner_token_text.join(" ")
+                    )
+                )?();
+
+            inner_token.from_vec_params(inner_token_text)?;
+            self.inner = inner_token;
         }
 
         Err(
@@ -64,9 +83,8 @@ impl TokenMethods for Ifdc {
     }
 
     fn parse(&self, input: &str) -> Result<String, AtpError> {
-        let token = read_from_text(&self.inner)?;
         if input.contains(&self.text) {
-            return Ok(token.parse(input)?);
+            return Ok(self.inner.parse(input)?);
         }
 
         Ok(input.to_string())
@@ -79,36 +97,84 @@ impl BytecodeTokenMethods for Ifdc {
         0x33
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        if instruction.op_code == self.get_opcode() {
-            self.text = instruction.operands[1].clone();
-            self.inner = instruction.operands[3..].join(" ");
-            return Ok(());
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 2 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid parser for this token".into()),
-                "IFDC".to_string(),
-                instruction.operands.join(" ")
-            )
-        )
+        match &instruction[0] {
+            AtpParamTypes::String(payload) => {
+                self.text = payload.clone();
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token expected a String as argument at this position".into()
+                        ),
+                        self.to_atp_line(),
+                        ""
+                    )
+                );
+            }
+        }
+
+        Ok(())
     }
 
-    fn token_to_bytecode_instruction(&self) -> BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: self.get_opcode(),
-            operands: [
-                [self.text.clone()].to_vec(),
-                self.inner
-                    .split_whitespace()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>(),
-            ].concat(),
-        }
+    fn to_bytecode(&self) -> Vec<u8> {
+        use crate::utils::transforms::token_to_bytecode_token;
+
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = self.text.as_str().as_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let second_param_type: u32 = 0x03;
+        let second_param_payload = token_to_bytecode_token(&self.inner).unwrap().to_bytecode();
+        let second_param_payload_size: u32 = second_param_payload.len() as u32;
+
+        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+
+        let instruction_total_size: u64 =
+            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(2);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        // Second Param Total Size
+        result.extend_from_slice(&second_param_total_size.to_be_bytes());
+        // Second Param Type
+        result.extend_from_slice(&second_param_type.to_be_bytes());
+        // Second Param Payload Size
+        result.extend_from_slice(&second_param_payload_size.to_be_bytes());
+        // Second Param Payload
+        result.extend_from_slice(&second_param_payload);
+
+        result
     }
 }
 
