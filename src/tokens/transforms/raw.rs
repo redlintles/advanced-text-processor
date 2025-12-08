@@ -155,13 +155,13 @@ impl BytecodeTokenMethods for Raw {
         let first_param_payload = self.pattern.as_str().as_bytes();
         let first_param_payload_size: u32 = first_param_payload.len() as u32;
 
-        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
 
         let second_param_type: u32 = 0x02;
         let second_param_payload = self.text_to_replace.as_bytes();
         let second_param_payload_size: u32 = second_param_payload.len() as u32;
 
-        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
 
         let instruction_total_size: u64 =
             8 + 4 + 1 + first_param_total_size + second_param_total_size;
@@ -245,14 +245,14 @@ mod raw_tests {
         );
         let first_param_payload = "banana".as_bytes();
         let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
 
         let second_param_type: u32 = AtpParamTypes::get_param_type_code(
             AtpParamTypes::String("".to_string())
         );
         let second_param_payload = "laranja".as_bytes();
         let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
 
         let instruction_type: u32 = 0x0b;
         let param_count: u8 = 0x02;
