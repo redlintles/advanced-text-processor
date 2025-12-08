@@ -2,12 +2,14 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
+#[cfg(feature = "bytecode")]
+use crate::utils::bytecode_utils::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeInstruction, BytecodeTokenMethods } };
+use crate::{ bytecode::{ BytecodeTokenMethods } };
 
 /// SSLT - Split Select
 ///
@@ -31,8 +33,10 @@ pub struct Sslt {
 }
 
 impl Sslt {
-    pub fn params(pattern: &str, index: usize) -> Result<Self, String> {
-        let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
+    pub fn params(pattern: &str, index: usize) -> Result<Self, AtpError> {
+        let pattern = Regex::new(&pattern).map_err(|e|
+            AtpError::new(AtpErrorCode::BytecodeParsingError(e.to_string().into()), "", "")
+        )?;
         Ok(Sslt {
             pattern,
             index,
@@ -120,36 +124,100 @@ impl BytecodeTokenMethods for Sslt {
         0x1a
     }
 
-    fn token_from_bytecode_instruction(
-        &mut self,
-        instruction: crate::bytecode::BytecodeInstruction
-    ) -> Result<(), AtpError> {
-        check_vec_len(&instruction.operands, 2)?;
-        if instruction.op_code == Sslt::default().get_opcode() {
-            self.pattern = Regex::new(&instruction.operands[0]).map_err(|_|
+    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        if instruction.len() != 2 {
+            return Err(
                 AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                    "sslt".to_string(),
-                    String::from(&instruction.operands[0])
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
                 )
-            )?;
-            self.index = string_to_usize(&instruction.operands[1])?;
-            return Ok(());
+            );
         }
-        Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                instruction.op_code.to_string(),
-                instruction.operands.join(" ")
-            )
-        )
+
+        match &instruction[0] {
+            AtpParamTypes::Usize(payload) => {
+                self.index = payload.clone();
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single usize as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                );
+            }
+        }
+        match &instruction[1] {
+            AtpParamTypes::String(payload) => {
+                self.pattern = Regex::new(&payload.clone()).map_err(|e|
+                    AtpError::new(AtpErrorCode::BytecodeParsingError(e.to_string().into()), "", "")
+                )?;
+            }
+            _ => {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "This token takes a single usize as argument".into()
+                        ),
+                        "",
+                        ""
+                    )
+                );
+            }
+        }
+
+        return Ok(());
     }
 
-    fn token_to_bytecode_instruction(&self) -> crate::bytecode::BytecodeInstruction {
-        BytecodeInstruction {
-            op_code: Sslt::default().get_opcode(),
-            operands: [self.pattern.to_string(), self.index.to_string()].to_vec(),
-        }
+    fn to_bytecode(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+
+        let instruction_type: u32 = self.get_opcode() as u32;
+
+        let first_param_type: u32 = 0x02;
+        let first_param_payload = (self.index as u32).to_be_bytes();
+        let first_param_payload_size: u32 = first_param_payload.len() as u32;
+
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let second_param_type: u32 = 0x02;
+        let second_param_payload = self.pattern.as_str().as_bytes();
+        let second_param_payload_size: u32 = second_param_payload.len() as u32;
+
+        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+
+        let instruction_total_size: u64 =
+            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+
+        // Instruction Total Size
+        result.extend_from_slice(&instruction_total_size.to_be_bytes());
+        // Instruction Type
+        result.extend_from_slice(&instruction_type.to_be_bytes());
+        // Param Count
+        result.push(2);
+        // First Param Total Size
+        result.extend_from_slice(&first_param_total_size.to_be_bytes());
+        // First Param Type
+        result.extend_from_slice(&first_param_type.to_be_bytes());
+        // First Param Payload Size
+        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        // First Param Payload
+        result.extend_from_slice(&first_param_payload);
+
+        // Second Param Total Size
+        result.extend_from_slice(&second_param_total_size.to_be_bytes());
+        // Second Param Type
+        result.extend_from_slice(&second_param_type.to_be_bytes());
+        // Second Param Payload Size
+        result.extend_from_slice(&second_param_payload_size.to_be_bytes());
+        // Second Param Payload
+        result.extend_from_slice(&second_param_payload);
+
+        result
     }
 }
 
@@ -207,49 +275,58 @@ mod sslt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_select_bytecode_tests() {
-        use crate::bytecode::{ BytecodeInstruction, BytecodeTokenMethods };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
-        let mut token = Sslt::params("_", 5).unwrap();
+        let mut token = Sslt::params("banana", 1).unwrap();
 
-        let mut instruction = BytecodeInstruction {
-            op_code: 0x1a,
-            operands: ["_".to_string(), (5).to_string()].to_vec(),
-        };
+        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
 
         assert_eq!(token.get_opcode(), 0x1a, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.token_from_bytecode_instruction(instruction.clone()),
+            token.from_params(instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
 
+        let first_param_type: u32 = 0x01;
+        let first_param_payload = "banana".as_bytes();
+        let first_param_payload_size = first_param_payload.len() as u32;
+        let first_param_total_size: u64 = 8 + 4 + 4 + (first_param_payload_size as u64);
+
+        let second_param_type: u32 = 0x02;
+        let second_param_payload = vec![0x01];
+        let second_param_payload_size = second_param_payload.len() as u32;
+        let second_param_total_size: u64 = 8 + 4 + 4 + (second_param_payload_size as u64);
+
+        let instruction_type: u32 = 0x1a;
+        let param_count: u8 = 0x02;
+
+        let instruction_total_size: u64 =
+            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+
+        let mut expected_output: Vec<u8> = vec![];
+
+        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+
+        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+
+        expected_output.push(param_count);
+
+        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&first_param_payload);
+
+        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
+        expected_output.extend_from_slice(&second_param_payload);
+
         assert_eq!(
-            token.token_to_bytecode_instruction(),
-            instruction,
+            token.to_bytecode(),
+            expected_output,
             "Conversion to bytecode instruction works perfectly!"
-        );
-
-        instruction.operands = ["(".to_string(), (1).to_string()].to_vec();
-
-        assert!(
-            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-            "It throws an error for invalid operands"
-        );
-
-        instruction.op_code = 0x01;
-        assert!(
-            matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-            "It throws an error for invalid op_code"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["sslt".to_string(), "(".to_string(), (1).to_string()].to_vec()
-                ),
-                Err(_)
-            ),
-            "It throws an error for invalid param vec"
         );
     }
 }
