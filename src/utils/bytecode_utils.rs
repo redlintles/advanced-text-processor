@@ -11,6 +11,16 @@ pub enum AtpParamTypes {
     Token(Box<dyn BytecodeTokenMethods>),
 }
 
+impl AtpParamTypes {
+    pub fn get_param_type_code(x: AtpParamTypes) -> u32 {
+        match x {
+            AtpParamTypes::String(_) => 0x01,
+            AtpParamTypes::Usize(_) => 0x02,
+            AtpParamTypes::Token(_) => 0x03,
+        }
+    }
+}
+
 // [type, size, payload]
 
 // Param Type - 4 Bytes
