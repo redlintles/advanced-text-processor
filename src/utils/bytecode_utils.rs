@@ -383,7 +383,7 @@ pub fn parse_bytecode_token(token_vec: Vec<u8>) -> Result<Box<dyn BytecodeTokenM
         parsed_params.push(parsed);
     }
 
-    token.from_params(parsed_params)?;
+    token.from_params(&parsed_params)?;
 
     Ok(token)
 }
