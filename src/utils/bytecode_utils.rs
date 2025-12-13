@@ -12,12 +12,28 @@ pub enum AtpParamTypes {
 }
 
 impl AtpParamTypes {
-    pub fn get_param_type_code(x: AtpParamTypes) -> u32 {
-        match x {
+    pub fn get_param_type_code(&self) -> u32 {
+        match self {
             AtpParamTypes::String(_) => 0x01,
             AtpParamTypes::Usize(_) => 0x02,
             AtpParamTypes::Token(_) => 0x03,
         }
+    }
+    pub fn param_to_bytecode(&self) -> Vec<u8> {
+        let mut result: Vec<u8> = Vec::new();
+
+        result.extend_from_slice(&self.get_param_type_code().to_be_bytes());
+        let payload = match self {
+            AtpParamTypes::String(x) => x.as_bytes().to_vec(),
+            AtpParamTypes::Usize(x) => x.to_be_bytes().to_vec(),
+            AtpParamTypes::Token(x) => x.to_bytecode(),
+        };
+
+        result.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+
+        result.extend_from_slice(&payload);
+
+        result
     }
 }
 
