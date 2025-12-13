@@ -54,7 +54,7 @@ impl BytecodeTokenMethods for Tbs {
         0x05
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
@@ -140,7 +140,7 @@ mod tbs_tests {
         assert_eq!(token.get_opcode(), 0x05, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

@@ -79,7 +79,7 @@ impl BytecodeTokenMethods for Tucs {
         0x14
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
                 AtpError::new(
@@ -195,7 +195,7 @@ mod tucs_tests {
         assert_eq!(token.get_opcode(), 0x14, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

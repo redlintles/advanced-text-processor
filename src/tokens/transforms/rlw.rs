@@ -106,7 +106,7 @@ impl BytecodeTokenMethods for Rlw {
         0x1e
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -238,36 +238,29 @@ mod rlw_tests {
     }
     #[cfg(feature = "bytecode")]
     #[test]
-    fn replace_last_with_bytecode_tests() {
+    fn replace_all_with_bytecode_tests() {
         use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
 
         let mut token = Rlw::params("banana", "laranja").unwrap();
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+        let instruction: Vec<AtpParamTypes> = vec![
+            AtpParamTypes::Usize(3),
+            AtpParamTypes::String("Banana".to_string())
+        ];
 
-        assert_eq!(token.get_opcode(), 0x0c, "get_opcode does not disrepect ATP token mapping");
+        assert_eq!(token.get_opcode(), 0x0b, "get_opcode does not disrepect ATP token mapping");
 
-        assert_eq!(
-            token.from_params(instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
-        );
-
-        let first_param_type: u32 = AtpParamTypes::get_param_type_code(
-            AtpParamTypes::String("".to_string())
-        );
+        let first_param_type: u32 = *&instruction[0].get_param_type_code();
         let first_param_payload = "banana".as_bytes();
         let first_param_payload_size = first_param_payload.len() as u32;
         let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
 
-        let second_param_type: u32 = AtpParamTypes::get_param_type_code(
-            AtpParamTypes::String("".to_string())
-        );
+        let second_param_type: u32 = *&instruction[1].get_param_type_code();
         let second_param_payload = "laranja".as_bytes();
         let second_param_payload_size = second_param_payload.len() as u32;
         let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
 
-        let instruction_type: u32 = token.get_opcode() as u32;
+        let instruction_type: u32 = 0x0b;
         let param_count: u8 = 0x02;
 
         let instruction_total_size: u64 =
@@ -290,6 +283,12 @@ mod rlw_tests {
         expected_output.extend_from_slice(&second_param_type.to_be_bytes());
         expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
         expected_output.extend_from_slice(&second_param_payload);
+
+        assert_eq!(
+            token.from_params(&instruction),
+            Ok(()),
+            "Parsing from bytecode to token works correctly!"
+        );
 
         assert_eq!(
             token.to_bytecode(),

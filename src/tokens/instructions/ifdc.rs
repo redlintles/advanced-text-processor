@@ -97,7 +97,7 @@ impl BytecodeTokenMethods for Ifdc {
         0x33
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(

@@ -87,7 +87,7 @@ impl BytecodeTokenMethods for Dls {
         0x32
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
                 AtpError::new(
@@ -191,7 +191,7 @@ mod dls_tests {
         assert_eq!(token.get_opcode(), 0x32, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

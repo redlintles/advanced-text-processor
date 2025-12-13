@@ -98,7 +98,7 @@ impl BytecodeTokenMethods for Dlb {
         0x0a
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
                 AtpError::new(
@@ -205,7 +205,7 @@ mod dlb_tests {
         assert_eq!(token.get_opcode(), 0x0a, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

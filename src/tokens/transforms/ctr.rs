@@ -101,7 +101,7 @@ impl BytecodeTokenMethods for Ctr {
         0x1c
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -269,7 +269,7 @@ mod ctr_tests {
         assert_eq!(token.get_opcode(), 0x1c, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

@@ -56,7 +56,7 @@ impl BytecodeTokenMethods for Htmle {
         0x24
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
@@ -127,7 +127,7 @@ mod htmle_tests {
         assert_eq!(token.get_opcode(), 0x24, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );

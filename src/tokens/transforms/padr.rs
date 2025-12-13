@@ -77,7 +77,7 @@ impl BytecodeTokenMethods for Padr {
         0x30
     }
 
-    fn from_params(&mut self, instruction: Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -217,7 +217,7 @@ mod padr_tests {
         assert_eq!(token.get_opcode(), 0x2f, "get_opcode does not disrepect ATP token mapping");
 
         assert_eq!(
-            token.from_params(instruction),
+            token.from_params(&instruction),
             Ok(()),
             "Parsing from bytecode to token works correctly!"
         );
