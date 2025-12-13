@@ -25,10 +25,37 @@ pub fn write_bytecode_to_file(
         }
     };
 
-    for token in tokens.iter() {
-        let line = token.token_to_bytecode_instruction().to_bytecode_line();
+    let mut header: Vec<u8> = Vec::new();
 
-        match file.write(line.as_bytes()) {
+    let magic_number: Vec<u8> = vec![38, 235, 245, 8, 244, 137, 1, 179];
+
+    let protocol_version = (1 as u64).to_be_bytes();
+
+    let instruction_count = (tokens.len() as u32).to_be_bytes();
+
+    header.extend_from_slice(&magic_number);
+    header.extend_from_slice(&protocol_version);
+    header.extend_from_slice(&instruction_count);
+
+    match file.write(&header) {
+        Ok(_) => (),
+        Err(_) => {
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::FileWritingError(
+                        "Failed writing text to atp file".into()
+                    ),
+                    "Write bytecode to file",
+                    "Header writing error"
+                )
+            );
+        }
+    }
+
+    for token in tokens.iter() {
+        let line = token.to_bytecode();
+
+        match file.write(&line) {
             Ok(_) => (),
             Err(_) => {
                 return Err(
@@ -36,8 +63,8 @@ pub fn write_bytecode_to_file(
                         crate::utils::errors::AtpErrorCode::FileWritingError(
                             "Failed writing text to atp file".into()
                         ),
-                        "",
-                        line
+                        "Write bytecode to file",
+                        token.to_atp_line()
                     )
                 );
             }
