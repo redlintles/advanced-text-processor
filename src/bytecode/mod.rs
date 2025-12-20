@@ -1,4 +1,4 @@
-use crate::{ tokens::TokenMethods, utils::{ bytecode_utils::AtpParamTypes, errors::AtpError } };
+use crate::{ tokens::TokenMethods, utils::{ params::AtpParamTypes, errors::AtpError } };
 
 pub mod writer;
 pub mod reader;
