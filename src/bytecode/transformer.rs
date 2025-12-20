@@ -28,11 +28,9 @@ pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Resul
         )?;
 
     for token in tokens.into_iter() {
-        let line = token_to_bytecode_token(&token)?
-            .token_to_bytecode_instruction()
-            .to_bytecode_line();
+        let line = token_to_bytecode_token(&token)?.to_bytecode();
 
-        match new_file.write(line.as_bytes()) {
+        match new_file.write(&line) {
             Ok(_) => (),
             Err(_) => {
                 return Err(
@@ -41,7 +39,7 @@ pub fn atp_text_to_bytecode_file(input_file: &Path, output_file: &Path) -> Resul
                             "Failed writing text to atp file".into()
                         ),
                         "",
-                        line
+                        ""
                     )
                 );
             }
