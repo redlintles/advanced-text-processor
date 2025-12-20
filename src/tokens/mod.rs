@@ -8,7 +8,8 @@ pub mod instructions;
 /// TokenMethods
 ///
 /// Basic Contract which every token should implement
-pub trait TokenMethods: TokenMethodsClone {
+
+pub trait TokenMethods: TokenMethodsClone + Send + Sync {
     /// to_atp_line
     ///
     /// Converts the token to an ATP line to be written in an .atp file
