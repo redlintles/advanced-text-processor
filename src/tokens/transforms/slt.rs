@@ -9,8 +9,6 @@ use crate::{
 };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-#[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods } };
 
 /// Slt - Select
 ///
@@ -96,14 +94,11 @@ impl TokenMethods for Slt {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("slt {} {};\n", self.start_index, self.end_index).into()
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Slt {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x11
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -150,7 +145,7 @@ impl BytecodeTokenMethods for Slt {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -257,7 +252,7 @@ mod slt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn select_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Slt::params(1, 3).unwrap();
 

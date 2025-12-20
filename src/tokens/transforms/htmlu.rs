@@ -5,7 +5,7 @@ use html_escape::decode_html_entities;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// HTMLU - HTML Unescape
 ///
@@ -47,14 +47,11 @@ impl TokenMethods for Htmlu {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Htmlu {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x25
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -68,6 +65,7 @@ impl BytecodeTokenMethods for Htmlu {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -117,7 +115,7 @@ mod htmlu_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_unescape_bytecode_test() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Htmlu::default();
 

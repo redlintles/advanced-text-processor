@@ -7,7 +7,7 @@ use crate::{
 };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -93,14 +93,11 @@ impl TokenMethods for Ctr {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ctr {} {};\n", self.start_index, self.end_index).into()
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Ctr {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x1c
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -147,7 +144,7 @@ impl BytecodeTokenMethods for Ctr {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -260,7 +257,7 @@ mod ctr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_range_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Ctr::params(1, 3).unwrap();
 

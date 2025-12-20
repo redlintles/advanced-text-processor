@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -59,14 +59,11 @@ impl TokenMethods for Jsone {
                 )?
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Jsone {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x26
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -80,6 +77,7 @@ impl BytecodeTokenMethods for Jsone {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -132,7 +130,7 @@ mod jsone_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_json_escape_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Jsone::default();
 

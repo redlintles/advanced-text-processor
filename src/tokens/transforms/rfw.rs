@@ -5,7 +5,7 @@ use regex::Regex;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// RFW - Replace First With
 ///
 /// Replace the first ocurrency of `pattern` in `input` with `text_to_replace`
@@ -86,13 +86,11 @@ impl TokenMethods for Rfw {
     fn get_string_repr(&self) -> &'static str {
         "rfw"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rfw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0c
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -145,7 +143,7 @@ impl BytecodeTokenMethods for Rfw {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -226,7 +224,7 @@ mod rfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_all_with_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rfw::params("banana", "laranja").unwrap();
 

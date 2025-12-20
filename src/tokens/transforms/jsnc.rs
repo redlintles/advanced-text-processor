@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// JSNC - Join to Snake Case
 ///
@@ -54,14 +54,11 @@ impl TokenMethods for Jsnc {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Jsnc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2c
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -75,6 +72,7 @@ impl BytecodeTokenMethods for Jsnc {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -122,7 +120,7 @@ mod jsnc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_snake_case_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Jsnc::default();
 

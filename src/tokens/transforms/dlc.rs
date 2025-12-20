@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// Dlc - Delete Chunk
 ///
@@ -110,13 +110,11 @@ impl TokenMethods for Dlc {
     fn get_string_repr(&self) -> &'static str {
         "dlc"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dlc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x08
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -163,7 +161,7 @@ impl BytecodeTokenMethods for Dlc {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -270,7 +268,7 @@ mod dlc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn delete_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Dlc::params(1, 3).unwrap();
 

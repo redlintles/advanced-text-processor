@@ -1,13 +1,10 @@
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
 use crate::tokens::{ TokenMethods, transforms::dlf::Dlf };
 
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-use crate::utils::mapping::get_supported_default_tokens;
 
 /// Ifdc - If Do Contains
 ///
@@ -89,10 +86,7 @@ impl TokenMethods for Ifdc {
 
         Ok(input.to_string())
     }
-}
 
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Ifdc {
     fn get_opcode(&self) -> u32 {
         0x33
     }

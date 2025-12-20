@@ -8,10 +8,7 @@ use crate::{
 use crate::utils::errors::{ AtpError };
 
 #[cfg(feature = "bytecode")]
-use crate::{
-    bytecode::{ BytecodeTokenMethods },
-    utils::{ params::AtpParamTypes, errors::AtpErrorCode },
-};
+use crate::{ utils::{ params::AtpParamTypes, errors::AtpErrorCode } };
 /// Token `Ctc` — Capitalize Chunk
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
@@ -117,14 +114,11 @@ impl TokenMethods for Ctc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ctc {} {};\n", self.start_index, self.end_index).into()
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Ctc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x1b
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -171,7 +165,7 @@ impl BytecodeTokenMethods for Ctc {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -278,7 +272,7 @@ mod ctc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Ctc::params(1, 3).unwrap();
 

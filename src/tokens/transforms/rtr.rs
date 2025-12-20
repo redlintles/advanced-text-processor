@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// RTR - Rotate Right
 ///
 /// Rotates `input` to the right `n` times
@@ -78,13 +78,11 @@ impl TokenMethods for Rtr {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rtr {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0f
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -114,7 +112,7 @@ impl BytecodeTokenMethods for Rtr {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -180,7 +178,7 @@ mod rtr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn rotate_right_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rtr::params(3);
 

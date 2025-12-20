@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// RMWS - Remove Whitespace
 ///
@@ -45,13 +45,11 @@ impl TokenMethods for Rmws {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rmws {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x31
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -65,6 +63,7 @@ impl BytecodeTokenMethods for Rmws {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -113,7 +112,7 @@ mod rmws_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn remove_whitespace_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rmws::default();
 

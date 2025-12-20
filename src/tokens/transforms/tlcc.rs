@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// TLCC - To Lowercase Chunk
 ///
@@ -93,13 +93,11 @@ impl TokenMethods for Tlcc {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tlcc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x17
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -146,7 +144,7 @@ impl BytecodeTokenMethods for Tlcc {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -257,7 +255,7 @@ mod tlcc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tlcc::params(1, 3).unwrap();
 

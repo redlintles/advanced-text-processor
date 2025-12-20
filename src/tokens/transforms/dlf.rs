@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// DLF - Delete First
 ///
 /// Deletes the first character of `input`
@@ -49,13 +49,11 @@ impl TokenMethods for Dlf {
     fn get_string_repr(&self) -> &'static str {
         "dlf"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dlf {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x03
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -69,6 +67,7 @@ impl BytecodeTokenMethods for Dlf {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -122,8 +121,6 @@ mod dlf_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_delete_first_bytecode() {
-        use crate::bytecode::{ BytecodeTokenMethods };
-
         let mut token = Dlf::default();
 
         let instruction = vec![];

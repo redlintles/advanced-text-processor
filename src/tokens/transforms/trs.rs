@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// TLS - Trim left sides
 ///
@@ -48,13 +48,11 @@ impl TokenMethods for Trs {
     fn get_string_repr(&self) -> &'static str {
         "trs"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Trs {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x07
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -68,7 +66,7 @@ impl BytecodeTokenMethods for Trs {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -129,7 +127,6 @@ mod trs_tests {
     #[test]
     fn test_bytecode_trim_right_side() {
         use crate::tokens::{ transforms::trs::Trs };
-        use crate::bytecode::{ BytecodeTokenMethods };
         use crate::utils::params::AtpParamTypes;
 
         let mut token = Trs::default();

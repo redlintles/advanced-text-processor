@@ -7,8 +7,6 @@ use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-#[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods } };
 /// Dla - Delete After
 /// Delete all characters after `index` in the specified `input`
 ///
@@ -84,13 +82,11 @@ impl TokenMethods for Dla {
     fn get_string_repr(&self) -> &'static str {
         "dla"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dla {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x09
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -120,7 +116,7 @@ impl BytecodeTokenMethods for Dla {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -186,8 +182,6 @@ mod dla_tests {
     }
     #[test]
     fn delete_after_bytecode() {
-        use crate::bytecode::{ BytecodeTokenMethods };
-
         let mut token = Dla::params(3);
 
         let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];

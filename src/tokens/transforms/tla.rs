@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// TLA - To Lowercase All
 ///
 /// Lowercases every character from `input`
@@ -44,13 +44,11 @@ impl TokenMethods for Tla {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tla {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x13
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -64,7 +62,7 @@ impl BytecodeTokenMethods for Tla {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -117,7 +115,7 @@ mod tla_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_to_lowercase_all_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tla::default();
 

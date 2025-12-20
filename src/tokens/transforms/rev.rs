@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 
@@ -44,14 +44,11 @@ impl TokenMethods for Rev {
     fn parse(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.chars().rev().collect())
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rev {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x22
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -65,6 +62,7 @@ impl BytecodeTokenMethods for Rev {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -121,7 +119,7 @@ mod rev_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_reverse_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rev::default();
 

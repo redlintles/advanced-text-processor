@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 
 use crate::utils::errors::AtpError;
+#[cfg(feature = "bytecode")]
+use crate::utils::params::AtpParamTypes;
 
 pub mod transforms;
 pub mod instructions;
@@ -28,6 +30,15 @@ pub trait TokenMethods: TokenMethodsClone + Send + Sync {
     ///
     /// Fills the token object params based on a String vec send by the lexer
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError>;
+
+    /// BytecodeMethods
+    #[cfg(feature = "bytecode")]
+    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError>;
+    #[cfg(feature = "bytecode")]
+    fn to_bytecode(&self) -> Vec<u8>;
+
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32;
 }
 
 pub trait TokenMethodsClone {

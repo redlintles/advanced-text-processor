@@ -8,8 +8,6 @@ use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-#[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods } };
 
 /// SSLT - Split Select
 ///
@@ -116,14 +114,11 @@ impl TokenMethods for Sslt {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("sslt {} {};\n", self.pattern, self.index).into()
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Sslt {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x1a
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -172,7 +167,7 @@ impl BytecodeTokenMethods for Sslt {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -275,7 +270,7 @@ mod sslt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_select_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Sslt::params("banana", 1).unwrap();
 

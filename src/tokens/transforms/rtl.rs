@@ -6,8 +6,6 @@ use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-#[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods } };
 /// RTL - Rotate Left
 ///
 /// Rotates `input` to the left `n` times
@@ -79,13 +77,11 @@ impl TokenMethods for Rtl {
     fn get_string_repr(&self) -> &'static str {
         "rtl"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rtl {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0e
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -115,7 +111,7 @@ impl BytecodeTokenMethods for Rtl {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -181,7 +177,7 @@ mod rtl_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn rotate_left_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rtl::params(3);
 

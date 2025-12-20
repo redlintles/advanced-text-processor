@@ -5,7 +5,7 @@ use html_escape::encode_text;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// HTMLE - HTML Escape
 ///
@@ -48,14 +48,11 @@ impl TokenMethods for Htmle {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Htmle {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x24
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -69,6 +66,7 @@ impl BytecodeTokenMethods for Htmle {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -118,7 +116,7 @@ mod htmle_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_escape_bytecode_test() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Htmle::default();
 

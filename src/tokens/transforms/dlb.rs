@@ -6,8 +6,6 @@ use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-#[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
 /// Dlb - Delete Before
 /// Delete all characters before `index` in the specified `input`
 ///
@@ -91,13 +89,11 @@ impl TokenMethods for Dlb {
     fn get_string_repr(&self) -> &'static str {
         "dlb"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dlb {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0a
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -127,7 +123,7 @@ impl BytecodeTokenMethods for Dlb {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -193,8 +189,6 @@ mod dlb_tests {
     }
     #[test]
     fn delete_before_bytecode() {
-        use crate::bytecode::{ BytecodeTokenMethods };
-
         let mut token = Dlb::params(3);
 
         let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];

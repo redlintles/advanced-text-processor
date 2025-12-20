@@ -9,7 +9,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// TUCW - To Uppercase Word
 ///
 /// Uppercase a single word of string
@@ -73,14 +73,11 @@ impl TokenMethods for Tucw {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tucw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2a
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -110,7 +107,7 @@ impl BytecodeTokenMethods for Tucw {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -191,7 +188,7 @@ mod tucw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_word_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tucw::params(3);
 

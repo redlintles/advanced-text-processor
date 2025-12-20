@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// TBS - Trim both sides
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
@@ -47,13 +47,11 @@ impl TokenMethods for Tbs {
     fn get_string_repr(&self) -> &'static str {
         "tbs"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tbs {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x05
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -67,7 +65,7 @@ impl BytecodeTokenMethods for Tbs {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -130,7 +128,6 @@ mod tbs_tests {
     #[test]
     fn test_bytecode_trim_both_sides() {
         use crate::tokens::{ transforms::tbs::Tbs };
-        use crate::bytecode::{ BytecodeTokenMethods };
         use crate::utils::params::AtpParamTypes;
 
         let mut token = Tbs::default();

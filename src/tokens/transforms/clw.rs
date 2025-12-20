@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// Token `Clw` — Capitalize Last Word
 ///
 /// Capitalizes the last word of `input`
@@ -59,14 +59,11 @@ impl TokenMethods for Clw {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "clw;\n".into()
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Clw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x19
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -80,7 +77,7 @@ impl BytecodeTokenMethods for Clw {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -149,7 +146,7 @@ mod clw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_last_word_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Clw::default();
 

@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// JPSC - Join to PascalCase
 ///
@@ -59,14 +59,11 @@ impl TokenMethods for Jpsc {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Jpsc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2e
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -80,6 +77,7 @@ impl BytecodeTokenMethods for Jpsc {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -127,7 +125,7 @@ mod jpsc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_pascal_case_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Jpsc::default();
 

@@ -9,7 +9,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// TLCW - To Lowercase Word
 ///
@@ -74,14 +74,11 @@ impl TokenMethods for Tlcw {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tlcw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x29
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -111,7 +108,7 @@ impl BytecodeTokenMethods for Tlcw {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -192,7 +189,7 @@ mod tlcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_word_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tlcw::params(3);
 

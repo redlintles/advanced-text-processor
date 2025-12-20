@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// Token `Atb` — Add to Beginning
 ///
@@ -59,14 +59,13 @@ impl TokenMethods for Atb {
     fn get_string_repr(&self) -> &'static str {
         "atb"
     }
-}
 
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Atb {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x01
     }
 
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -97,6 +96,7 @@ impl BytecodeTokenMethods for Atb {
         }
     }
 
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -204,7 +204,6 @@ mod atb_tests {
     #[cfg(feature = "bytecode")]
     mod test_bytecode_version {
         use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
-        use crate::bytecode::{ BytecodeTokenMethods };
 
         #[test]
         fn test_to_bytecode_instruction() {

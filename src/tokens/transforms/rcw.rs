@@ -6,8 +6,6 @@ use regex::Regex;
 use crate::utils::params::AtpParamTypes;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-#[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods } };
 
 /// RCW - Replace Count With
 ///
@@ -93,13 +91,11 @@ impl TokenMethods for Rcw {
     fn get_string_repr(&self) -> &'static str {
         "rcw"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rcw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x10
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 3 {
             return Err(
@@ -168,7 +164,7 @@ impl BytecodeTokenMethods for Rcw {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -264,7 +260,7 @@ mod rcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_count_with_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rcw::params("banana", "laranja", 3).unwrap();
 

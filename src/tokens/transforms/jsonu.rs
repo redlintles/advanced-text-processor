@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -60,14 +60,11 @@ impl TokenMethods for Jsonu {
                 )?
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Jsonu {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x27
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -81,6 +78,7 @@ impl BytecodeTokenMethods for Jsonu {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -133,7 +131,7 @@ mod jsonu_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_json_unescape_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Jsonu::default();
 

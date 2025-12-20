@@ -5,7 +5,7 @@ use regex::Regex;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// RAW - Replace All With
 ///
 /// Replace all ocurrences of `pattern` in `input` with `text_to_replace`
@@ -86,13 +86,11 @@ impl TokenMethods for Raw {
     fn get_string_repr(&self) -> &'static str {
         "raw"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Raw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0b
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -145,7 +143,7 @@ impl BytecodeTokenMethods for Raw {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -226,7 +224,7 @@ mod raw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_all_with_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Raw::params("banana", "laranja").unwrap();
 

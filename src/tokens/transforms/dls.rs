@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// DLS - Delete Single
 ///
@@ -79,14 +79,11 @@ impl TokenMethods for Dls {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dls {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x32
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -116,7 +113,7 @@ impl BytecodeTokenMethods for Dls {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -182,7 +179,7 @@ mod dls_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn delete_single_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Dls::params(3);
 

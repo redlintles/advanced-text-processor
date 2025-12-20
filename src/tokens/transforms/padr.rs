@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// PADR - Pad Right
 ///
 /// Repeats `text` characters until `max_len` is reached, and then insert the result at the end of `input`
@@ -70,13 +70,11 @@ impl TokenMethods for Padr {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Padr {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x30
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -123,7 +121,7 @@ impl BytecodeTokenMethods for Padr {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -208,7 +206,7 @@ mod padr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn pad_right_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Padr::params("banana", 1);
 

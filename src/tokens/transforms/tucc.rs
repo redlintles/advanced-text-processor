@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// TUCC - To uppercase Chunk
 ///
 /// Lowercases every character from a chunk delimited by `start_index` and `end_index`(inclusive) in `input`
@@ -92,14 +92,11 @@ impl TokenMethods for Tucc {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tucc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x16
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -146,7 +143,7 @@ impl BytecodeTokenMethods for Tucc {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -257,7 +254,7 @@ mod tucc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tucc::params(1, 3).unwrap();
 

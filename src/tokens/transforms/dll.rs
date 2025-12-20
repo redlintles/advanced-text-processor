@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// DLL - Delete Last
 ///
@@ -54,13 +54,11 @@ impl TokenMethods for Dll {
     fn get_string_repr(&self) -> &'static str {
         "dll"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Dll {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x04
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -74,6 +72,7 @@ impl BytecodeTokenMethods for Dll {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -129,7 +128,7 @@ mod dll_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_delete_last_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Dll::default();
 

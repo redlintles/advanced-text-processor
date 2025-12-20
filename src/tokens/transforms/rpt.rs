@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// RPT - Repeat
 ///
@@ -59,13 +59,11 @@ impl TokenMethods for Rpt {
     fn get_string_repr(&self) -> &'static str {
         "rpt"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rpt {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0d
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -95,7 +93,7 @@ impl BytecodeTokenMethods for Rpt {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -165,7 +163,7 @@ mod rpt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn repeat_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rpt::params(3);
 

@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// RLW - Replace Last With
 ///
 /// Replace the `nth`` ocurrency of `pattern` in `input` with `text_to_replace`
@@ -114,13 +114,11 @@ impl TokenMethods for Rnw {
     fn get_string_repr(&self) -> &'static str {
         "rnw"
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Rnw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x1f
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 3 {
             return Err(
@@ -189,7 +187,7 @@ impl BytecodeTokenMethods for Rnw {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -285,7 +283,7 @@ mod rnw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_count_with_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Rnw::params("banana", "laranja", 3).unwrap();
 

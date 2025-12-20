@@ -6,9 +6,6 @@ use crate::tokens::TokenMethods;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-#[cfg(feature = "bytecode")]
-use crate::bytecode::{ BytecodeTokenMethods };
-
 /// SPLC - Split Characters
 ///
 /// Split `input` characters in a result whose chars are separed by spaces
@@ -55,14 +52,11 @@ impl TokenMethods for Splc {
                 .join(" ")
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Splc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x23
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -76,6 +70,7 @@ impl BytecodeTokenMethods for Splc {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -129,7 +124,7 @@ mod splc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_characters_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Splc::default();
 

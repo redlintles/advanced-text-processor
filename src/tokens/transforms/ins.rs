@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 use crate::{
     tokens::TokenMethods,
@@ -85,14 +85,11 @@ impl TokenMethods for Ins {
 
         Ok(result)
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Ins {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x28
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
             return Err(
@@ -139,7 +136,7 @@ impl BytecodeTokenMethods for Ins {
 
         return Ok(());
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -224,7 +221,7 @@ mod ins_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn insert_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Ins::params(1, "banana");
 

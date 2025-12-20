@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// TUCS - To Uppercase Single
 ///
@@ -72,13 +72,11 @@ impl TokenMethods for Tucs {
             )
         )
     }
-}
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Tucs {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x14
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 1 {
             return Err(
@@ -108,7 +106,7 @@ impl BytecodeTokenMethods for Tucs {
             }
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -186,7 +184,7 @@ mod tucs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_single_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Tucs::params(3);
 

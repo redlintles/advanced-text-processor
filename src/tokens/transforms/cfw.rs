@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// Token `Cfw` — Capitalize First Word
 ///
 /// Capitalizes the first word of `input`
@@ -45,14 +45,12 @@ impl TokenMethods for Cfw {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "cfw;\n".into()
     }
-}
 
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Cfw {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x18
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -66,7 +64,7 @@ impl BytecodeTokenMethods for Cfw {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -120,7 +118,7 @@ mod cfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_first_word_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Cfw::default();
 

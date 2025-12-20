@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 
 /// JCMC - Join to Camel Case
 ///
@@ -62,14 +62,11 @@ impl TokenMethods for Jcmc {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Jcmc {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2d
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -83,6 +80,7 @@ impl BytecodeTokenMethods for Jcmc {
             );
         }
     }
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(13);
         // Tamanho total da instrução
@@ -130,7 +128,7 @@ mod jcmc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_camel_case_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+        use crate::{ utils::params::AtpParamTypes };
 
         let mut token = Jcmc::default();
 

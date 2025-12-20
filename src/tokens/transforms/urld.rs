@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
+use crate::{ utils::params::AtpParamTypes };
 /// URLD - URL Decode
 ///
 /// Decodes `input` from the URL Encoding Format
@@ -56,14 +56,11 @@ impl TokenMethods for Urld {
             )
         )
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl BytecodeTokenMethods for Urld {
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x21
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
@@ -77,7 +74,7 @@ impl BytecodeTokenMethods for Urld {
             )
         }
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         let mut result = Vec::new();
 
@@ -132,7 +129,6 @@ mod urld_tests {
     #[test]
     fn test_bytecode_url_decode() {
         use crate::tokens::{ transforms::urld::Urld };
-        use crate::bytecode::{ BytecodeTokenMethods };
         use crate::utils::params::AtpParamTypes;
 
         let mut token = Urld::default();
