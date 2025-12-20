@@ -78,6 +78,7 @@ pub enum AtpErrorCode {
     BytecodeNotFound(Cow<'static, str>),
     TextParsingError(Cow<'static, str>),
     BytecodeParsingError(Cow<'static, str>),
+    BytecodeParamParsingError(Cow<'static, str>),
     InvalidIndex(Cow<'static, str>),
     IndexOutOfRange(Cow<'static, str>),
     InvalidOperands(Cow<'static, str>),
@@ -111,8 +112,9 @@ impl AtpErrorCode {
             Self::BytecodeParamNotRecognized(_) => 205,
             Self::TextParsingError(_) => 300,
             Self::BytecodeParsingError(_) => 301,
-            Self::ValidationError(_) => 302,
-            Self::ZeroDivisionError(_) => 303,
+            Self::BytecodeParamParsingError(_) => 302,
+            Self::ValidationError(_) => 303,
+            Self::ZeroDivisionError(_) => 304,
         }
     }
 
@@ -132,6 +134,7 @@ impl AtpErrorCode {
             | Self::FileReadingError(x)
             | Self::FileWritingError(x)
             | Self::FileOpeningError(x)
+            | Self::BytecodeParamParsingError(x)
             | Self::ZeroDivisionError(x)
             | Self::TokenArrayNotFound(x)
             | Self::BytecodeParamNotRecognized(x) => x.to_string(),
