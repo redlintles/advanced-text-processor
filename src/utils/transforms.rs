@@ -1,3 +1,7 @@
+use std::borrow::Cow;
+use crate::utils::errors::AtpError;
+use crate::{ tokens::TokenMethods };
+
 pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
     let mut parsed_chunk = String::from(chunk);
     if chunk.ends_with(";") {
@@ -29,15 +33,6 @@ pub fn token_from_hex_string(s: &str) -> Option<u8> {
 
     Some(byte)
 }
-use std::borrow::Cow;
-
-use crate::utils::errors::AtpError;
-#[cfg(feature = "bytecode")]
-use crate::{
-    bytecode::BytecodeTokenMethods,
-    tokens::TokenMethods,
-    utils::mapping::get_supported_bytecode_tokens,
-};
 
 pub fn capitalize(input: &str) -> String {
     let mut chars = input.chars();
@@ -66,7 +61,7 @@ pub fn extend_string(input: &str, max_len: usize) -> String {
 #[cfg(feature = "bytecode")]
 pub fn token_to_bytecode_token(
     token: &Box<dyn TokenMethods>
-) -> Result<Box<dyn BytecodeTokenMethods>, AtpError> {
+) -> Result<Box<dyn TokenMethods>, AtpError> {
     let mut line = token.to_atp_line().trim().to_string();
 
     if line.ends_with(";") {

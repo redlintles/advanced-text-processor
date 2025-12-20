@@ -1,19 +1,18 @@
 use std::{ fs::OpenOptions, io::{ BufReader, Read }, path::Path };
 
-use crate::utils::{
-    params::AtpParamTypes,
-    errors::{ AtpError, AtpErrorCode },
-    mapping::get_mapping_bytecode_to_token,
-    validations::check_file_path,
+use crate::{
+    tokens::TokenMethods,
+    utils::{
+        errors::{ AtpError, AtpErrorCode },
+        mapping::get_mapping_bytecode_to_token,
+        params::AtpParamTypes,
+        validations::check_file_path,
+    },
 };
 
-use super::{ BytecodeTokenMethods };
-
-pub fn read_bytecode_from_file(
-    path: &Path
-) -> Result<Vec<Box<dyn BytecodeTokenMethods>>, AtpError> {
+pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
     check_file_path(path, Some("atpbc"))?;
-    let mut result: Vec<Box<dyn BytecodeTokenMethods>> = Vec::new();
+    let mut result: Vec<Box<dyn TokenMethods>> = Vec::new();
 
     let file = match OpenOptions::new().read(true).open(path) {
         Ok(x) => x,
