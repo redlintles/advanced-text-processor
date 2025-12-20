@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 /// Token `Cfw` — Capitalize First Word
 ///
 /// Capitalizes the first word of `input`
@@ -120,7 +120,7 @@ mod cfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_first_word_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Cfw::default();
 

@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// TUCS - To Uppercase Single
 ///
@@ -186,7 +186,7 @@ mod tucs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_single_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Tucs::params(3);
 

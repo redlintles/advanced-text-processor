@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// TLCC - To Lowercase Chunk
 ///
@@ -257,7 +257,7 @@ mod tlcc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Tlcc::params(1, 3).unwrap();
 

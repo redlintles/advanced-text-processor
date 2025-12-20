@@ -9,7 +9,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 /// TUCW - To Uppercase Word
 ///
 /// Uppercase a single word of string
@@ -191,7 +191,7 @@ mod tucw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_uppercase_word_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Tucw::params(3);
 

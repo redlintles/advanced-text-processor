@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 /// Token `Ate` — Add to End
 ///
 /// Appends `text` to the end of `input`
@@ -161,10 +161,7 @@ mod ate_tests {
 
     #[cfg(feature = "bytecode")]
     mod test_bytecode_version {
-        use crate::{
-            tokens::{ TokenMethods, transforms::ate::Ate },
-            utils::bytecode_utils::AtpParamTypes,
-        };
+        use crate::{ tokens::{ TokenMethods, transforms::ate::Ate }, utils::params::AtpParamTypes };
         use crate::bytecode::{ BytecodeTokenMethods };
 
         #[test]

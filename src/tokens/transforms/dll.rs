@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// DLL - Delete Last
 ///
@@ -129,7 +129,7 @@ mod dll_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_delete_last_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Dll::default();
 

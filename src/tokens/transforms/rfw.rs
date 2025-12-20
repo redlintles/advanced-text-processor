@@ -5,7 +5,7 @@ use regex::Regex;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 /// RFW - Replace First With
 ///
 /// Replace the first ocurrency of `pattern` in `input` with `text_to_replace`
@@ -226,7 +226,7 @@ mod rfw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn replace_all_with_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Rfw::params("banana", "laranja").unwrap();
 

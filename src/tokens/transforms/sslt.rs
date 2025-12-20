@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use regex::Regex;
 
 #[cfg(feature = "bytecode")]
-use crate::utils::bytecode_utils::AtpParamTypes;
+use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
@@ -275,7 +275,7 @@ mod sslt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn split_select_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Sslt::params("banana", 1).unwrap();
 

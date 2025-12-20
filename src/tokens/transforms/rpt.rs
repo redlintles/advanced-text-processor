@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 
 /// RPT - Repeat
 ///
@@ -165,7 +165,7 @@ mod rpt_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn repeat_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Rpt::params(3);
 

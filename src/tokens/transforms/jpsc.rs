@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// JPSC - Join to PascalCase
 ///
@@ -127,7 +127,7 @@ mod jpsc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn join_to_pascal_case_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Jpsc::default();
 

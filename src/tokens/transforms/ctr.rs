@@ -7,7 +7,7 @@ use crate::{
 };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -260,7 +260,7 @@ mod ctr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_range_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Ctr::params(1, 3).unwrap();
 

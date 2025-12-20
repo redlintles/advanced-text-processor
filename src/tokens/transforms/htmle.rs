@@ -5,7 +5,7 @@ use html_escape::encode_text;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// HTMLE - HTML Escape
 ///
@@ -118,7 +118,7 @@ mod htmle_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_escape_bytecode_test() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Htmle::default();
 

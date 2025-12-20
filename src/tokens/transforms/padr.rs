@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 /// PADR - Pad Right
 ///
 /// Repeats `text` characters until `max_len` is reached, and then insert the result at the end of `input`
@@ -208,7 +208,7 @@ mod padr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn pad_right_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Padr::params("banana", 1);
 

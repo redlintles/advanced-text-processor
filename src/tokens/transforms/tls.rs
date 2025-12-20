@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::tokens::TokenMethods;
 
 #[cfg(feature = "bytecode")]
-use crate::utils::bytecode_utils::AtpParamTypes;
+use crate::utils::params::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 #[cfg(feature = "bytecode")]
@@ -128,7 +128,7 @@ mod tls_tests {
     fn test_bytecode_trim_left_side() {
         use crate::tokens::{ transforms::tls::Tls };
         use crate::bytecode::{ BytecodeTokenMethods };
-        use crate::utils::bytecode_utils::AtpParamTypes;
+        use crate::utils::params::AtpParamTypes;
 
         let mut token = Tls::default();
 

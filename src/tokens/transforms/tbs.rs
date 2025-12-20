@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 /// TBS - Trim both sides
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
@@ -131,7 +131,7 @@ mod tbs_tests {
     fn test_bytecode_trim_both_sides() {
         use crate::tokens::{ transforms::tbs::Tbs };
         use crate::bytecode::{ BytecodeTokenMethods };
-        use crate::utils::bytecode_utils::AtpParamTypes;
+        use crate::utils::params::AtpParamTypes;
 
         let mut token = Tbs::default();
 

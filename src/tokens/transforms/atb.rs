@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 
 /// Token `Atb` — Add to Beginning
 ///
@@ -203,10 +203,7 @@ mod atb_tests {
 
     #[cfg(feature = "bytecode")]
     mod test_bytecode_version {
-        use crate::{
-            tokens::{ TokenMethods, transforms::atb::Atb },
-            utils::bytecode_utils::AtpParamTypes,
-        };
+        use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
         use crate::bytecode::{ BytecodeTokenMethods };
 
         #[test]

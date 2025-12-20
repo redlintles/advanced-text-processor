@@ -9,7 +9,7 @@ use crate::{
     },
 };
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// TLCW - To Lowercase Word
 ///
@@ -192,7 +192,7 @@ mod tlcw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_word_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Tlcw::params(3);
 

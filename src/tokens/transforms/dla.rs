@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::utils::bytecode_utils::AtpParamTypes;
+use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_index_against_input;
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 
@@ -154,10 +154,7 @@ impl BytecodeTokenMethods for Dla {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dla_tests {
-    use crate::{
-        tokens::{ TokenMethods, transforms::dla::Dla },
-        utils::bytecode_utils::AtpParamTypes,
-    };
+    use crate::{ tokens::{ TokenMethods, transforms::dla::Dla }, utils::params::AtpParamTypes };
     #[test]
     fn delete_after_test() {
         let mut token = Dla::params(3);

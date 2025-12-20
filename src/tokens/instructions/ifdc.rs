@@ -5,7 +5,7 @@ use crate::bytecode::{ BytecodeTokenMethods };
 use crate::tokens::{ TokenMethods, transforms::dlf::Dlf };
 
 #[cfg(feature = "bytecode")]
-use crate::utils::bytecode_utils::AtpParamTypes;
+use crate::utils::params::AtpParamTypes;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 use crate::utils::mapping::get_supported_default_tokens;
 

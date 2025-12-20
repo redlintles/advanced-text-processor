@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// TLCS - To Lowercase Single
 ///
@@ -185,7 +185,7 @@ mod tlcs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn to_lowercase_single_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Tlcs::params(3);
 

@@ -10,7 +10,7 @@ use crate::utils::errors::{ AtpError };
 #[cfg(feature = "bytecode")]
 use crate::{
     bytecode::{ BytecodeTokenMethods },
-    utils::{ bytecode_utils::AtpParamTypes, errors::AtpErrorCode },
+    utils::{ params::AtpParamTypes, errors::AtpErrorCode },
 };
 /// Token `Ctc` — Capitalize Chunk
 ///
@@ -278,7 +278,7 @@ mod ctc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Ctc::params(1, 3).unwrap();
 

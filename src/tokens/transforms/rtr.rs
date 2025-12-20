@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 /// RTR - Rotate Right
 ///
 /// Rotates `input` to the right `n` times
@@ -180,7 +180,7 @@ mod rtr_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn rotate_right_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Rtr::params(3);
 

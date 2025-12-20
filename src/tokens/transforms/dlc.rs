@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// Dlc - Delete Chunk
 ///
@@ -270,7 +270,7 @@ mod dlc_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn delete_chunk_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Dlc::params(1, 3).unwrap();
 

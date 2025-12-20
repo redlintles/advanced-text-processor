@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 
 use crate::{
     tokens::TokenMethods,
@@ -224,7 +224,7 @@ mod ins_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn insert_bytecode_tests() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Ins::params(1, "banana");
 

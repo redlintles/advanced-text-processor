@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 /// Token `Clw` — Capitalize Last Word
 ///
 /// Capitalizes the last word of `input`
@@ -149,7 +149,7 @@ mod clw_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_capitalize_last_word_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Clw::default();
 

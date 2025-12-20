@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::{ BytecodeTokenMethods }, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::{ BytecodeTokenMethods }, utils::params::AtpParamTypes };
 
 use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 
@@ -121,7 +121,7 @@ mod rev_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_reverse_bytecode() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Rev::default();
 

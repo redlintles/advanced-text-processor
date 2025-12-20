@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// URLE - URL Encode
 ///
@@ -122,7 +122,7 @@ mod urle_tests {
     fn test_bytecode_url_encode() {
         use crate::tokens::{ transforms::urle::Urle };
         use crate::bytecode::{ BytecodeTokenMethods };
-        use crate::utils::bytecode_utils::AtpParamTypes;
+        use crate::utils::params::AtpParamTypes;
 
         let mut token = Urle::default();
 

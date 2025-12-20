@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 #[cfg(feature = "bytecode")]
-use crate::utils::bytecode_utils::AtpParamTypes;
+use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -161,10 +161,7 @@ impl BytecodeTokenMethods for Dlb {
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 mod dlb_tests {
-    use crate::{
-        tokens::{ TokenMethods, transforms::dlb::Dlb },
-        utils::bytecode_utils::AtpParamTypes,
-    };
+    use crate::{ tokens::{ TokenMethods, transforms::dlb::Dlb }, utils::params::AtpParamTypes };
     #[test]
     fn delete_before_test() {
         let mut token = Dlb::params(3);

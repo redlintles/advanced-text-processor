@@ -5,7 +5,7 @@ use html_escape::decode_html_entities;
 use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 #[cfg(feature = "bytecode")]
-use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
 /// HTMLU - HTML Unescape
 ///
@@ -117,7 +117,7 @@ mod htmlu_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn html_unescape_bytecode_test() {
-        use crate::{ bytecode::BytecodeTokenMethods, utils::bytecode_utils::AtpParamTypes };
+        use crate::{ bytecode::BytecodeTokenMethods, utils::params::AtpParamTypes };
 
         let mut token = Htmlu::default();
 
