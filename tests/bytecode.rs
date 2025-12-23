@@ -3,20 +3,18 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp::builder::atp_processor::{ AtpProcessorBytecodeMethods };
-
-    use atp::utils::transforms::{ bytecode_token_vec_to_token_vec };
+    use atp::{ builder::atp_processor::AtpProcessorMethods, tokens::TokenMethods };
 
     #[test]
     fn test_write_bytecode_to_file() {
         use tempfile::Builder;
-        use atp::bytecode::{ writer::write_bytecode_to_file, BytecodeTokenMethods };
+        use atp::bytecode::{ writer::write_bytecode_to_file };
         use atp::tokens::transforms::{ atb::Atb, rpt::Rpt, ate::Ate };
         let file = Builder::new().suffix(".atpbc").prefix("output_").tempfile().unwrap();
 
         let path = file.path();
 
-        let tokens: Vec<Box<dyn BytecodeTokenMethods>> = vec![
+        let tokens: Vec<Box<dyn TokenMethods>> = vec![
             Box::new(Atb {
                 text: "Banana".to_string(),
             }),
@@ -59,9 +57,9 @@ pub mod bytecode {
 
         let expected_output = "BananaCoxinhaLaranjaBananaCoxinhaLaranjaBananaCoxinhaLaranja";
 
-        let mut processor: Box<dyn AtpProcessorBytecodeMethods> = Box::new(AtpProcessor::new());
+        let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
 
-        let identifier = processor.add_transform(bytecode_token_vec_to_token_vec(&tokens).unwrap());
+        let identifier = processor.add_transform(tokens.to_vec());
 
         let output = processor.process_all_bytecode_with_debug(&identifier, input).unwrap();
 
