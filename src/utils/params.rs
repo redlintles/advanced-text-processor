@@ -2,14 +2,15 @@ use core::str;
 use std::{ array::TryFromSliceError, io::{ BufReader, Read } };
 
 use crate::{
-    bytecode::BytecodeTokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, mapping::{ get_mapping_bytecode_to_token } },
+    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
+    tokens::TokenMethods,
+    utils::errors::{ AtpError, AtpErrorCode },
 };
 
 pub enum AtpParamTypes {
     String(String),
     Usize(usize),
-    Token(Box<dyn BytecodeTokenMethods>),
+    Token(Box<dyn TokenMethods>),
 }
 
 impl AtpParamTypes {
@@ -156,25 +157,13 @@ impl AtpParamTypes {
                     params.push(parsed_param);
                 }
 
-                let mut token = get_mapping_bytecode_to_token()
-                    .get(&instruction_type)
-                    .ok_or_else(||
-                        AtpError::new(
-                            AtpErrorCode::TokenNotFound("Invalid Bytecode".into()),
-                            "parse_bytecode_token",
-                            instruction_type.to_string()
-                        )
-                    )?();
+                let token_ref = TOKEN_TABLE.find(
+                    TableQuery::Bytecode(instruction_type)
+                )?.get_token();
 
-                token
-                    .from_params(&params)
-                    .map_err(|e|
-                        AtpError::new(
-                            AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                            "read_bytecode_from_file",
-                            e.to_string()
-                        )
-                    )?;
+                let mut token = token_ref.into_box();
+
+                token.from_params(&params)?;
 
                 Ok(AtpParamTypes::Token(token))
             }
