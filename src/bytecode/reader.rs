@@ -1,10 +1,10 @@
 use std::{ fs::OpenOptions, io::{ BufReader, Read }, path::Path };
 
 use crate::{
+    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
     tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
-        mapping::get_mapping_bytecode_to_token,
         params::AtpParamTypes,
         validations::check_file_path,
     },
@@ -141,16 +141,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>
                 // Código final para fazer o parsing dos parâmetros
             }
 
-            let mut token = get_mapping_bytecode_to_token()
-                .get(&instruction_type)
-                .ok_or_else(||
-                    AtpError::new(
-                        AtpErrorCode::TokenNotFound("Invalid Bytecode".into()),
-                        "parse_bytecode_token",
-                        instruction_type.to_string()
-                    )
-                )?();
+            let token_ref = TOKEN_TABLE.find(TableQuery::Bytecode(instruction_type))?.get_token();
 
+            let mut token = token_ref.into_box();
             token
                 .from_params(&params)
                 .map_err(|e|

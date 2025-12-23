@@ -6,11 +6,7 @@ use uuid::Uuid;
 use colored::*;
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{
-    reader::read_bytecode_from_file,
-    writer::write_bytecode_to_file,
-    BytecodeTokenMethods,
-};
+use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 use crate::tokens::{ TokenMethods };
 
 use crate::text::parser::parse_token;
@@ -18,8 +14,6 @@ use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
 
 use crate::utils::errors::{ token_array_not_found, AtpError, ErrorManager };
-#[cfg(feature = "bytecode")]
-use crate::utils::transforms::{ bytecode_token_vec_to_token_vec, token_vec_to_bytecode_token_vec };
 #[derive(Default)]
 pub struct AtpProcessor {
     transforms: HashMap<String, Vec<Box<dyn TokenMethods>>>,
@@ -47,19 +41,21 @@ pub trait AtpProcessorMethods {
     fn transform_exists(&self, id: &str) -> bool;
     fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError>;
     fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, AtpError>;
-}
-#[cfg(feature = "bytecode")]
-pub trait AtpProcessorBytecodeMethods: AtpProcessorMethods {
+
+    #[cfg(feature = "bytecode")]
     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError>;
+    #[cfg(feature = "bytecode")]
     fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError>;
+    #[cfg(feature = "bytecode")]
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,
         input: &str
     ) -> Result<String, AtpError>;
+    #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn BytecodeTokenMethods>,
+        token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError>;
 }
@@ -267,10 +263,7 @@ impl AtpProcessorMethods for AtpProcessor {
 
         Ok(output)
     }
-}
-
-#[cfg(feature = "bytecode")]
-impl AtpProcessorBytecodeMethods for AtpProcessor {
+    #[cfg(feature = "bytecode")]
     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
         let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
             Ok(x) => x,
@@ -280,15 +273,9 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
             }
         };
 
-        let btc_token_vec = match token_vec_to_bytecode_token_vec(tokens) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-        write_bytecode_to_file(path, btc_token_vec)
+        write_bytecode_to_file(path, tokens.to_vec())
     }
+    #[cfg(feature = "bytecode")]
     fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, AtpError> {
         let tokens = match read_bytecode_from_file(path) {
             Ok(x) => x,
@@ -298,18 +285,11 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
             }
         };
 
-        let token_vec = match bytecode_token_vec_to_token_vec(&tokens) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let identifier = self.add_transform(token_vec);
+        let identifier = self.add_transform(tokens.to_vec());
 
         Ok(identifier)
     }
+    #[cfg(feature = "bytecode")]
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,
@@ -319,17 +299,7 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
 
         let dashes = 10;
 
-        let tokens = match
-            token_vec_to_bytecode_token_vec(
-                self.transforms.get(id).ok_or_else(token_array_not_found(id))?
-            )
-        {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
+        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
 
         println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
 
@@ -353,10 +323,10 @@ impl AtpProcessorBytecodeMethods for AtpProcessor {
 
         Ok(result.to_string())
     }
-
+    #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn BytecodeTokenMethods>,
+        token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError> {
         let output = match token.parse(input) {
