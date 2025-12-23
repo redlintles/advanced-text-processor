@@ -17,12 +17,12 @@ impl TokenRef {
             TokenRef::Shared(a) => TokenRef::Shared(a.clone()),
         }
     }
-    fn as_ref(&self) -> &dyn TokenMethods {
-        match self {
-            TokenRef::Boxed(b) => b.as_ref(),
-            TokenRef::Shared(a) => a.as_ref(),
-        }
-    }
+    // fn as_ref(&self) -> &dyn TokenMethods {
+    //     match self {
+    //         TokenRef::Boxed(b) => b.as_ref(),
+    //         TokenRef::Shared(a) => a.as_ref(),
+    //     }
+    // }
     pub fn into_box(self) -> Box<dyn TokenMethods> {
         match self {
             TokenRef::Boxed(b) => b,
