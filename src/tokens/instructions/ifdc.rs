@@ -1,6 +1,9 @@
-use std::borrow::Cow;
+use std::{ borrow::Cow };
 
-use crate::tokens::{ TokenMethods, transforms::dlf::Dlf };
+use crate::{
+    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
+    tokens::{ TokenMethods, transforms::dlf::Dlf },
+};
 
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
@@ -53,17 +56,14 @@ impl TokenMethods for Ifdc {
 
             let inner_token_text = line[3..].to_vec();
 
-            let mut inner_token = get_supported_default_tokens()
-                .get(inner_token_text[0].as_str())
-                .ok_or_else(||
-                    AtpError::new(
-                        AtpErrorCode::TokenNotFound("Token Not Found".into()),
-                        self.to_atp_line(),
-                        inner_token_text.join(" ")
-                    )
-                )?();
+            let inner_token_ref = TOKEN_TABLE.find(
+                TableQuery::String(inner_token_text[0].clone().into())
+            )?.get_token();
+
+            let mut inner_token = inner_token_ref.into_box();
 
             inner_token.from_vec_params(inner_token_text)?;
+
             self.inner = inner_token;
         }
 
@@ -123,8 +123,6 @@ impl TokenMethods for Ifdc {
     }
 
     fn to_bytecode(&self) -> Vec<u8> {
-        use crate::utils::transforms::token_to_bytecode_token;
-
         let mut result = Vec::new();
 
         let instruction_type: u32 = self.get_opcode() as u32;
@@ -136,7 +134,7 @@ impl TokenMethods for Ifdc {
         let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
 
         let second_param_type: u32 = 0x03;
-        let second_param_payload = token_to_bytecode_token(&self.inner).unwrap().to_bytecode();
+        let second_param_payload = self.inner.to_bytecode();
         let second_param_payload_size: u32 = second_param_payload.len() as u32;
 
         let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
