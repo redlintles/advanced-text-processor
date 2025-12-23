@@ -122,6 +122,7 @@ mod tls_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_left_side() {
+        use crate::tokens::TokenMethods;
         use crate::tokens::{ transforms::tls::Tls };
         use crate::utils::params::AtpParamTypes;
 

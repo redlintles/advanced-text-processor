@@ -127,6 +127,7 @@ mod tbs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_both_sides() {
+        use crate::tokens::TokenMethods;
         use crate::tokens::{ transforms::tbs::Tbs };
         use crate::utils::params::AtpParamTypes;
 

@@ -126,6 +126,7 @@ mod trs_tests {
     #[cfg(feature = "bytecode")]
     #[test]
     fn test_bytecode_trim_right_side() {
+        use crate::tokens::TokenMethods;
         use crate::tokens::{ transforms::trs::Trs };
         use crate::utils::params::AtpParamTypes;
 
