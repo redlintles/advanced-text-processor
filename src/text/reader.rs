@@ -1,12 +1,9 @@
 use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
+    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
     tokens::TokenMethods,
-    utils::{
-        errors::{ AtpError, AtpErrorCode },
-        mapping::get_supported_default_tokens,
-        validations::check_file_path,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_file_path },
 };
 
 pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpError> {
@@ -39,38 +36,11 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
         }
     };
 
-    let supported_tokens = get_supported_default_tokens();
-    let token_factory = match supported_tokens.get(chunks[0].as_str()) {
-        Some(x) => x,
-        None => {
-            return Err(
-                AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TokenNotFound(
-                        "Token not recognized".into()
-                    ),
-                    "",
-                    chunks[0].to_string()
-                )
-            );
-        }
-    };
+    let token_ref = TOKEN_TABLE.find(TableQuery::String(chunks[0].clone().into()))?.get_token();
 
-    let mut token = token_factory();
+    let mut token = token_ref.into_box();
 
-    match token.from_vec_params(chunks) {
-        Ok(x) => x,
-        Err(_) => {
-            return Err(
-                AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TextParsingError(
-                        "Token not recognized".into()
-                    ),
-                    "",
-                    ""
-                )
-            );
-        }
-    }
+    token.from_vec_params(chunks)?;
 
     Ok(token)
 }
