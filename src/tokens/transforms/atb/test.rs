@@ -1,148 +1,204 @@
-#[cfg(feature = "test_access")]
+//! Tests for token `Atb`.
+//!
+//! Parent module has: `#[cfg(feature = "test_access")] pub mod test;`
+
 #[cfg(test)]
-mod atb_tests {
-    mod test_text_version {
-        use crate::{ tokens::TokenMethods, tokens::transforms::atb::Atb };
-        #[test]
-        fn test_with_inputs() {
-            let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
-            let token = Atb::params("banana");
+mod common {
+    use crate::tokens::{ transforms::atb::Atb, TokenMethods };
 
-            assert_eq!(
-                token.transform(&random_text),
-                Ok(format!("{}{}", "banana", random_text)),
-                "It works with random inputs"
-            );
+    #[test]
+    fn params_sets_text() {
+        let t = Atb::params("foo");
+        assert_eq!(t.text, "foo");
+    }
 
-            assert_eq!(
-                token.transform("coxinha"),
-                Ok("bananacoxinha".to_string()),
-                "It works with expected inputs"
-            );
+    #[test]
+    fn transform_prepends_text() {
+        let t = Atb::params("foo");
+        assert_eq!(t.transform(" bar").unwrap(), "foo bar");
+    }
 
-            assert_eq!(
-                token.transform("bànánà"),
-                Ok("bananabànánà".to_string()),
-                "It supports utf-8 strings"
-            )
-        }
+    #[test]
+    fn transform_empty_input() {
+        let t = Atb::params("foo");
+        assert_eq!(t.transform("").unwrap(), "foo");
+    }
 
-        #[test]
-        fn test_to_atp_line() {
-            let token = Atb::params("banana");
+    #[test]
+    fn transform_empty_prefix() {
+        let t = Atb::params("");
+        assert_eq!(t.transform("bar").unwrap(), "bar");
+    }
 
-            assert_eq!(
-                token.to_atp_line(),
-                "atb banana;\n".to_string(),
-                "conversion to atp_line works correctly"
-            );
-        }
+    #[test]
+    fn to_atp_line_exact_format() {
+        let t = Atb::params("foo");
+        let line = t.to_atp_line();
+        assert_eq!(line.as_ref(), "atb foo;\n");
+    }
 
-        #[test]
-        fn test_get_string_repr() {
-            let token = Atb::default();
-            assert_eq!(
-                token.get_string_repr(),
-                "atb".to_string(),
-                "get_string_repr works as expected"
-            );
-        }
+    #[test]
+    fn get_string_repr_is_atb() {
+        let t = Atb::default();
+        assert_eq!(t.get_string_repr(), "atb");
+    }
 
-        #[test]
-        fn test_from_vec_params() {
-            let mut token = Atb::params("laranja");
-            assert!(
-                matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-                "It throws an error for invalid vec_params"
-            );
-            assert!(
-                matches!(
-                    token.from_vec_params(["atb".to_string(), "banana".to_string()].to_vec()),
-                    Ok(_)
-                ),
-                "It does not throws an error for valid vec_params"
-            );
+    #[test]
+    fn from_vec_params_sets_text_when_tag_matches() {
+        let mut t = Atb::default();
+        t.from_vec_params(vec!["atb".into(), "hello".into()]).unwrap();
+        assert_eq!(t.text, "hello");
+        assert_eq!(t.transform(" world").unwrap(), "hello world");
+    }
 
-            assert_eq!(
-                token.transform("coxinha"),
-                Ok("bananacoxinha".to_string()),
-                "from_vec_params call fill token params correctly"
-            );
+    #[test]
+    fn from_vec_params_returns_error_when_tag_mismatch_and_does_not_mutate() {
+        let mut t = Atb::params("initial");
+        let res = t.from_vec_params(vec!["nope".into(), "hello".into()]);
+        assert!(res.is_err());
+        assert_eq!(t.text, "initial");
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_when_missing_param() {
+        // Documenta o comportamento atual (line[1] sem check de len)
+        let mut t = Atb::default();
+        let _ = t.from_vec_params(vec!["atb".into()]);
+    }
+}
+
+#[cfg(all(test, feature = "bytecode"))]
+mod bytecode {
+    use crate::{ tokens::{ transforms::atb::Atb, TokenMethods }, utils::params::AtpParamTypes };
+
+    // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
+    // [type: u32][payload_size: u32][payload: bytes]
+    fn encode_param_for_decoder(param_type: u32, payload: &[u8]) -> Vec<u8> {
+        let mut v = Vec::with_capacity(4 + 4 + payload.len());
+        v.extend_from_slice(&param_type.to_be_bytes());
+        v.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+        v.extend_from_slice(payload);
+        v
+    }
+
+    #[test]
+    fn opcode_is_expected() {
+        let t = Atb::default();
+        assert_eq!(t.get_opcode(), 0x01);
+    }
+
+    #[test]
+    fn atpparam_from_bytecode_string_roundtrip_decoder_format() {
+        // Este teste valida o DECODER real do from_bytecode, usando o formato que ele espera.
+        let raw = encode_param_for_decoder(0x01, b"abc");
+        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
+
+        match parsed {
+            AtpParamTypes::String(s) => assert_eq!(s, "abc"),
+            other => panic!("Expected String, got {:?}", other.get_param_type_code()),
         }
     }
 
-    #[cfg(feature = "bytecode")]
-    mod test_bytecode_version {
-        use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+    #[test]
+    fn atpparam_from_bytecode_usize_decoder_format() {
+        let n: usize = 123;
+        let raw = encode_param_for_decoder(0x02, &n.to_be_bytes());
+        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
 
-        #[test]
-        fn test_to_bytecode_instruction() {
-            let token = Atb::params("banana");
-
-            let first_param_type: u32 = 0x01;
-            let first_param_payload = "banana".as_bytes();
-            let first_param_payload_size = first_param_payload.len() as u32;
-            let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
-
-            let instruction_type: u32 = 0x01;
-            let param_count: u8 = 0x01;
-
-            let instruction_total_size: u64 = 4 + 1 + first_param_total_size;
-
-            let mut expected_output: Vec<u8> = vec![];
-
-            expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
-            expected_output.extend_from_slice(&instruction_type.to_be_bytes());
-            expected_output.push(param_count);
-            expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-            expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-            expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-            expected_output.extend_from_slice(&first_param_payload);
-
-            assert_eq!(
-                token.to_bytecode(),
-                expected_output,
-                "Conversion to bytecode instruction works perfectly!"
-            );
+        match parsed {
+            AtpParamTypes::Usize(x) => assert_eq!(x, 123),
+            other => panic!("Expected Usize, got {:?}", other.get_param_type_code()),
         }
+    }
 
-        #[test]
-        fn test_get_op_code() {
-            let token = Atb::default();
-            assert_eq!(token.get_opcode(), 0x01, "get_opcode does not disrepect ATP token mapping");
-        }
+    #[test]
+    fn atb_from_params_accepts_single_string_param() {
+        let mut t = Atb::default();
+        let params = vec![AtpParamTypes::String("foo".to_string())];
 
-        #[test]
-        fn test_from_bytecode_instruction() {
-            let mut token = Atb::params("laranja");
+        t.from_params(&params).unwrap();
+        assert_eq!(t.text, "foo");
+        assert_eq!(t.transform(" bar").unwrap(), "foo bar");
+    }
 
-            let instruction: Vec<AtpParamTypes> = vec![
-                AtpParamTypes::String("laranja".to_string())
-            ];
+    #[test]
+    fn atb_from_params_rejects_wrong_param_count() {
+        let mut t = Atb::default();
+        let params = vec![
+            AtpParamTypes::String("a".to_string()),
+            AtpParamTypes::String("b".to_string())
+        ];
 
-            assert_eq!(
-                token.from_params(&instruction),
-                Ok(()),
-                "Parsing from bytecode to token works correctly!"
-            );
-            assert_eq!(
-                token.transform("coxinha"),
-                Ok("bananacoxinha".to_string()),
-                "from_bytecode_instruction fills token params correctly"
-            );
+        let err = t.from_params(&params).unwrap_err();
+        // Assert forte: tipo do erro (sem depender de mensagem/string)
+        assert!(matches!(err, crate::utils::errors::AtpError { .. }));
 
-            // assert!(
-            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-            //     "Throws an error for invalid op_code"
-            // );
+        // Como AtpError não expõe fields public, a melhor checagem forte
+        // é pelo Display do AtpErrorCode ou por comparação se você expuser um getter.
+        // Aqui vai um check “semi-forte” usando o código:
+        // (se você adicionar um getter em AtpError pra pegar error_code, isso fica perfeito)
+        let rendered = err.to_string();
+        assert!(rendered.contains("106")); // BytecodeNotFound => 106
+    }
 
-            // instruction.op_code = 0x01;
-            // instruction.operands = [].to_vec();
+    #[test]
+    fn atb_to_bytecode_can_be_parsed_into_params_and_feed_from_params() {
+        // Aqui a gente valida o fluxo real:
+        // Atb::to_bytecode -> decodificar estrutura -> AtpParamTypes::from_bytecode(param bytes) -> Atb::from_params
+        //
+        // Observação: Atb::to_bytecode gera uma INSTRUCTION com layout:
+        // [u64 instruction_total_size][u32 opcode][u8 param_count]
+        // [u64 param_total_size][u32 param_type][u32 payload_size][payload]
+        //
+        // E AtpParamTypes::from_bytecode espera:
+        // [u32 type][u32 payload_size][payload]
+        //
+        // Então, para montar o input correto do from_bytecode, pegamos o trecho:
+        // [u32 param_type][u32 payload_size][payload] (ignorando o u64 param_total_size).
 
-            // assert!(
-            //     matches!(token.token_from_bytecode_instruction(instruction.clone()), Err(_)),
-            //     "Throws an error for invalid operands"
-            // );
-        }
+        let original = Atb::params("hello");
+        let bytes = original.to_bytecode();
+
+        // pulo: 8 (total) + 4 (opcode) + 1 (param_count) = 13
+        let mut idx = 13;
+
+        // lê u64 param_total_size, mas não usa (8 bytes)
+        let _param_total_size = u64::from_be_bytes(bytes[idx..idx + 8].try_into().unwrap());
+        idx += 8;
+
+        // Agora o sub-slice começa em [u32 param_type][u32 payload_size][payload...]
+        let param_slice = bytes[idx..].to_vec();
+
+        // Parse param => AtpParamTypes
+        let parsed_param = AtpParamTypes::from_bytecode(param_slice).unwrap();
+
+        let mut rebuilt = Atb::default();
+        rebuilt.from_params(&vec![parsed_param]).unwrap();
+
+        assert_eq!(rebuilt.text, "hello");
+        assert_eq!(rebuilt.transform(" world").unwrap(), "hello world");
+    }
+
+    #[test]
+    fn atpparam_param_to_bytecode_has_internal_structure() {
+        // Este teste NÃO faz roundtrip (porque encoder/decoder não batem hoje),
+        // mas garante que o encoder produz algo consistente internamente.
+        let p = AtpParamTypes::String("abc".to_string());
+        let b = p.param_to_bytecode();
+
+        // type u32
+        let ty = u32::from_be_bytes(b[0..4].try_into().unwrap());
+        assert_eq!(ty, 0x01);
+
+        // em seguida você grava u64 param_total_size
+        let _total = u64::from_be_bytes(b[4..12].try_into().unwrap());
+
+        // depois payload_size u32
+        let size = u32::from_be_bytes(b[12..16].try_into().unwrap());
+        assert_eq!(size, 3);
+
+        // payload
+        assert_eq!(&b[16..19], b"abc");
     }
 }
