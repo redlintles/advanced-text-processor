@@ -84,6 +84,8 @@ impl TokenMethods for Rtr {
     }
     #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 1 {
             return Err(
                 AtpError::new(
@@ -94,23 +96,9 @@ impl TokenMethods for Rtr {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::Usize(payload) => {
-                self.times = payload.clone();
-                return Ok(());
-            }
-            _ => {
-                Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                )
-            }
-        }
+        self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");
+
+        Ok(())
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

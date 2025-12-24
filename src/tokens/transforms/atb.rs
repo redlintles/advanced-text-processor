@@ -67,6 +67,8 @@ impl TokenMethods for Atb {
 
     #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 1 {
             return Err(
                 AtpError::new(
@@ -77,23 +79,9 @@ impl TokenMethods for Atb {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::String(payload) => {
-                self.text = payload.to_string();
-                return Ok(());
-            }
-            _ => {
-                Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single string as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                )
-            }
-        }
+        self.text = parse_args!(instruction, 0, String, "Text should be of string type");
+
+        Ok(())
     }
 
     #[cfg(feature = "bytecode")]

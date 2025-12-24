@@ -97,6 +97,8 @@ impl TokenMethods for Rcw {
     }
     #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 3 {
             return Err(
                 AtpError::new(
@@ -107,60 +109,29 @@ impl TokenMethods for Rcw {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::String(payload) => {
-                self.pattern = Regex::new(&payload.clone()).map_err(|_|
-                    AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                        "sslt",
-                        payload.clone()
-                    )
-                )?;
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single String as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[1] {
-            AtpParamTypes::String(payload) => {
-                self.text_to_replace = payload.to_string();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single String as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[2] {
-            AtpParamTypes::Usize(payload) => {
-                self.count = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
+        let pattern_payload = parse_args!(
+            instruction,
+            0,
+            String,
+            "Pattern should be of string type"
+        );
+
+        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_|
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                pattern_payload.clone()
+            )
+        )?;
+
+        self.text_to_replace = parse_args!(
+            instruction,
+            1,
+            String,
+            "Text_to_replace should be of type String"
+        );
+
+        self.count = parse_args!(instruction, 2, Usize, "Index should be of type Usize");
 
         return Ok(());
     }

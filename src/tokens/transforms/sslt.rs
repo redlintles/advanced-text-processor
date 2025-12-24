@@ -120,6 +120,8 @@ impl TokenMethods for Sslt {
     }
     #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -130,40 +132,22 @@ impl TokenMethods for Sslt {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::Usize(payload) => {
-                self.index = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[1] {
-            AtpParamTypes::String(payload) => {
-                self.pattern = Regex::new(&payload.clone()).map_err(|e|
-                    AtpError::new(AtpErrorCode::BytecodeParsingError(e.to_string().into()), "", "")
-                )?;
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
+        self.index = parse_args!(instruction, 0, Usize, "Index should be of type Usize");
+
+        let pattern_payload = parse_args!(
+            instruction,
+            1,
+            String,
+            "Pattern should be of string type"
+        );
+
+        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_|
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                pattern_payload.clone()
+            )
+        )?;
 
         return Ok(());
     }

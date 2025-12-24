@@ -5,6 +5,8 @@ use crate::{
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
 };
 
+use crate::parse_args;
+
 #[cfg(feature = "bytecode")]
 use crate::{ utils::params::AtpParamTypes };
 
@@ -87,38 +89,8 @@ impl TokenMethods for Padl {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::String(payload) => {
-                self.text = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[1] {
-            AtpParamTypes::Usize(payload) => {
-                self.max_len = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
+        self.text = parse_args!(instruction, 0, String, "Text_to_insert should be of String type");
+        self.max_len = parse_args!(instruction, 1, Usize, "Index should be of usize type");
 
         return Ok(());
     }

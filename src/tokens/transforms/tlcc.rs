@@ -99,6 +99,8 @@ impl TokenMethods for Tlcc {
     }
     #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -109,38 +111,8 @@ impl TokenMethods for Tlcc {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::Usize(payload) => {
-                self.start_index = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[1] {
-            AtpParamTypes::Usize(payload) => {
-                self.end_index = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
+        self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
+        self.end_index = parse_args!(instruction, 1, Usize, "Index should be of usize type");
 
         return Ok(());
     }
