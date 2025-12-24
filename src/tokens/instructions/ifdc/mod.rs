@@ -1,3 +1,6 @@
+#[cfg(feature = "test_access")]
+pub mod test;
+
 use std::{ borrow::Cow };
 
 use crate::{
@@ -167,11 +170,4 @@ impl TokenMethods for Ifdc {
 
         result
     }
-}
-
-#[cfg(feature = "test_access")]
-#[cfg(test)]
-mod ifdc_tests {
-    #[test]
-    fn it_works_correctly() {}
 }
