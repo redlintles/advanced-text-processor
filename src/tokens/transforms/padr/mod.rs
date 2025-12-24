@@ -1,4 +1,4 @@
-#[cfg(feature="test_access")]
+#[cfg(feature = "test_access")]
 pub mod test;
 
 use std::borrow::Cow;
@@ -142,97 +142,5 @@ impl TokenMethods for Padr {
         result.extend_from_slice(&second_param_payload);
 
         result
-    }
-}
-
-#[cfg(test)]
-#[cfg(feature = "test_access")]
-mod padr_tests {
-    use crate::tokens::{ TokenMethods, transforms::padr::Padr };
-    #[test]
-    fn pad_right_tests() {
-        let mut token = Padr::params("xy", 7);
-        assert_eq!(token.transform("banana"), Ok("bananax".to_string()), "It supports expected inputs");
-
-        assert_eq!(
-            token.to_atp_line(),
-            "padr xy 7;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(
-            token.get_string_repr(),
-            "padr".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["padr".to_string(), "xy".to_string(), (7).to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
-    }
-    #[cfg(feature = "bytecode")]
-    #[test]
-    fn pad_right_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
-
-        let mut token = Padr::params("banana", 1);
-
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
-
-        assert_eq!(token.get_opcode(), 0x2f, "get_opcode does not disrepect ATP token mapping");
-
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
-        );
-
-        let first_param_type: u32 = 0x01;
-        let first_param_payload = "banana".as_bytes();
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
-
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = vec![0x01];
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
-
-        let instruction_type: u32 = 0x2f;
-        let param_count: u8 = 0x02;
-
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
-
-        let mut expected_output: Vec<u8> = vec![];
-
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
-
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
-
-        expected_output.push(param_count);
-
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
-
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
-
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
-        );
     }
 }
