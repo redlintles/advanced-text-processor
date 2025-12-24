@@ -15,7 +15,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// use atp::tokens::{TokenMethods, transforms::atb::Atb};
 ///
 /// let token = Atb::params("foo");
-/// assert_eq!(token.parse(" bar"), Ok("foo bar".to_string()));
+/// assert_eq!(token.transform(" bar"), Ok("foo bar".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Atb {
@@ -35,7 +35,7 @@ impl TokenMethods for Atb {
         format!("atb {};\n", self.text).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(&self.text);
         s.push_str(input);
         Ok(s)
@@ -127,19 +127,19 @@ mod atb_tests {
             let token = Atb::params("banana");
 
             assert_eq!(
-                token.parse(&random_text),
+                token.transform(&random_text),
                 Ok(format!("{}{}", "banana", random_text)),
                 "It works with random inputs"
             );
 
             assert_eq!(
-                token.parse("coxinha"),
+                token.transform("coxinha"),
                 Ok("bananacoxinha".to_string()),
                 "It works with expected inputs"
             );
 
             assert_eq!(
-                token.parse("bànánà"),
+                token.transform("bànánà"),
                 Ok("bananabànánà".to_string()),
                 "It supports utf-8 strings"
             )
@@ -182,7 +182,7 @@ mod atb_tests {
             );
 
             assert_eq!(
-                token.parse("coxinha"),
+                token.transform("coxinha"),
                 Ok("bananacoxinha".to_string()),
                 "from_vec_params call fill token params correctly"
             );
@@ -244,7 +244,7 @@ mod atb_tests {
                 "Parsing from bytecode to token works correctly!"
             );
             assert_eq!(
-                token.parse("coxinha"),
+                token.transform("coxinha"),
                 Ok("bananacoxinha".to_string()),
                 "from_bytecode_instruction fills token params correctly"
             );

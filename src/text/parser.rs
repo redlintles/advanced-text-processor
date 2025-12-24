@@ -5,7 +5,7 @@ pub fn parse_token(
     input: &str,
     error_manager: &mut ErrorManager
 ) -> Result<String, AtpError> {
-    match token.parse(input) {
+    match token.transform(input) {
         Ok(x) => Ok(x),
         Err(e) => {
             error_manager.add_error(e.clone());

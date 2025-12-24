@@ -17,7 +17,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Splc::default();
 ///
-/// assert_eq!(token.parse("banana"), Ok("b a n a n a".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("b a n a n a".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -43,7 +43,7 @@ impl TokenMethods for Splc {
             )
         )
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(
             input
                 .chars()
@@ -92,7 +92,7 @@ mod splc_tests {
     fn split_characters_tests() {
         let mut token = Splc::default();
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("b a n a n a".to_string()),
             "It supports expected inputs"
         );
@@ -115,7 +115,7 @@ mod splc_tests {
             "It does not throws an error for valid vec_params"
         );
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("b a n a n a".to_string()),
             "It works correctly after re-parsing"
         );

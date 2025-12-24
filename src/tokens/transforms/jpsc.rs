@@ -19,7 +19,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Jpsc::default();
 ///
-/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("BananaLaranjaCheiaDeCanja".to_string()));
+/// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("BananaLaranjaCheiaDeCanja".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -34,7 +34,7 @@ impl TokenMethods for Jpsc {
         "jpsc;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let v = input.split_whitespace().collect::<Vec<_>>();
 
         let processed = v
@@ -99,7 +99,7 @@ mod jpsc_tests {
     fn join_to_pascal_case_tests() {
         let mut token = Jpsc::default();
         assert_eq!(
-            token.parse("banana laranja cheia de canja"),
+            token.transform("banana laranja cheia de canja"),
             Ok("BananaLaranjaCheiaDeCanja".to_string()),
             "It supports expected inputs"
         );

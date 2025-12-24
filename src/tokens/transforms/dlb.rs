@@ -18,7 +18,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Dlb::params(3);
 ///
-/// assert_eq!(token.parse("banana laranja vermelha azul"), Ok("ana laranja vermelha azul".to_string()))
+/// assert_eq!(token.transform("banana laranja vermelha azul"), Ok("ana laranja vermelha azul".to_string()))
 ///
 /// ```
 #[derive(Clone, Copy, Default)]
@@ -39,7 +39,7 @@ impl TokenMethods for Dlb {
         format!("dlb {};\n", self.index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
         check_index_against_input(self.index, input)?;
@@ -150,12 +150,12 @@ mod dlb_tests {
         let mut token = Dlb::params(3);
 
         assert_eq!(
-            token.parse("banana laranja vermelha azul"),
+            token.transform("banana laranja vermelha azul"),
             Ok("ana laranja vermelha azul".to_string()),
             "It works correctly with expected inputs"
         );
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if the string does not have the current token index"
         );
 

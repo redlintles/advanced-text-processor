@@ -21,7 +21,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tucw::params(1);
 ///
-/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("banana LARANJA cheia de canja".to_string()));
+/// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana LARANJA cheia de canja".to_string()));
 ///
 /// ```
 #[derive(Clone, Default, Copy)]
@@ -43,7 +43,7 @@ impl TokenMethods for Tucw {
         format!("tucw {};\n", self.index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
+    fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
         check_index_against_input(self.index, input)?;
         Ok(
             input
@@ -135,12 +135,12 @@ mod tucw_tests {
         let mut token = Tucw::params(1);
 
         assert_eq!(
-            token.parse("banana laranja cheia de canja"),
+            token.transform("banana laranja cheia de canja"),
             Ok("banana LARANJA cheia de canja".to_string())
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 

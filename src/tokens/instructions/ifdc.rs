@@ -20,8 +20,8 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Ifdc::params("xy", "atb laranja;");
 ///
-/// assert_eq!(token.parse("larryxy"), Ok("laranjalarryxy".to_string())); // Adds laranja to the beginning
-/// assert_eq!(token.parse("banana"), Ok("banana".to_string())); // Does nothing
+/// assert_eq!(token.transform("larryxy"), Ok("laranjalarryxy".to_string())); // Adds laranja to the beginning
+/// assert_eq!(token.transform("banana"), Ok("banana".to_string())); // Does nothing
 ///
 /// ```
 #[derive(Clone)]
@@ -79,9 +79,9 @@ impl TokenMethods for Ifdc {
         "ifdc"
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.contains(&self.text) {
-            return Ok(self.inner.parse(input)?);
+            return Ok(self.inner.transform(input)?);
         }
 
         Ok(input.to_string())

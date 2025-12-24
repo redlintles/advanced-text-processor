@@ -22,7 +22,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Slt::params(1,9999).unwrap();
 ///
-/// assert_eq!(token.parse("banàna"), Ok("anàn".to_string()));
+/// assert_eq!(token.transform("banàna"), Ok("anàn".to_string()));
 ///
 ///
 /// ```
@@ -46,7 +46,7 @@ impl TokenMethods for Slt {
     fn get_string_repr(&self) -> &'static str {
         "slt"
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let total_chars = input.chars().count();
         let last_char_index = total_chars.saturating_sub(1);
 
@@ -180,12 +180,12 @@ mod slt_tests {
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 
         assert_eq!(
-            token.parse("banànalaranjacheiadecanja"),
+            token.transform("banànalaranjacheiadecanja"),
             Ok("anàna".to_string()),
             "It works with expected inputs"
         );

@@ -17,7 +17,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Tls::default();
 ///
-/// assert_eq!(token.parse("   banana   "), Ok("banana   ".to_string()));
+/// assert_eq!(token.transform("   banana   "), Ok("banana   ".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -28,7 +28,7 @@ impl TokenMethods for Tls {
         "tls;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(String::from(input.trim_start()))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -102,11 +102,11 @@ mod tls_tests {
         text = format!("{}{}", spaces, text);
 
         assert_eq!(
-            token.parse("     banana"),
+            token.transform("     banana"),
             Ok("banana".to_string()),
             "It supports expected inputs"
         );
-        assert_eq!(token.parse(&text), Ok("banana".to_string()));
+        assert_eq!(token.transform(&text), Ok("banana".to_string()));
         assert_eq!(token.to_atp_line(), "tls;\n".to_string(), "It supports random inputs");
         assert_eq!(token.get_string_repr(), "tls".to_string(), "get_string_repr works as expected");
         assert!(

@@ -23,7 +23,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tlcs::params(1);
 ///
-/// assert_eq!(token.parse("BANANA"), Ok("BaNANA".to_string()));
+/// assert_eq!(token.transform("BANANA"), Ok("BaNANA".to_string()));
 ///
 /// ```
 
@@ -48,7 +48,7 @@ impl TokenMethods for Tlcs {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tlcs {};\n", self.index).into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         let result: String = input
             .char_indices()
@@ -132,10 +132,10 @@ mod tlcs_tests {
     fn to_lowercase_single_tests() {
         let mut token = Tlcs::params(1);
 
-        assert_eq!(token.parse("BANANA"), Ok("BaNANA".to_string()));
+        assert_eq!(token.transform("BANANA"), Ok("BaNANA".to_string()));
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 

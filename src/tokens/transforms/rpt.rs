@@ -19,7 +19,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rpt::params(3);
 ///
-/// assert_eq!(token.parse("banana"),Ok("bananabananabanana".to_string()));
+/// assert_eq!(token.transform("banana"),Ok("bananabananabanana".to_string()));
 ///
 /// ```
 #[derive(Clone, Default)]
@@ -38,7 +38,7 @@ impl TokenMethods for Rpt {
         format!("rpt {};\n", self.times).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.repeat(self.times))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -122,7 +122,7 @@ mod rpt_tests {
         let mut token = Rpt::params(3);
 
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("bananabananabanana".to_string()),
             "It supports expected inputs"
         );
@@ -142,7 +142,7 @@ mod rpt_tests {
         );
 
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("bananabananabanana".to_string()),
             "from_vec_params parses the argument list correctly"
         );

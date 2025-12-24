@@ -18,7 +18,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rtr::params(2);
 ///
-/// assert_eq!(token.parse("banana"),Ok("nabana".to_string()));
+/// assert_eq!(token.transform("banana"),Ok("nabana".to_string()));
 ///
 /// ```
 #[derive(Clone, Default)]
@@ -35,7 +35,7 @@ impl Rtr {
 }
 
 impl TokenMethods for Rtr {
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(
                 AtpError::new(
@@ -140,7 +140,7 @@ mod rtr_tests {
     fn rotate_right_tests() {
         let mut token = Rtr::params(2);
 
-        assert_eq!(token.parse("banana"), Ok("nabana".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("nabana".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "rtr 2;\n".to_string(),
@@ -157,7 +157,7 @@ mod rtr_tests {
         );
 
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("nabana".to_string()),
             "from_vec_params parses the argument list correctly"
         );

@@ -19,7 +19,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Htmlu::default();
 ///
-/// assert_eq!(token.parse("&lt;div&gt;banana&lt;/div&gt;"), Ok("<div>banana</div>".to_string()));
+/// assert_eq!(token.transform("&lt;div&gt;banana&lt;/div&gt;"), Ok("<div>banana</div>".to_string()));
 /// ```
 #[derive(Copy, Clone, Default)]
 pub struct Htmlu {}
@@ -32,7 +32,7 @@ impl TokenMethods for Htmlu {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "htmlu;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(decode_html_entities(input).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -88,7 +88,7 @@ mod htmlu_tests {
         let mut token = Htmlu::default();
 
         assert_eq!(
-            token.parse("&lt;div&gt;banana&lt;/div&gt;"),
+            token.transform("&lt;div&gt;banana&lt;/div&gt;"),
             Ok("<div>banana</div>".to_string()),
             "It supports expected inputs"
         );

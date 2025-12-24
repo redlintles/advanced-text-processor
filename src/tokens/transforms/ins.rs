@@ -20,7 +20,7 @@ use crate::{
 ///
 /// let token = Ins::params(2,"laranja");
 ///
-/// assert_eq!(token.parse("banana"), Ok("banlaranjaana".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("banlaranjaana".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Ins {
@@ -57,7 +57,7 @@ impl TokenMethods for Ins {
             )
         )
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         if self.index > input.chars().count() {
             return Err(
                 AtpError::new(
@@ -170,7 +170,7 @@ mod ins_tests {
     fn insert_tests() {
         let mut token = Ins::params(2, "laranja");
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("banlaranjaana".to_string()),
             "It supports expected inputs"
         );

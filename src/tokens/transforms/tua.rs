@@ -16,7 +16,7 @@ impl TokenMethods for Tua {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tua;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_uppercase())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -77,9 +77,9 @@ mod tua_tests {
 
         let mut token = Tua::default();
 
-        assert_eq!(token.parse("banana"), Ok("BANANA".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("BANANA".to_string()), "It supports expected inputs");
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(random_text.to_uppercase()),
             "It supports random inputs"
         );

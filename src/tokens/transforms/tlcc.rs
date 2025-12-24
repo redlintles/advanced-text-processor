@@ -23,7 +23,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tlcc::params(1,4).unwrap();
 ///
-/// assert_eq!(token.parse("BANANA"), Ok("BananA".to_string()));
+/// assert_eq!(token.transform("BANANA"), Ok("BananA".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -50,7 +50,7 @@ impl TokenMethods for Tlcc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tlcc {} {};\n", self.start_index, self.end_index).into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
         // Since the user will probably not know the length of the string in the middle of the processing
@@ -179,12 +179,12 @@ mod tlcc_tests {
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 
         assert_eq!(
-            token.parse("BANANA"),
+            token.transform("BANANA"),
             Ok("BananA".to_string()),
             "It works with expected inputs"
         );

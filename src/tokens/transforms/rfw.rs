@@ -24,7 +24,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rfw::params(&"a", "b").unwrap();
 ///
-/// assert_eq!(token.parse("aaaaa"), Ok("baaaa".to_string()));
+/// assert_eq!(token.transform("aaaaa"), Ok("baaaa".to_string()));
 /// ```
 ///
 #[derive(Clone)]
@@ -57,7 +57,7 @@ impl TokenMethods for Rfw {
         format!("rfw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(self.pattern.replace(input, &self.text_to_replace).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -184,7 +184,7 @@ mod rfw_tests {
     #[test]
     fn replace_first_with_tests() {
         let mut token = Rfw::params("a", "b").unwrap();
-        assert_eq!(token.parse("aaaaa"), Ok("baaaa".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("aaaaa"), Ok("baaaa".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

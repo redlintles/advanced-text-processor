@@ -195,7 +195,7 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        match token.parse(input) {
+        match token.transform(input) {
             Ok(x) => Ok(x),
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -245,7 +245,7 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        let output = match token.parse(input) {
+        let output = match token.transform(input) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -329,7 +329,7 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn TokenMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        let output = match token.parse(input) {
+        let output = match token.transform(input) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());

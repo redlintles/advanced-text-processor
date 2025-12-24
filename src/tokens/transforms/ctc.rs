@@ -25,7 +25,7 @@ use crate::{ utils::{ params::AtpParamTypes, errors::AtpErrorCode } };
 /// use atp::tokens::{TokenMethods, transforms::ctc::Ctc};
 ///
 /// let token = Ctc::params(1, 5).unwrap();
-/// assert_eq!(token.parse("bananabananosa"), Ok("bAnanabananosa".to_string()));
+/// assert_eq!(token.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Ctc {
@@ -47,7 +47,7 @@ impl TokenMethods for Ctc {
     fn get_string_repr(&self) -> &'static str {
         "ctc"
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let total_chars = input.chars().count();
 
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
@@ -201,12 +201,12 @@ mod ctc_tests {
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 
         assert_eq!(
-            token.parse("bananabananosa"),
+            token.transform("bananabananosa"),
             Ok("bAnanabananosa".to_string()),
             "It works with expected inputs"
         );

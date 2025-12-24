@@ -20,7 +20,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// use atp::tokens::{TokenMethods, transforms::clw::Clw};
 ///
 /// let token = Clw::default();
-/// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
+/// assert_eq!(token.transform("foo bar"), Ok("foo Bar".to_string()));
 /// ```
 #[derive(Copy, Clone, Default)]
 pub struct Clw {}
@@ -41,7 +41,7 @@ impl TokenMethods for Clw {
             )
         )
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut v: Vec<String> = input
             .split(' ')
             .rev()
@@ -107,7 +107,7 @@ mod clw_tests {
         let mut token = Clw::default();
 
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(
                 random_text
                     .split_whitespace()
@@ -123,7 +123,7 @@ mod clw_tests {
             "It supports random inputs"
         );
         assert_eq!(
-            token.parse("banana bananosa"),
+            token.transform("banana bananosa"),
             Ok("banana Bananosa".to_string()),
             "It supports expected inputs"
         );

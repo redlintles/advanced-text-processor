@@ -21,7 +21,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let expected_output = "{banana: '10'}".to_string();
 ///
-/// assert_eq!(token.parse("\"{banana: '10'}\""), Ok(expected_output));
+/// assert_eq!(token.transform("\"{banana: '10'}\""), Ok(expected_output));
 /// ```
 
 #[derive(Clone, Copy, Default)]
@@ -47,7 +47,7 @@ impl TokenMethods for Jsonu {
         )
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(
             serde_json
                 ::from_str::<String>(input)
@@ -104,7 +104,7 @@ mod jsonu_tests {
         let expected_output = "{banana: '10'}".to_string();
 
         assert_eq!(
-            token.parse("\"{banana: '10'}\""),
+            token.transform("\"{banana: '10'}\""),
             Ok(expected_output),
             "It supports expected inputs"
         );

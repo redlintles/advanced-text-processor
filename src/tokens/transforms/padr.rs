@@ -22,7 +22,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Padr::params("xy", 7);
 ///
-/// assert_eq!(token.parse("banana"), Ok("bananax".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("bananax".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Padr {
@@ -46,7 +46,7 @@ impl TokenMethods for Padr {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("padr {} {};\n", self.text, self.max_len).into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let character_count = input.chars().count();
 
         if character_count >= self.max_len {
@@ -149,7 +149,7 @@ mod padr_tests {
     #[test]
     fn pad_right_tests() {
         let mut token = Padr::params("xy", 7);
-        assert_eq!(token.parse("banana"), Ok("bananax".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("bananax".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

@@ -23,7 +23,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tucs::params(1);
 ///
-/// assert_eq!(token.parse("banana"), Ok("bAnana".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("bAnana".to_string()));
 ///
 /// ```
 
@@ -48,7 +48,7 @@ impl TokenMethods for Tucs {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tucs {};\n", self.index).into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         let result: String = input
             .char_indices()
@@ -133,10 +133,10 @@ mod tucs_tests {
     fn to_uppercase_single_tests() {
         let mut token = Tucs::params(1);
 
-        assert_eq!(token.parse("banana"), Ok("bAnana".to_string()));
+        assert_eq!(token.transform("banana"), Ok("bAnana".to_string()));
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 

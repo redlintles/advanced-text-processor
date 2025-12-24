@@ -22,7 +22,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Jsnc::default();
 ///
-/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("banana_laranja_cheia_de_canja".to_string()));
+/// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana_laranja_cheia_de_canja".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -37,7 +37,7 @@ impl TokenMethods for Jsnc {
         "jsnc;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join("_").to_lowercase())
     }
 
@@ -94,7 +94,7 @@ mod jsnc_tests {
     fn join_to_snake_case_tests() {
         let mut token = Jsnc::default();
         assert_eq!(
-            token.parse("banana laranja cheia de canja"),
+            token.transform("banana laranja cheia de canja"),
             Ok("banana_laranja_cheia_de_canja".to_string()),
             "It supports expected inputs"
         );

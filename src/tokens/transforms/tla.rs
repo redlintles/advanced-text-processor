@@ -15,7 +15,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tla::default();
 ///
-/// assert_eq!(token.parse("BANANA"), Ok("banana".to_string()));
+/// assert_eq!(token.transform("BANANA"), Ok("banana".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -29,7 +29,7 @@ impl TokenMethods for Tla {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tla;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.to_lowercase())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -89,9 +89,9 @@ mod tla_tests {
 
         let mut token = Tla::default();
 
-        assert_eq!(token.parse("BANANA"), Ok("banana".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("BANANA"), Ok("banana".to_string()), "It supports expected inputs");
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(random_text.to_lowercase()),
             "It supports random inputs"
         );

@@ -1,5 +1,5 @@
 use crate::{ tokens::TokenMethods, utils::errors::AtpError };
 
-pub fn parse_token(token: &dyn TokenMethods, input: &str) -> Result<String, AtpError> {
-    token.parse(input)
+pub fn apply_token(token: &dyn TokenMethods, input: &str) -> Result<String, AtpError> {
+    token.transform(input)
 }

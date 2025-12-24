@@ -19,7 +19,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Dla::params(3);
 ///
-/// assert_eq!(token.parse("banana laranja vermelha azul"), Ok("bana".to_string()))
+/// assert_eq!(token.transform("banana laranja vermelha azul"), Ok("bana".to_string()))
 ///
 /// ```
 #[derive(Clone, Copy, Default)]
@@ -40,7 +40,7 @@ impl TokenMethods for Dla {
         format!("dla {};\n", self.index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
 
         let mut s = String::from(input);
@@ -143,12 +143,12 @@ mod dla_tests {
         let mut token = Dla::params(3);
 
         assert_eq!(
-            token.parse("banana laranja vermelha azul"),
+            token.transform("banana laranja vermelha azul"),
             Ok("bana".to_string()),
             "It works correctly with expected inputs"
         );
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if the string does not have the current token index"
         );
 

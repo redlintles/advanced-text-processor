@@ -16,7 +16,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Dll::default();
 ///
-/// assert_eq!(token.parse("banana"), Ok("banan".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("banan".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -27,7 +27,7 @@ impl TokenMethods for Dll {
         "dll;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
         if let Some((x, _)) = s.char_indices().next_back() {
@@ -104,11 +104,11 @@ mod dll_tests {
         let mut token = Dll::default();
 
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(expected_output.to_string()),
             "It supports random inputs"
         );
-        assert_eq!(token.parse("banana"), Ok("banan".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("banan".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "dll;\n".to_string(),

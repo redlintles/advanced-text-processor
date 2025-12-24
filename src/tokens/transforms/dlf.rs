@@ -15,7 +15,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Dlf::default();
 ///
-/// assert_eq!(token.parse("banana"), Ok("anana".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("anana".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -26,7 +26,7 @@ impl TokenMethods for Dlf {
         "dlf;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
         s.drain(..1);
         Ok(s)
@@ -97,11 +97,11 @@ mod dlf_tests {
         let mut token = Dlf::default();
 
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(expected_output.to_string()),
             "It supports random inputs"
         );
-        assert_eq!(token.parse("banana"), Ok("anana".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("anana".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "dlf;\n".to_string(),

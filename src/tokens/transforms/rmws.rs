@@ -16,7 +16,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rmws::default();
 ///
-/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("bananalaranjacheiadecanja".to_string()));
+/// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("bananalaranjacheiadecanja".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -29,7 +29,7 @@ impl TokenMethods for Rmws {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "rmws;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join(""))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -86,7 +86,7 @@ mod rmws_tests {
         let mut token = Rmws::default();
 
         assert_eq!(
-            token.parse("banana laranja cheia de canja"),
+            token.transform("banana laranja cheia de canja"),
             Ok("bananalaranjacheiadecanja".to_string()),
             "It supports expected inputs"
         );

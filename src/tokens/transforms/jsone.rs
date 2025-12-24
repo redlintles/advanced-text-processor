@@ -20,7 +20,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// let token = Jsone::default();
 /// let expected_output = "\"{banana: '10'}\"".to_string();
 ///
-/// assert_eq!(token.parse("{banana: '10'}"), Ok(expected_output));
+/// assert_eq!(token.transform("{banana: '10'}"), Ok(expected_output));
 /// ```
 
 #[derive(Clone, Copy, Default)]
@@ -46,7 +46,7 @@ impl TokenMethods for Jsone {
         )
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(
             serde_json
                 ::to_string(input)
@@ -103,7 +103,7 @@ mod jsone_tests {
         let expected_output = "\"{banana: '10'}\"".to_string();
 
         assert_eq!(
-            token.parse("{banana: '10'}"),
+            token.transform("{banana: '10'}"),
             Ok(expected_output),
             "It supports expected inputs"
         );

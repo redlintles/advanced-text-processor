@@ -29,7 +29,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rnw::params(&"a", "b", 2).unwrap();
 ///
-/// assert_eq!(token.parse("aaaaa"), Ok("aabaa".to_string()));
+/// assert_eq!(token.transform("aaaaa"), Ok("aabaa".to_string()));
 /// ```
 ///
 #[derive(Clone)]
@@ -65,7 +65,7 @@ impl TokenMethods for Rnw {
         format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut count = 0;
 
         let mut idx = None;
@@ -229,7 +229,7 @@ mod rnw_tests {
     #[test]
     fn replace_nth_with_tests() {
         let mut token = Rnw::params("a", "b", 2).unwrap();
-        assert_eq!(token.parse("aaaaa"), Ok("aabaa".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("aaaaa"), Ok("aabaa".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

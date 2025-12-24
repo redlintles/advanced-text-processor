@@ -17,7 +17,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// use atp::tokens::{TokenMethods, transforms::cfw::Cfw};
 ///
 /// let token = Cfw::default();
-/// assert_eq!(token.parse("foo bar"), Ok("Foo bar".to_string()));
+/// assert_eq!(token.transform("foo bar"), Ok("Foo bar".to_string()));
 /// ```
 #[derive(Copy, Clone, Default)]
 pub struct Cfw {}
@@ -38,7 +38,7 @@ impl TokenMethods for Cfw {
             )
         )
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(capitalize(input))
     }
 
@@ -94,11 +94,11 @@ mod cfw_tests {
         let mut token = Cfw::default();
 
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(capitalize(&random_text)),
             "It supports random inputs"
         );
-        assert_eq!(token.parse("banana"), Ok("Banana".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("Banana".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "cfw;\n".to_string(),

@@ -17,7 +17,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Rtl::params(3);
 ///
-/// assert_eq!(token.parse("banana"),Ok("anaban".to_string()));
+/// assert_eq!(token.transform("banana"),Ok("anaban".to_string()));
 ///
 /// ```
 #[derive(Clone, Default)]
@@ -34,7 +34,7 @@ impl Rtl {
 }
 
 impl TokenMethods for Rtl {
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(
                 AtpError::new(
@@ -139,7 +139,7 @@ mod rtl_tests {
     fn rotate_left_tests() {
         let mut token = Rtl::params(3);
 
-        assert_eq!(token.parse("banana"), Ok("anaban".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("anaban".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "rtl 3;\n".to_string(),
@@ -156,7 +156,7 @@ mod rtl_tests {
         );
 
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("anaban".to_string()),
             "from_vec_params parses the argument list correctly"
         );

@@ -14,7 +14,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// use atp::tokens::{TokenMethods, transforms::ate::Ate};
 ///
 /// let token = Ate::params(" bar");
-/// assert_eq!(token.parse("foo"), Ok("foo bar".to_string()));
+/// assert_eq!(token.transform("foo"), Ok("foo bar".to_string()));
 /// ```
 
 #[derive(Clone, Default)]
@@ -35,7 +35,7 @@ impl TokenMethods for Ate {
         format!("ate {};\n", self.text).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut s = String::from(input);
         s.push_str(&self.text);
         Ok(s)
@@ -123,9 +123,9 @@ mod ate_tests {
         let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
         let mut token = Ate::params("banana");
 
-        assert_eq!(token.parse(&random_text), Ok(format!("{}{}", random_text, "banana")));
+        assert_eq!(token.transform(&random_text), Ok(format!("{}{}", random_text, "banana")));
 
-        assert_eq!(token.parse("coxinha"), Ok("coxinhabanana".to_string()));
+        assert_eq!(token.transform("coxinha"), Ok("coxinhabanana".to_string()));
 
         assert_eq!(
             token.to_atp_line(),
@@ -201,7 +201,7 @@ mod ate_tests {
                 "Parsing from bytecode to token works correctly!"
             );
             assert_eq!(
-                token.parse("coxinha"),
+                token.transform("coxinha"),
                 Ok("bananacoxinha".to_string()),
                 "from_bytecode_instruction fills token params correctly"
             );

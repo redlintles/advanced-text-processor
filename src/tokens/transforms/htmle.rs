@@ -19,7 +19,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Htmle::default();
 ///
-/// assert_eq!(token.parse("<div>banana</div>"), Ok("&lt;div&gt;banana&lt;/div&gt;".to_string()));
+/// assert_eq!(token.transform("<div>banana</div>"), Ok("&lt;div&gt;banana&lt;/div&gt;".to_string()));
 /// ```
 
 #[derive(Copy, Clone, Default)]
@@ -33,7 +33,7 @@ impl TokenMethods for Htmle {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "htmle;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(encode_text(input).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -89,7 +89,7 @@ mod htmle_tests {
         let mut token = Htmle::default();
 
         assert_eq!(
-            token.parse("<div>banana</div>"),
+            token.transform("<div>banana</div>"),
             Ok("&lt;div&gt;banana&lt;/div&gt;".to_string()),
             "It supports expected inputs!"
         );

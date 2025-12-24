@@ -16,7 +16,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Urle::default();
 ///
-/// assert_eq!(token.parse("banana laranja"), Ok("banana%20laranja".to_string()));
+/// assert_eq!(token.transform("banana laranja"), Ok("banana%20laranja".to_string()));
 /// ```
 ///
 #[derive(Copy, Clone, Default)]
@@ -30,7 +30,7 @@ impl TokenMethods for Urle {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "urle;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(urlencoding::encode(input).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -90,7 +90,7 @@ mod urle_tests {
         let mut token = Urle::default();
 
         assert_eq!(
-            token.parse("banana laranja"),
+            token.transform("banana laranja"),
             Ok("banana%20laranja".to_string()),
             "It supports expected inputs"
         );

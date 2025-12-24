@@ -24,7 +24,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// ```rust
 /// use atp::tokens::{TokenMethods,transforms::ctr::Ctr};
 /// let token = Ctr::params(1,5).unwrap();
-/// assert_eq!(token.parse("foo bar mar"), Ok("foo Bar Mar".to_string()));
+/// assert_eq!(token.transform("foo bar mar"), Ok("foo Bar Mar".to_string()));
 /// ```
 ///
 #[derive(Clone, Default)]
@@ -47,7 +47,7 @@ impl TokenMethods for Ctr {
     fn get_string_repr(&self) -> &'static str {
         "ctr"
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
@@ -180,18 +180,18 @@ mod ctr_tests {
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 
         assert_eq!(
-            token.parse("banana bananosa bananinha laranjinha vermelhinha azulzinha e fresquinha"),
+            token.transform("banana bananosa bananinha laranjinha vermelhinha azulzinha e fresquinha"),
             Ok(
                 "banana Bananosa Bananinha Laranjinha Vermelhinha Azulzinha e fresquinha".to_string()
             )
         );
         assert_eq!(
-            token.parse("banana bananosa bananinha laranjinha"),
+            token.transform("banana bananosa bananinha laranjinha"),
             Ok("banana Bananosa Bananinha Laranjinha".to_string()),
             "It works with expected inputs"
         );

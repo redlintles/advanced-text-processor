@@ -21,7 +21,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Sslt::params("_", 1).unwrap();
 ///
-/// assert_eq!(token.parse("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
+/// assert_eq!(token.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
 ///
 /// ```
 #[derive(Clone)]
@@ -55,7 +55,7 @@ impl TokenMethods for Sslt {
     fn get_string_repr(&self) -> &'static str {
         "sslt"
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let s = self.pattern
             .split(input)
 
@@ -209,10 +209,10 @@ mod sslt_tests {
     fn split_select_tests() {
         let mut token = Sslt::params("_", 5).unwrap();
 
-        assert_eq!(token.parse("foobar_foo_bar_bar_foo_barfoo"), Ok("barfoo".to_string()));
+        assert_eq!(token.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("barfoo".to_string()));
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 

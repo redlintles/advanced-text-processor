@@ -20,7 +20,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Dlc::params(1,5).unwrap();
 ///
-/// assert_eq!(token.parse("bananalaranjacheiadecanja"), Ok("blaranjacheiadecanja".to_string()))
+/// assert_eq!(token.transform("bananalaranjacheiadecanja"), Ok("blaranjacheiadecanja".to_string()))
 ///
 /// ```
 #[derive(Clone, Copy, Default)]
@@ -44,7 +44,7 @@ impl TokenMethods for Dlc {
         format!("dlc {} {};\n", self.start_index, self.end_index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
         let start_index = input
             .char_indices()
@@ -196,12 +196,12 @@ mod dlc_tests {
         );
 
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if start_index does not exists in input"
         );
 
         assert_eq!(
-            token.parse("bananalaranjacheiadecanja"),
+            token.transform("bananalaranjacheiadecanja"),
             Ok("blaranjacheiadecanja".to_string()),
             "It works with expected inputs"
         );

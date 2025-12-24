@@ -24,7 +24,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Raw::params(&"a", "b").unwrap();
 ///
-/// assert_eq!(token.parse("aaaaa"), Ok("bbbbb".to_string()));
+/// assert_eq!(token.transform("aaaaa"), Ok("bbbbb".to_string()));
 /// ```
 ///
 #[derive(Clone)]
@@ -57,7 +57,7 @@ impl TokenMethods for Raw {
         format!("raw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(self.pattern.replace_all(input, &self.text_to_replace).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -184,7 +184,7 @@ mod raw_tests {
     #[test]
     fn replace_all_with_tests() {
         let mut token = Raw::params("a", "b").unwrap();
-        assert_eq!(token.parse("aaaaa"), Ok("bbbbb".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("aaaaa"), Ok("bbbbb".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

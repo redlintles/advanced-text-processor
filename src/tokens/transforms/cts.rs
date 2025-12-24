@@ -27,7 +27,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// ```rust
 /// use atp::tokens::{TokenMethods, transforms::cts::Cts};
 /// let token = Cts::params(1);
-/// assert_eq!(token.parse("foo bar"), Ok("foo Bar".to_string()));
+/// assert_eq!(token.transform("foo bar"), Ok("foo Bar".to_string()));
 /// ```
 
 #[derive(Clone, Default)]
@@ -47,7 +47,7 @@ impl TokenMethods for Cts {
     fn get_string_repr(&self) -> &'static str {
         "cts"
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         let v = input.split_whitespace().collect::<Vec<_>>();
 
@@ -144,12 +144,12 @@ mod cts_tests {
         let mut token = Cts::params(3);
 
         assert_eq!(
-            token.parse("banana laranja vermelha azul"),
+            token.transform("banana laranja vermelha azul"),
             Ok("banana laranja vermelha Azul".to_string()),
             "It works correctly with expected inputs"
         );
         assert!(
-            matches!(token.parse(""), Err(_)),
+            matches!(token.transform(""), Err(_)),
             "It throws an error if the string does not have the current token index"
         );
 

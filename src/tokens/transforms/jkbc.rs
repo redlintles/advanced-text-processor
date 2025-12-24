@@ -22,7 +22,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Jkbc::default();
 ///
-/// assert_eq!(token.parse("banana laranja cheia de canja"), Ok("banana-laranja-cheia-de-canja".to_string()));
+/// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana-laranja-cheia-de-canja".to_string()));
 /// ```
 ///
 #[derive(Clone, Copy, Default)]
@@ -37,7 +37,7 @@ impl TokenMethods for Jkbc {
         "jkbc;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join("-").to_lowercase())
     }
 
@@ -94,7 +94,7 @@ mod jkbc_tests {
     fn join_to_kebab_case_tests() {
         let mut token = Jkbc::default();
         assert_eq!(
-            token.parse("banana laranja cheia de canja"),
+            token.transform("banana laranja cheia de canja"),
             Ok("banana-laranja-cheia-de-canja".to_string()),
             "It supports expected inputs"
         );

@@ -16,10 +16,10 @@ pub trait TokenMethods: TokenMethodsClone + Send + Sync {
     ///
     /// Converts the token to an ATP line to be written in an .atp file
     fn to_atp_line(&self) -> Cow<'static, str>;
-    /// parse
+    /// transform
     ///
     /// Responsible for applying the respective token transformation to `input`
-    fn parse(&self, input: &str) -> Result<String, AtpError>;
+    fn transform(&self, input: &str) -> Result<String, AtpError>;
 
     /// get_string_repr
     ///

@@ -25,7 +25,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Dls::params(3);
 ///
-/// assert_eq!(token.parse("banana"), Ok("banna".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("banna".to_string()));
 /// ```
 #[derive(Clone, Copy, Default)]
 pub struct Dls {
@@ -48,7 +48,7 @@ impl TokenMethods for Dls {
         format!("dls {};\n", self.index).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         Ok(
             input
@@ -140,7 +140,7 @@ mod dls_tests {
     fn delete_single_tests() {
         let mut token = Dls::params(3);
 
-        assert_eq!(token.parse("banana"), Ok("banna".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("banna".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "dls 3;\n".to_string(),
@@ -157,7 +157,7 @@ mod dls_tests {
         );
 
         assert_eq!(
-            token.parse("banana"),
+            token.transform("banana"),
             Ok("banna".to_string()),
             "from_vec_params parses the argument list correctly"
         );

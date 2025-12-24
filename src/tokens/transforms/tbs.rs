@@ -15,7 +15,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Tbs::default();
 ///
-/// assert_eq!(token.parse("   banana   "), Ok("banana".to_string()));
+/// assert_eq!(token.transform("   banana   "), Ok("banana".to_string()));
 /// ```
 ///
 #[derive(Clone, Default)]
@@ -26,7 +26,7 @@ impl TokenMethods for Tbs {
         "tbs;\n".into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(String::from(input.trim()))
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -103,11 +103,11 @@ mod tbs_tests {
         text = format!("{}{}{}", spaces_start, text, spaces_end);
 
         assert_eq!(
-            token.parse("     banana  "),
+            token.transform("     banana  "),
             Ok("banana".to_string()),
             "It supports expected inputs"
         );
-        assert_eq!(token.parse(&text), Ok("banana".to_string()), "It supports random inputs");
+        assert_eq!(token.transform(&text), Ok("banana".to_string()), "It supports random inputs");
         assert_eq!(
             token.to_atp_line(),
             "tbs;\n".to_string(),

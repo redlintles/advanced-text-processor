@@ -25,7 +25,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 ///
 /// let token = Rcw::params(&"a", "b", 3).unwrap();
 ///
-/// assert_eq!(token.parse("aaaaa"), Ok("bbbaa".to_string()));
+/// assert_eq!(token.transform("aaaaa"), Ok("bbbaa".to_string()));
 /// ```
 ///
 #[derive(Clone)]
@@ -61,7 +61,7 @@ impl TokenMethods for Rcw {
         format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(self.pattern.replacen(input, self.count, &self.text_to_replace).to_string())
     }
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
@@ -206,7 +206,7 @@ mod rcw_tests {
     #[test]
     fn replace_count_with_tests() {
         let mut token = Rcw::params("a", "b", 3).unwrap();
-        assert_eq!(token.parse("aaaaa"), Ok("bbbaa".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("aaaaa"), Ok("bbbaa".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

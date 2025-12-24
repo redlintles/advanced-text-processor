@@ -15,7 +15,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Urld::default();
 ///
-/// assert_eq!(token.parse("banana%20laranja"), Ok("banana laranja".to_string()));
+/// assert_eq!(token.transform("banana%20laranja"), Ok("banana laranja".to_string()));
 /// ```
 ///
 
@@ -30,7 +30,7 @@ impl TokenMethods for Urld {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "urld;\n".into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(
             urlencoding
                 ::decode(input)
@@ -101,7 +101,7 @@ mod urld_tests {
         let mut token = Urld::default();
 
         assert_eq!(
-            token.parse("banana%20laranja"),
+            token.transform("banana%20laranja"),
             Ok("banana laranja".to_string()),
             "It supports expected inputs"
         );

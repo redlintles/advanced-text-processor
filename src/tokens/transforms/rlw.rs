@@ -24,7 +24,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Rlw::params(&"a", "b").unwrap();
 ///
-/// assert_eq!(token.parse("aaaaa"), Ok("aaaab".to_string()));
+/// assert_eq!(token.transform("aaaaa"), Ok("aaaab".to_string()));
 /// ```
 ///
 #[derive(Clone)]
@@ -57,7 +57,7 @@ impl TokenMethods for Rlw {
         format!("rlw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let caps: Vec<_> = self.pattern.find_iter(input).collect();
 
         if let Some(m) = caps.last() {
@@ -197,7 +197,7 @@ mod rlw_tests {
     #[test]
     fn replace_last_with_tests() {
         let mut token = Rlw::params("a", "b").unwrap();
-        assert_eq!(token.parse("aaaaa"), Ok("aaaab".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("aaaaa"), Ok("aaaab".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),

@@ -15,7 +15,7 @@ use crate::{ utils::errors::{ AtpError, AtpErrorCode }, tokens::TokenMethods };
 /// use atp::tokens::{TokenMethods, transforms::rev::Rev};
 ///
 /// let token = Rev::default();
-/// assert_eq!(token.parse("foobar"), Ok("raboof".to_string()));
+/// assert_eq!(token.transform("foobar"), Ok("raboof".to_string()));
 /// ``````
 #[derive(Clone, Default, Copy)]
 pub struct Rev {}
@@ -41,7 +41,7 @@ impl TokenMethods for Rev {
         )
     }
 
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.chars().rev().collect())
     }
     #[cfg(feature = "bytecode")]
@@ -88,7 +88,7 @@ mod rev_tests {
         let mut token = Rev::default();
 
         assert_eq!(
-            token.parse(&random_text),
+            token.transform(&random_text),
             Ok(
                 random_text
                     .chars()
@@ -99,7 +99,7 @@ mod rev_tests {
             ),
             "It supports random inputs"
         );
-        assert_eq!(token.parse("banana"), Ok("ananab".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("ananab".to_string()), "It supports expected inputs");
         assert_eq!(
             token.to_atp_line(),
             "rev;\n".to_string(),

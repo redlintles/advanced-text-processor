@@ -25,7 +25,7 @@ use crate::{ utils::params::AtpParamTypes };
 ///
 /// let token = Padl::params("xy", 7);
 ///
-/// assert_eq!(token.parse("banana"), Ok("xbanana".to_string()));
+/// assert_eq!(token.transform("banana"), Ok("xbanana".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Padl {
@@ -49,7 +49,7 @@ impl TokenMethods for Padl {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("padl {} {};\n", self.text, self.max_len).into()
     }
-    fn parse(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
         let character_count = input.chars().count();
 
         if character_count >= self.max_len {
@@ -150,7 +150,7 @@ mod padl_tests {
     #[test]
     fn pad_left_tests() {
         let mut token = Padl::params("xy", 7);
-        assert_eq!(token.parse("banana"), Ok("xbanana".to_string()), "It supports expected inputs");
+        assert_eq!(token.transform("banana"), Ok("xbanana".to_string()), "It supports expected inputs");
 
         assert_eq!(
             token.to_atp_line(),
