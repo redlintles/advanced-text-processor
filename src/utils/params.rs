@@ -193,6 +193,7 @@ impl AtpParamTypes {
     pub fn param_to_bytecode(&self) -> Vec<u8> {
         let mut result: Vec<u8> = Vec::new();
 
+        // Payload Type
         result.extend_from_slice(&self.get_param_type_code().to_be_bytes());
         let payload = match self {
             AtpParamTypes::String(x) => x.as_bytes().to_vec(),
@@ -200,8 +201,15 @@ impl AtpParamTypes {
             AtpParamTypes::Token(x) => x.to_bytecode(),
         };
 
-        result.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+        // Param Size
+        let payload_size = &(payload.len() as u32);
 
+        let param_total_size = ((4 + 4 + payload_size) as u64).to_be_bytes();
+
+        result.extend_from_slice(&param_total_size);
+
+        result.extend_from_slice(&payload_size.to_be_bytes());
+        // Payload Content
         result.extend_from_slice(&payload);
 
         result
