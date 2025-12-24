@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use crate::parse_args;
+
 use regex::Regex;
 
 use crate::{
@@ -130,60 +132,29 @@ impl TokenMethods for Rnw {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::String(payload) => {
-                self.pattern = Regex::new(&payload.clone()).map_err(|_|
-                    AtpError::new(
-                        AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                        "sslt",
-                        payload.clone()
-                    )
-                )?;
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single String as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[1] {
-            AtpParamTypes::String(payload) => {
-                self.text_to_replace = payload.to_string();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single String as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
-        match &instruction[2] {
-            AtpParamTypes::Usize(payload) => {
-                self.index = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token takes a single usize as argument".into()
-                        ),
-                        "",
-                        ""
-                    )
-                );
-            }
-        }
+        let pattern_payload = parse_args!(
+            instruction,
+            0,
+            String,
+            "Pattern should be of string type"
+        );
+
+        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_|
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                pattern_payload.clone()
+            )
+        )?;
+
+        self.text_to_replace = parse_args!(
+            instruction,
+            1,
+            String,
+            "Text_to_replace should be of type String"
+        );
+
+        self.index = parse_args!(instruction, 2, Usize, "Index should be of type Usize");
 
         return Ok(());
     }
