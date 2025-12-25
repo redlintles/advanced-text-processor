@@ -190,7 +190,28 @@ impl AtpParamTypes {
             AtpParamTypes::Token(_) => 0x03,
         }
     }
-    pub fn param_to_bytecode(&self) -> Vec<u8> {
+
+    pub fn write_as_instruction_param(&self, out: &mut Vec<u8>) {
+        let param_type = self.get_param_type_code();
+
+        let payload: Vec<u8> = match self {
+            AtpParamTypes::String(s) => s.as_bytes().to_vec(),
+            AtpParamTypes::Usize(n) => n.to_be_bytes().to_vec(),
+            AtpParamTypes::Token(t) => t.to_bytecode(), // token aninhado
+        };
+
+        let payload_size_u32: u32 = payload.len() as u32;
+
+        // Param Total Size = 8 + 4 + 4 + payload
+        let param_total_size_u64: u64 = 8 + 4 + 4 + (payload.len() as u64);
+
+        out.extend_from_slice(&param_total_size_u64.to_be_bytes());
+        out.extend_from_slice(&param_type.to_be_bytes());
+        out.extend_from_slice(&payload_size_u32.to_be_bytes());
+        out.extend_from_slice(&payload);
+    }
+
+    pub fn param_to_bytecode(&self) -> (u64, Vec<u8>) {
         let mut result: Vec<u8> = Vec::new();
 
         // Payload Type
@@ -212,6 +233,6 @@ impl AtpParamTypes {
         // Payload Content
         result.extend_from_slice(&payload);
 
-        result
+        (u64::from_be_bytes(param_total_size), result)
     }
 }
