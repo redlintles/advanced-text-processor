@@ -71,18 +71,8 @@ impl TokenMethods for Tls {
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
-        let mut result = Vec::new();
-
-        // tamanho total = opcode (4) + param_count (1) + header (8)
-        let instruction_size: u64 = 13;
-
-        result.extend_from_slice(&instruction_size.to_be_bytes());
-
-        let opcode: u32 = self.get_opcode() as u32;
-        result.extend_from_slice(&opcode.to_be_bytes());
-
-        result.push(0); // número de parâmetros
-
+        use crate::to_bytecode;
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), []);
         result
     }
 }

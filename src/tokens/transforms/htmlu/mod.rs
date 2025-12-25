@@ -70,14 +70,8 @@ impl TokenMethods for Htmlu {
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
-        let mut result = Vec::with_capacity(13);
-        // Tamanho total da instrução
-        result.extend_from_slice(&(0x0d as u64).to_be_bytes());
-        // Código da instrução
-        result.extend_from_slice(&self.get_opcode().to_be_bytes());
-        // Número de parâmetros
-        result.push(0);
-
+        use crate::to_bytecode;
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), []);
         result
     }
 }

@@ -118,49 +118,11 @@ impl TokenMethods for Ins {
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
-        let mut result = Vec::new();
-
-        let instruction_type: u32 = self.get_opcode() as u32;
-
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = (self.index as u32).to_be_bytes();
-        let first_param_payload_size: u32 = first_param_payload.len() as u32;
-
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
-
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = self.text_to_insert.as_bytes();
-        let second_param_payload_size: u32 = second_param_payload.len() as u32;
-
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
-
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
-
-        // Instruction Total Size
-        result.extend_from_slice(&instruction_total_size.to_be_bytes());
-        // Instruction Type
-        result.extend_from_slice(&instruction_type.to_be_bytes());
-        // Param Count
-        result.push(2);
-        // First Param Total Size
-        result.extend_from_slice(&first_param_total_size.to_be_bytes());
-        // First Param Type
-        result.extend_from_slice(&first_param_type.to_be_bytes());
-        // First Param Payload Size
-        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        // First Param Payload
-        result.extend_from_slice(&first_param_payload);
-
-        // Second Param Total Size
-        result.extend_from_slice(&second_param_total_size.to_be_bytes());
-        // Second Param Type
-        result.extend_from_slice(&second_param_type.to_be_bytes());
-        // Second Param Payload Size
-        result.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        // Second Param Payload
-        result.extend_from_slice(&second_param_payload);
-
+        use crate::to_bytecode;
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.index),
+            AtpParamTypes::String(self.text_to_insert.clone()),
+        ]);
         result
     }
 }
