@@ -1,9 +1,10 @@
-use std::{ borrow::Cow, sync::{ Arc, LazyLock } };
+use std::{ borrow::Cow, collections::HashMap, sync::{ Arc, LazyLock } };
 
 use crate::{
     tokens::{ TokenMethods, instructions::*, transforms::* },
     utils::errors::{ AtpError, AtpErrorCode },
 };
+
 #[derive(Clone)]
 pub enum TokenRef {
     Boxed(Box<dyn TokenMethods>),
@@ -17,12 +18,7 @@ impl TokenRef {
             TokenRef::Shared(a) => TokenRef::Shared(a.clone()),
         }
     }
-    // fn as_ref(&self) -> &dyn TokenMethods {
-    //     match self {
-    //         TokenRef::Boxed(b) => b.as_ref(),
-    //         TokenRef::Shared(a) => a.as_ref(),
-    //     }
-    // }
+
     pub fn into_box(self) -> Box<dyn TokenMethods> {
         match self {
             TokenRef::Boxed(b) => b,
@@ -37,63 +33,164 @@ pub struct TokenEntry {
     code: u32,
     token: TokenRef,
 }
-#[derive(Clone)]
-pub enum TableQuery {
-    String(Cow<'static, str>),
-    Bytecode(u32),
-}
 
 impl TokenEntry {
     fn new(identifier: Cow<'static, str>, code: u32, token: TokenRef) -> TokenEntry {
         TokenEntry { identifier, code, token }
     }
-}
 
-impl TokenEntry {
     pub fn get_bytecode(&self) -> u32 {
         self.code
     }
     pub fn get_identifier(&self) -> &str {
-        &self.identifier.as_ref()
+        self.identifier.as_ref()
     }
     pub fn get_token(&self) -> TokenRef {
         self.token.clone_ref()
     }
 }
 
-pub trait TokenTableMethods {
-    fn find(&self, query: TableQuery) -> Result<&TokenEntry, AtpError>;
+#[derive(Clone, Debug)]
+pub enum QuerySource {
+    Identifier(Cow<'static, str>),
+    Bytecode(u32),
 }
 
-impl TokenTableMethods for Vec<TokenEntry> {
-    fn find(&self, query: TableQuery) -> Result<&TokenEntry, AtpError> {
-        for entry in self.iter() {
-            match query {
-                TableQuery::String(ref x) => {
-                    if x.as_ref() == entry.get_identifier() {
-                        return Ok(entry);
-                    }
-                }
-                TableQuery::Bytecode(x) => {
-                    if x == entry.get_bytecode() {
-                        return Ok(entry);
-                    }
-                }
-            }
-        }
-        Err(
+#[derive(Clone, Copy, Debug)]
+pub enum QueryTarget {
+    Identifier,
+    Bytecode,
+    Token,
+}
+
+#[derive(Clone)]
+pub enum TargetValue {
+    Identifier(&'static str),
+    Bytecode(u32),
+    Token(TokenRef),
+}
+
+pub struct TokenTable {
+    // 4 hashmaps como você descreveu:
+    id_to_code: HashMap<&'static str, u32>,
+    code_to_id: HashMap<u32, &'static str>,
+    id_to_token: HashMap<&'static str, TokenRef>,
+    code_to_token: HashMap<u32, TokenRef>,
+
+    // opcional: manter os entries por debug/iterar/listar
+    entries: Vec<TokenEntry>,
+}
+
+impl TokenTable {
+    pub fn find(
+        &self,
+        (query_source, query_target): (QuerySource, QueryTarget)
+    ) -> Result<TargetValue, AtpError> {
+        let err = ||
             AtpError::new(
                 AtpErrorCode::TokenNotFound("Token Not Found in mapping".into()),
-                "TokenTable.find()",
+                "TOKEN_TABLE.find()",
                 "query"
-            )
-        )
+            );
+
+        match (query_source, query_target) {
+            // ✅ CORINGA: QuerySource e QueryTarget "iguais" (eco + valida existência)
+            (QuerySource::Identifier(id), QueryTarget::Identifier) => {
+                // valida que existe
+                if self.id_to_code.contains_key(id.as_ref()) {
+                    // devolve o próprio id, mas como &'static str:
+                    // como seu mapa usa &'static str, pegamos pelo code_to_id via code:
+                    let code = *self.id_to_code.get(id.as_ref()).ok_or_else(err)?;
+                    let real_id = *self.code_to_id.get(&code).ok_or_else(err)?;
+                    Ok(TargetValue::Identifier(real_id))
+                } else {
+                    Err(err())
+                }
+            }
+            (QuerySource::Bytecode(code), QueryTarget::Bytecode) => {
+                // valida que existe
+                if self.code_to_id.contains_key(&code) {
+                    Ok(TargetValue::Bytecode(code))
+                } else {
+                    Err(err())
+                }
+            }
+
+            // --- demais casos normais ---
+
+            (QuerySource::Identifier(id), QueryTarget::Bytecode) => {
+                let code = *self.id_to_code.get(id.as_ref()).ok_or_else(err)?;
+                Ok(TargetValue::Bytecode(code))
+            }
+            (QuerySource::Identifier(id), QueryTarget::Token) => {
+                let tok = self.id_to_token.get(id.as_ref()).ok_or_else(err)?;
+                Ok(TargetValue::Token(tok.clone_ref()))
+            }
+            (QuerySource::Bytecode(code), QueryTarget::Identifier) => {
+                let id = *self.code_to_id.get(&code).ok_or_else(err)?;
+                Ok(TargetValue::Identifier(id))
+            }
+            (QuerySource::Bytecode(code), QueryTarget::Token) => {
+                let tok = self.code_to_token.get(&code).ok_or_else(err)?;
+                Ok(TargetValue::Token(tok.clone_ref()))
+            }
+        }
+    }
+    // Se você ainda quiser “TokenEntry” por ID/Bytecode:
+    pub fn entry_by_id(&self, id: &str) -> Option<&TokenEntry> {
+        self.entries.iter().find(|e| e.get_identifier() == id)
+    }
+    pub fn entry_by_code(&self, code: u32) -> Option<&TokenEntry> {
+        self.entries.iter().find(|e| e.get_bytecode() == code)
     }
 }
 
-pub static TOKEN_TABLE: LazyLock<Vec<TokenEntry>> = LazyLock::new(|| {
-    // Lista de tokens e bytecodes correspondentes, igual ao legado
-    let entries: &[(&str, u32, fn() -> TokenRef)] = &[
+macro_rules! define_token_table {
+    ($vis:vis static $name:ident = [$(($id:literal, $code:expr, $ctor:expr)),* $(,)?];) => {
+        $vis static $name: LazyLock<TokenTable> = LazyLock::new(|| {
+            let mut id_to_code: HashMap<&'static str, u32> = HashMap::new();
+            let mut code_to_id: HashMap<u32, &'static str> = HashMap::new();
+            let mut id_to_token: HashMap<&'static str, TokenRef> = HashMap::new();
+            let mut code_to_token: HashMap<u32, TokenRef> = HashMap::new();
+
+            let mut entries: Vec<TokenEntry> = Vec::new();
+
+            $(
+                // constrói o token UMA vez e duplica a referência (Arc) pros 2 maps
+                let token: TokenRef = ($ctor)();
+                let token_for_code = token.clone_ref();
+
+                // (opcional) checagens simples: duplicatas
+                if id_to_code.contains_key($id) {
+                    panic!("define_token_table: duplicate identifier: {}", $id);
+                }
+                if code_to_id.contains_key(&$code) {
+                    panic!("define_token_table: duplicate bytecode: 0x{:x} for {}", $code, $id);
+                }
+
+                id_to_code.insert($id, $code);
+                code_to_id.insert($code, $id);
+
+                id_to_token.insert($id, token.clone_ref());
+                code_to_token.insert($code, token_for_code);
+
+                entries.push(TokenEntry::new(Cow::Borrowed($id), $code, token));
+            )*
+
+            TokenTable {
+                id_to_code,
+                code_to_id,
+                id_to_token,
+                code_to_token,
+                entries,
+            }
+        });
+    };
+}
+
+// ✅ sua “tabela 3 colunas” vira só isso:
+define_token_table! {
+    pub static TOKEN_TABLE = [
         ("atb", 0x01, || TokenRef::Shared(Arc::new(atb::Atb::default()))),
         ("ate", 0x02, || TokenRef::Shared(Arc::new(ate::Ate::default()))),
         ("dlc", 0x08, || TokenRef::Shared(Arc::new(dlc::Dlc::default()))),
@@ -145,9 +242,4 @@ pub static TOKEN_TABLE: LazyLock<Vec<TokenEntry>> = LazyLock::new(|| {
         ("dls", 0x32, || TokenRef::Shared(Arc::new(dls::Dls::default()))),
         ("ifdc", 0x33, || TokenRef::Shared(Arc::new(ifdc::Ifdc::default()))),
     ];
-
-    entries
-        .iter()
-        .map(|(id, code, f)| TokenEntry::new(Cow::Borrowed(id), *code, f()))
-        .collect()
-});
+}
