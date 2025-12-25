@@ -90,13 +90,12 @@ mod bytecode {
 
     #[test]
     fn atpparam_from_bytecode_string_roundtrip_decoder_format() {
-        // Este teste valida o DECODER real do from_bytecode, usando o formato que ele espera.
         let raw = encode_param_for_decoder(0x01, b"abc");
         let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
 
         match parsed {
             AtpParamTypes::String(s) => assert_eq!(s, "abc"),
-            other => panic!("Expected String, got {:?}", other.get_param_type_code()),
+            other => panic!("Expected String, got type code {}", other.get_param_type_code()),
         }
     }
 
@@ -108,7 +107,7 @@ mod bytecode {
 
         match parsed {
             AtpParamTypes::Usize(x) => assert_eq!(x, 123),
-            other => panic!("Expected Usize, got {:?}", other.get_param_type_code()),
+            other => panic!("Expected Usize, got type code {}", other.get_param_type_code()),
         }
     }
 
@@ -131,34 +130,35 @@ mod bytecode {
         ];
 
         let err = t.from_params(&params).unwrap_err();
-        // Assert forte: tipo do erro (sem depender de mensagem/string)
-        assert!(matches!(err, crate::utils::errors::AtpError { .. }));
 
-        // Como AtpError não expõe fields public, a melhor checagem forte
-        // é pelo Display do AtpErrorCode ou por comparação se você expuser um getter.
-        // Aqui vai um check “semi-forte” usando o código:
-        // (se você adicionar um getter em AtpError pra pegar error_code, isso fica perfeito)
+        // check semi-forte (porque AtpError não tem getter público do code)
+        // Mas garantimos que é BytecodeNotFound (106)
         let rendered = err.to_string();
-        assert!(rendered.contains("106")); // BytecodeNotFound => 106
+        assert!(rendered.contains("106"));
+
+        // (opcional) também checa a mensagem base
+        assert!(rendered.contains("Invalid Parser for this token"));
     }
 
     #[test]
     fn atb_to_bytecode_can_be_parsed_into_params_and_feed_from_params() {
-        // Aqui a gente valida o fluxo real:
-        // Atb::to_bytecode -> decodificar estrutura -> AtpParamTypes::from_bytecode(param bytes) -> Atb::from_params
+        // Fluxo real:
+        // Atb::to_bytecode -> extrair param -> AtpParamTypes::from_bytecode(param bytes) -> Atb::from_params
         //
-        // Observação: Atb::to_bytecode gera uma INSTRUCTION com layout:
+        // Layout:
         // [u64 instruction_total_size][u32 opcode][u8 param_count]
         // [u64 param_total_size][u32 param_type][u32 payload_size][payload]
         //
         // E AtpParamTypes::from_bytecode espera:
         // [u32 type][u32 payload_size][payload]
         //
-        // Então, para montar o input correto do from_bytecode, pegamos o trecho:
-        // [u32 param_type][u32 payload_size][payload] (ignorando o u64 param_total_size).
+        // Então pulamos o u64 param_total_size.
 
         let original = Atb::params("hello");
         let bytes = original.to_bytecode();
+
+        // sanity: param_count deve ser 1
+        assert_eq!(bytes[12], 1);
 
         // pulo: 8 (total) + 4 (opcode) + 1 (param_count) = 13
         let mut idx = 13;
@@ -170,7 +170,6 @@ mod bytecode {
         // Agora o sub-slice começa em [u32 param_type][u32 payload_size][payload...]
         let param_slice = bytes[idx..].to_vec();
 
-        // Parse param => AtpParamTypes
         let parsed_param = AtpParamTypes::from_bytecode(param_slice).unwrap();
 
         let mut rebuilt = Atb::default();
@@ -182,16 +181,15 @@ mod bytecode {
 
     #[test]
     fn atpparam_param_to_bytecode_has_internal_structure() {
-        // Este teste NÃO faz roundtrip (porque encoder/decoder não batem hoje),
-        // mas garante que o encoder produz algo consistente internamente.
+        // Este teste NÃO faz roundtrip (encoder/decoder não batem), mas checa o layout interno atual.
         let p = AtpParamTypes::String("abc".to_string());
-        let b = p.param_to_bytecode();
+        let (_total_u64, b) = p.param_to_bytecode();
 
         // type u32
         let ty = u32::from_be_bytes(b[0..4].try_into().unwrap());
         assert_eq!(ty, 0x01);
 
-        // em seguida você grava u64 param_total_size
+        // em seguida você grava u64 param_total_size (legacy)
         let _total = u64::from_be_bytes(b[4..12].try_into().unwrap());
 
         // depois payload_size u32
