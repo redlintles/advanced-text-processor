@@ -3,7 +3,7 @@ use std::{ array::TryFromSliceError, io::{ BufReader, Read } };
 
 use crate::{
     globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
-    tokens::{ TokenMethods, transforms::ins },
+    tokens::{ TokenMethods },
     utils::errors::{ AtpError, AtpErrorCode },
 };
 
