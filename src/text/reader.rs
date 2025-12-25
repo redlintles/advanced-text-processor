@@ -1,7 +1,7 @@
 use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
-    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
+    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     tokens::TokenMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_file_path },
 };
@@ -36,13 +36,21 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
         }
     };
 
-    let token_ref = TOKEN_TABLE.find(TableQuery::String(chunks[0].clone().into()))?.get_token();
+    let token_query = TOKEN_TABLE.find((
+        QuerySource::Identifier(chunks[0].clone().into()),
+        QueryTarget::Token,
+    ))?;
 
-    let mut token = token_ref.into_box();
+    match token_query {
+        TargetValue::Token(token_ref) => {
+            let mut token = token_ref.into_box();
 
-    token.from_vec_params(chunks)?;
+            token.from_vec_params(chunks)?;
 
-    Ok(token)
+            Ok(token)
+        }
+        _ => unreachable!("Invalid query result!"),
+    }
 }
 
 pub fn read_from_text_vec(tokens: Vec<String>) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {

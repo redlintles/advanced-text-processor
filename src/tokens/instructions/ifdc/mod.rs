@@ -4,7 +4,7 @@ pub mod test;
 use std::{ borrow::Cow };
 
 use crate::{
-    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
+    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     tokens::{ TokenMethods, transforms::dlf::Dlf },
 };
 
@@ -59,15 +59,21 @@ impl TokenMethods for Ifdc {
 
             let inner_token_text = line[3..].to_vec();
 
-            let inner_token_ref = TOKEN_TABLE.find(
-                TableQuery::String(inner_token_text[0].clone().into())
-            )?.get_token();
+            let query_result = TOKEN_TABLE.find((
+                QuerySource::Identifier(inner_token_text[0].clone().into()),
+                QueryTarget::Token,
+            ))?;
 
-            let mut inner_token = inner_token_ref.into_box();
+            match query_result {
+                TargetValue::Token(inner_token_ref) => {
+                    let mut inner_token = inner_token_ref.into_box();
 
-            inner_token.from_vec_params(inner_token_text)?;
+                    inner_token.from_vec_params(inner_token_text)?;
 
-            self.inner = inner_token;
+                    self.inner = inner_token;
+                }
+                _ => unreachable!("Invalid query result"),
+            }
         }
 
         Err(

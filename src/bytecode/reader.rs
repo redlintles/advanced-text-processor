@@ -1,7 +1,7 @@
 use std::{ fs::OpenOptions, io::{ BufReader, Read }, path::Path };
 
 use crate::{
-    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
+    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     tokens::TokenMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
@@ -141,20 +141,30 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>
                 // Código final para fazer o parsing dos parâmetros
             }
 
-            let token_ref = TOKEN_TABLE.find(TableQuery::Bytecode(instruction_type))?.get_token();
+            let query_result = TOKEN_TABLE.find((
+                QuerySource::Bytecode(instruction_type),
+                QueryTarget::Token,
+            ))?;
 
-            let mut token = token_ref.into_box();
-            token
-                .from_params(&params)
-                .map_err(|e|
-                    AtpError::new(
-                        AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                        "read_bytecode_from_file",
-                        e.to_string()
-                    )
-                )?;
+            match query_result {
+                TargetValue::Token(token_ref) => {
+                    let mut token = token_ref.into_box();
+                    token
+                        .from_params(&params)
+                        .map_err(|e|
+                            AtpError::new(
+                                AtpErrorCode::BytecodeParsingError(
+                                    "Failed Reading Bytecode".into()
+                                ),
+                                "read_bytecode_from_file",
+                                e.to_string()
+                            )
+                        )?;
 
-            result.push(token);
+                    result.push(token);
+                }
+                _ => unreachable!("Invalid query result!"),
+            }
         }
     }
 

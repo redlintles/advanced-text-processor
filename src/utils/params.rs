@@ -2,8 +2,8 @@ use core::str;
 use std::{ array::TryFromSliceError, io::{ BufReader, Read } };
 
 use crate::{
-    globals::table::{ TOKEN_TABLE, TableQuery, TokenTableMethods },
-    tokens::TokenMethods,
+    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
+    tokens::{ TokenMethods, transforms::ins },
     utils::errors::{ AtpError, AtpErrorCode },
 };
 
@@ -157,15 +157,21 @@ impl AtpParamTypes {
                     params.push(parsed_param);
                 }
 
-                let token_ref = TOKEN_TABLE.find(
-                    TableQuery::Bytecode(instruction_type)
-                )?.get_token();
+                let query_result = TOKEN_TABLE.find((
+                    QuerySource::Bytecode(instruction_type),
+                    QueryTarget::Token,
+                ))?;
 
-                let mut token = token_ref.into_box();
+                match query_result {
+                    TargetValue::Token(token_ref) => {
+                        let mut token = token_ref.into_box();
 
-                token.from_params(&params)?;
+                        token.from_params(&params)?;
 
-                Ok(AtpParamTypes::Token(token))
+                        Ok(AtpParamTypes::Token(token))
+                    }
+                    _ => unreachable!("Invalid Query Result!"),
+                }
             }
             _ => {
                 Err(
