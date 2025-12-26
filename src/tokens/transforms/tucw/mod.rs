@@ -8,7 +8,7 @@ use crate::{
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
-        validations::{ check_index_against_input, check_vec_len },
+        validations::{ check_index_against_words, check_vec_len },
     },
 };
 #[cfg(feature = "bytecode")]
@@ -46,8 +46,8 @@ impl TokenMethods for Tucw {
         format!("tucw {};\n", self.index).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
-        check_index_against_input(self.index, input)?;
+    fn transform(&self, input: &str) -> Result<String, AtpError> {
+        check_index_against_words(self.index, input)?;
         Ok(
             input
                 .split_whitespace()
@@ -61,7 +61,7 @@ impl TokenMethods for Tucw {
         )
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), crate::utils::errors::AtpError> {
+    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         check_vec_len(&line, 2)?;
         if line[0] == "tucw" {
             self.index = string_to_usize(&line[1])?;

@@ -8,7 +8,7 @@ use crate::{
     utils::{
         errors::{ AtpError, AtpErrorCode },
         transforms::string_to_usize,
-        validations::{ check_index_against_input, check_vec_len },
+        validations::{ check_index_against_input, check_index_against_words, check_vec_len },
     },
 };
 #[cfg(feature = "bytecode")]
@@ -48,7 +48,7 @@ impl TokenMethods for Tlcw {
     }
 
     fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
-        check_index_against_input(self.index, input)?;
+        check_index_against_words(self.index, input)?;
         Ok(
             input
                 .split_whitespace()
