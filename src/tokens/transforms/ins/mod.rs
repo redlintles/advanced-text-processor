@@ -53,11 +53,7 @@ impl TokenMethods for Ins {
             return Ok(());
         }
         Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                "ins".to_string(),
-                line.join(" ")
-            )
+            AtpError::new(AtpErrorCode::TokenNotFound("".into()), "ins".to_string(), line.join(" "))
         )
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
@@ -68,7 +64,7 @@ impl TokenMethods for Ins {
                         format!(
                             "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
                             input,
-                            input.len().saturating_sub(1)
+                            input.chars().count() - 1
                         ).into()
                     ),
                     self.to_atp_line(),

@@ -50,28 +50,22 @@ impl TokenMethods for Slt {
         "slt"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        let total_chars = input.chars().count();
-        let last_char_index = total_chars.saturating_sub(1);
-
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
-        let subslice_start = input
+        let start_byte = input
             .char_indices()
             .nth(self.start_index)
             .map(|(i, _)| i)
             .unwrap_or(0);
 
-        let subslice_end = if self.end_index > last_char_index {
-            last_char_index
-        } else {
-            input
-                .char_indices()
-                .nth(self.end_index)
-                .map(|(i, _)| i)
-                .unwrap_or(input.len())
-        };
+        // Fim EXCLUSIVO: byte do (end_index + 1)º char, ou input.len() se passar do fim
+        let end_byte_exclusive = input
+            .char_indices()
+            .nth(self.end_index.saturating_add(1))
+            .map(|(i, _)| i)
+            .unwrap_or(input.len());
 
-        Ok(input[subslice_start..=subslice_end].to_string())
+        Ok(input[start_byte..end_byte_exclusive].to_string())
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {

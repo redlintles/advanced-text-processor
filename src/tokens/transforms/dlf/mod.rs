@@ -30,10 +30,22 @@ impl TokenMethods for Dlf {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        let mut s = String::from(input);
-        s.drain(..1);
-        Ok(s)
+        // Se a string é vazia, não há o que deletar.
+        if input.is_empty() {
+            return Ok(String::new());
+        }
+
+        // Encontra o byte-index do início do 2º caractere (se existir).
+        // Se não existir, a string tem 1 char só => resultado é vazio.
+        let cut = input
+            .char_indices()
+            .nth(1)
+            .map(|(byte_idx, _)| byte_idx)
+            .unwrap_or(input.len());
+
+        Ok(input[cut..].to_string())
     }
+
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         // "dlf;"
 

@@ -59,13 +59,10 @@ impl TokenMethods for Sslt {
         "sslt"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        let s = self.pattern
+        let item = self.pattern
             .split(input)
-
-            .collect::<Vec<_>>();
-
-        if !(0..s.len()).contains(&self.index) {
-            return Err(
+            .nth(self.index)
+            .ok_or_else(|| {
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
                         "Index does not exist in the splitted vec".into()
@@ -73,22 +70,8 @@ impl TokenMethods for Sslt {
                     self.to_atp_line(),
                     input.to_string()
                 )
-            );
-        }
-        let i = match self.index >= s.len() {
-            true => s.len() - 1,
-            false => self.index,
-        };
+            })?;
 
-        let item = s
-            .get(i)
-            .ok_or_else(||
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange("Item not found".into()),
-                    "sslt".to_string(),
-                    input.to_string()
-                )
-            )?;
         Ok(item.to_string())
     }
 

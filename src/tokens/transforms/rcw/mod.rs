@@ -31,7 +31,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// assert_eq!(token.transform("aaaaa"), Ok("bbbaa".to_string()));
 /// ```
 ///
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Rcw {
     pub pattern: Regex,
     pub count: usize,

@@ -30,7 +30,7 @@ use crate::{ utils::params::AtpParamTypes };
 /// assert_eq!(token.transform("aaaaa"), Ok("bbbbb".to_string()));
 /// ```
 ///
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Raw {
     pub pattern: Regex,
     pub text_to_replace: String,

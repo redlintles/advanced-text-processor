@@ -5,6 +5,7 @@ use std::{ borrow::Cow };
 
 use crate::{
     globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
+    to_bytecode,
     tokens::{ TokenMethods, transforms::dlf::Dlf },
 };
 
@@ -54,9 +55,20 @@ impl TokenMethods for Ifdc {
     }
 
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "ifdc" {
-            self.text = line[1].clone();
+        if line.get(0).map(|s| s.as_str()) == Some("ifdc") {
+            if line.len() < 4 || line.get(2).map(|s| s.as_str()) != Some("do") {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::InvalidParameters(
+                            "Expected: ifdc <text> do <token...>".into()
+                        ),
+                        "ifdc".to_string(),
+                        line.join(" ")
+                    )
+                );
+            }
 
+            self.text = line[1].clone();
             let inner_token_text = line[3..].to_vec();
 
             let query_result = TOKEN_TABLE.find((
@@ -67,19 +79,19 @@ impl TokenMethods for Ifdc {
             match query_result {
                 TargetValue::Token(inner_token_ref) => {
                     let mut inner_token = inner_token_ref.into_box();
-
                     inner_token.from_vec_params(inner_token_text)?;
-
                     self.inner = inner_token;
                 }
                 _ => unreachable!("Invalid query result"),
             }
+
+            return Ok(());
         }
 
         Err(
             AtpError::new(
                 AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                "IFDC".to_string(),
+                "ifdc".to_string(),
                 line.join(" ")
             )
         )
@@ -96,11 +108,14 @@ impl TokenMethods for Ifdc {
         Ok(input.to_string())
     }
 
+    #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x33
     }
-
+    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
         if instruction.len() != 2 {
             return Err(
                 AtpError::new(
@@ -111,68 +126,18 @@ impl TokenMethods for Ifdc {
             );
         }
 
-        match &instruction[0] {
-            AtpParamTypes::String(payload) => {
-                self.text = payload.clone();
-            }
-            _ => {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "This token expected a String as argument at this position".into()
-                        ),
-                        self.to_atp_line(),
-                        ""
-                    )
-                );
-            }
-        }
+        self.text = parse_args!(instruction, 0, String, "");
+
+        self.inner = parse_args!(instruction, 1, Token, "");
 
         Ok(())
     }
-
+    #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
-        let mut result = Vec::new();
-
-        let instruction_type: u32 = self.get_opcode() as u32;
-
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = self.text.as_str().as_bytes();
-        let first_param_payload_size: u32 = first_param_payload.len() as u32;
-
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
-
-        let second_param_type: u32 = 0x03;
-        let second_param_payload = self.inner.to_bytecode();
-        let second_param_payload_size: u32 = second_param_payload.len() as u32;
-
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
-
-        let instruction_total_size: u64 = 4 + 1 + first_param_total_size + second_param_total_size;
-
-        // Instruction Total Size
-        result.extend_from_slice(&instruction_total_size.to_be_bytes());
-        // Instruction Type
-        result.extend_from_slice(&instruction_type.to_be_bytes());
-        // Param Count
-        result.push(2);
-        // First Param Total Size
-        result.extend_from_slice(&first_param_total_size.to_be_bytes());
-        // First Param Type
-        result.extend_from_slice(&first_param_type.to_be_bytes());
-        // First Param Payload Size
-        result.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        // First Param Payload
-        result.extend_from_slice(&first_param_payload);
-
-        // Second Param Total Size
-        result.extend_from_slice(&second_param_total_size.to_be_bytes());
-        // Second Param Type
-        result.extend_from_slice(&second_param_type.to_be_bytes());
-        // Second Param Payload Size
-        result.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        // Second Param Payload
-        result.extend_from_slice(&second_param_payload);
+        let result = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::String(self.text.clone()),
+            AtpParamTypes::Token(self.inner.clone()),
+        ]);
 
         result
     }

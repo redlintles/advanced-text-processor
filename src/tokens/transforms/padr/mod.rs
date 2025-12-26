@@ -100,8 +100,8 @@ impl TokenMethods for Padr {
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
         let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::Usize(self.max_len),
             AtpParamTypes::String(self.text.clone()),
+            AtpParamTypes::Usize(self.max_len),
         ]);
         result
     }

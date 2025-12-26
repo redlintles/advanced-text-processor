@@ -53,14 +53,18 @@ impl TokenMethods for Tlcs {
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
+
         let result: String = input
-            .char_indices()
+            .chars()
+            .enumerate()
             .map(|(i, c)| {
                 if i == self.index { c.to_lowercase().to_string() } else { c.to_string() }
             })
             .collect();
+
         Ok(result)
     }
+
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         check_vec_len(&line, 2)?;
         if line[0] == "tlcs" {

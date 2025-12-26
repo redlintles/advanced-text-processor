@@ -56,14 +56,11 @@ impl TokenMethods for Tlcc {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
-        // Since the user will probably not know the length of the string in the middle of the processing
-        // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
-        let mut end = self.end_index;
-        let total = input.chars().count();
+        let total_chars = input.chars().count();
+        let last_char_index = total_chars.saturating_sub(1);
 
-        if end > total {
-            end = input.len();
-        }
+        let end = if self.end_index > last_char_index { last_char_index } else { self.end_index };
+
         let result: String = input
             .chars()
             .enumerate()
@@ -75,8 +72,10 @@ impl TokenMethods for Tlcc {
                 }
             })
             .collect();
+
         Ok(result)
     }
+
     fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
         if line[0] == "tlcc" {
             let start_index = string_to_usize(&line[1])?;
