@@ -28,4 +28,18 @@ macro_rules! parse_args {
         }
         }
     };
+    ($params:expr, $idx:expr, Token, $msg:expr) => {
+        {
+        match &$params[$idx] {
+            AtpParamTypes::Token(payload) => payload.clone(),
+            _ => {
+                return Err(AtpError::new(
+                    AtpErrorCode::InvalidParameters($msg.into()),
+                    "",
+                    "",
+                ));
+            }
+        }
+        }
+    };
 }
