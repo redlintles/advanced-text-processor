@@ -1,80 +1,142 @@
-#[cfg(feature = "test_access")]
+// src/tokens/transforms/dlf/test.rs
+
 #[cfg(test)]
-mod dlf_tests {
-    use crate::tokens::{ transforms::dlf::Dlf, TokenMethods };
+mod tests {
+    use crate::tokens::transforms::dlf::Dlf;
+    use crate::tokens::TokenMethods;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
-    fn test_delete_first() {
-        let random_text = random_string::generate(6, ('a'..'z').collect::<String>());
-
-        let mut expected_output = random_text.clone();
-
-        expected_output.drain(..1);
-
-        let mut token = Dlf::default();
-
-        assert_eq!(
-            token.transform(&random_text),
-            Ok(expected_output.to_string()),
-            "It supports random inputs"
-        );
-        assert_eq!(
-            token.transform("banana"),
-            Ok("anana".to_string()),
-            "It supports expected inputs"
-        );
-        assert_eq!(
-            token.to_atp_line(),
-            "dlf;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(token.get_string_repr(), "dlf".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(token.from_vec_params(["dlf".to_string()].to_vec()), Ok(_)),
-            "It does not throws an error for valid vec_params"
-        );
+    fn get_string_repr_is_dlf() {
+        let t = Dlf::default();
+        assert_eq!(t.get_string_repr(), "dlf");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn test_delete_first_bytecode() {
-        let mut token = Dlf::default();
+    fn to_atp_line_is_constant() {
+        let t = Dlf::default();
+        assert_eq!(t.to_atp_line().as_ref(), "dlf;\n");
+    }
 
-        let instruction = vec![];
+    #[test]
+    fn from_vec_params_accepts_dlf_identifier() {
+        let mut t = Dlf::default();
+        let line = vec!["dlf".to_string()];
 
-        assert_eq!(token.get_opcode(), 0x03, "get_opcode does not disrepect ATP token mapping");
+        assert_eq!(t.from_vec_params(line), Ok(()));
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier() {
+        let mut t = Dlf::default();
+        let line = vec!["nope".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        assert_eq!(
-            token.to_bytecode(),
-            vec![
-                // Tamanho total do token
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x0d,
-                // TIpo do token
-                0x00,
-                0x00,
-                0x00,
-                0x03,
-                // Número de parâmetros
-                0x00
-            ],
-            "Conversion to bytecode instruction works perfectly!"
-        );
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn transform_deletes_first_char_basic() {
+        let t = Dlf::default();
+        assert_eq!(t.transform("banana"), Ok("anana".to_string()));
+    }
+
+    #[test]
+    fn transform_empty_string_stays_empty() {
+        let t = Dlf::default();
+        assert_eq!(t.transform(""), Ok("".to_string()));
+    }
+
+    #[test]
+    fn transform_single_char_becomes_empty() {
+        let t = Dlf::default();
+        assert_eq!(t.transform("a"), Ok("".to_string()));
+    }
+
+    #[test]
+    fn transform_unicode_first_char_removed_safely_accented() {
+        let t = Dlf::default();
+        assert_eq!(t.transform("ábc"), Ok("bc".to_string()));
+    }
+
+    #[test]
+    fn transform_unicode_first_char_removed_safely_emoji() {
+        let t = Dlf::default();
+        assert_eq!(t.transform("💥boom"), Ok("boom".to_string()));
+    }
+
+    // ============================
+    // Bytecode-only tests (separados)
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::errors::AtpErrorCode;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_03() {
+            let t = Dlf::default();
+            assert_eq!(t.get_opcode(), 0x03);
+        }
+
+        #[test]
+        fn from_params_accepts_empty_param_list() {
+            let mut t = Dlf::default();
+            let params: Vec<AtpParamTypes> = vec![];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+        }
+
+        #[test]
+        fn from_params_rejects_any_params() {
+            let mut t = Dlf::default();
+            let params = vec![AtpParamTypes::Usize(1)];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_expected_header_and_no_params() {
+            let t = Dlf::default();
+            let bc = t.to_bytecode();
+
+            // header mínimo: 8 + 4 + 1 = 13 bytes
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+
+            // total_size = tamanho do "body" (opcode+count+params...)
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x03);
+
+            let param_count = bc[i] as usize;
+            assert_eq!(param_count, 0);
+        }
     }
 }

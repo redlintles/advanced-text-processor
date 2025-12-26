@@ -1,94 +1,269 @@
+// src/tokens/transforms/rlw/test.rs
+
 #[cfg(test)]
-#[cfg(feature = "test_access")]
-mod rlw_tests {
-    use crate::tokens::{ TokenMethods, transforms::rlw::Rlw };
-    #[test]
-    fn replace_last_with_tests() {
-        let mut token = Rlw::params("a", "b").unwrap();
-        assert_eq!(
-            token.transform("aaaaa"),
-            Ok("aaaab".to_string()),
-            "It supports expected inputs"
-        );
+mod tests {
+    use crate::tokens::TokenMethods;
+    use crate::tokens::transforms::rlw::Rlw;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-        assert_eq!(
-            token.to_atp_line(),
-            "rlw a b;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(token.get_string_repr(), "rlw".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["rlw".to_string(), "a".to_string(), "b".to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
+    #[test]
+    fn get_string_repr_is_rlw() {
+        let t = Rlw::default();
+        assert_eq!(t.get_string_repr(), "rlw");
     }
-    #[cfg(feature = "bytecode")]
+
     #[test]
-    fn replace_all_with_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn params_creates_valid_regex_and_fields() {
+        let t = Rlw::params("a+", "b").unwrap();
+        assert_eq!(t.pattern.as_str(), "a+");
+        assert_eq!(t.text_to_replace, "b".to_string());
+    }
 
-        let mut token = Rlw::params("banana", "laranja").unwrap();
+    #[test]
+    fn params_rejects_invalid_regex() {
+        let err = Rlw::params("(", "b").unwrap_err();
+        assert!(!err.is_empty());
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![
-            AtpParamTypes::Usize(3),
-            AtpParamTypes::String("Banana".to_string())
-        ];
+    #[test]
+    fn to_atp_line_contains_pattern_and_replacement() {
+        let t = Rlw::params("a+", "b").unwrap();
+        let line = t.to_atp_line();
+        assert_eq!(line.as_ref(), "rlw a+ b;\n");
+    }
 
-        assert_eq!(token.get_opcode(), 0x0b, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn transform_replaces_last_occurrence_doc_example() {
+        let t = Rlw::params("a", "b").unwrap();
+        assert_eq!(t.transform("aaaaa"), Ok("aaaab".to_string()));
+    }
 
-        let first_param_type: u32 = *&instruction[0].get_param_type_code();
-        let first_param_payload = "banana".as_bytes();
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+    #[test]
+    fn transform_when_no_match_returns_original() {
+        let t = Rlw::params("z", "b").unwrap();
+        assert_eq!(t.transform("aaaaa"), Ok("aaaaa".to_string()));
+    }
 
-        let second_param_type: u32 = *&instruction[1].get_param_type_code();
-        let second_param_payload = "laranja".as_bytes();
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+    #[test]
+    fn transform_replaces_last_match_when_regex_groups() {
+        // aqui "a+" casa o bloco inteiro como UM match, então trocar "último match" == trocar o único match.
+        let t = Rlw::params("a+", "b").unwrap();
+        assert_eq!(t.transform("aaaaa"), Ok("b".to_string()));
+    }
 
-        let instruction_type: u32 = 0x0b;
-        let param_count: u8 = 0x02;
+    #[test]
+    fn transform_replaces_last_match_only() {
+        let t = Rlw::params(r"\d+", "X").unwrap();
+        assert_eq!(t.transform("a1 b22 c333"), Ok("a1 b22 cX".to_string()));
+    }
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+    #[test]
+    fn transform_handles_utf8_safely() {
+        // se o regex encontra "ã", a substituição precisa manter UTF-8 correto
+        let t = Rlw::params("ã", "A").unwrap();
+        assert_eq!(t.transform("maçã maçã"), Ok("maçã maçA".to_string()));
+    }
 
-        let mut expected_output: Vec<u8> = vec![];
+    #[test]
+    fn from_vec_params_parses_pattern_and_replacement() {
+        let mut t = Rlw::default();
+        let line = vec!["rlw".to_string(), "a".to_string(), "b".to_string()];
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.pattern.as_str(), "a");
+        assert_eq!(t.text_to_replace, "b".to_string());
 
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+        assert_eq!(t.transform("aaaaa"), Ok("aaaab".to_string()));
+    }
 
-        expected_output.push(param_count);
+    #[test]
+    fn from_vec_params_rejects_invalid_regex() {
+        let mut t = Rlw::default();
+        let line = vec!["rlw".to_string(), "(".to_string(), "b".to_string()];
 
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
+        let got = t.from_vec_params(line.clone());
 
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
-
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Failed creating regex".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier() {
+        let mut t = Rlw::default();
+        let line = vec!["nope".to_string(), "a".to_string(), "b".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_line_is_empty() {
+        let mut t = Rlw::default();
+        let line: Vec<String> = vec![];
+        let _ = t.from_vec_params(line);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_line_is_too_short() {
+        // acessa line[2]
+        let mut t = Rlw::default();
+        let line = vec!["rlw".to_string(), "a".to_string()];
+        let _ = t.from_vec_params(line);
+    }
+
+    // ============================
+    // Bytecode-only tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_0x1e() {
+            let t = Rlw::default();
+            assert_eq!(t.get_opcode(), 0x1e);
+        }
+
+        #[test]
+        fn from_params_parses_two_params() {
+            let mut t = Rlw::default();
+
+            let params = vec![
+                AtpParamTypes::String("a+".to_string()),
+                AtpParamTypes::String("b".to_string())
+            ];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.pattern.as_str(), "a+");
+            assert_eq!(t.text_to_replace, "b".to_string());
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Rlw::default();
+
+            let params = vec![AtpParamTypes::String("a+".to_string())];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_types() {
+            let mut t = Rlw::default();
+
+            let params = vec![
+                AtpParamTypes::Usize(7), // deveria ser String (pattern)
+                AtpParamTypes::String("b".to_string())
+            ];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_rejects_invalid_regex_payload() {
+            let mut t = Rlw::default();
+
+            let params = vec![
+                AtpParamTypes::String("(".to_string()),
+                AtpParamTypes::String("b".to_string())
+            ];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                    "sslt",
+                    "(".to_string()
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_expected_header_and_two_params() {
+            let t = Rlw::params("a+", "b").unwrap();
+            let bc = t.to_bytecode();
+
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x1e);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 2);
+
+            // Param 1: String("a+")
+            let _p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            let p1_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            let p1_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
+            i += 4;
+            assert_eq!(p1_type, 0x01);
+            let p1_payload = &bc[i..i + p1_payload_size];
+            i += p1_payload_size;
+            assert_eq!(std::str::from_utf8(p1_payload).unwrap(), "a+");
+
+            // Param 2: String("b")
+            let _p2_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            let p2_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            let p2_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
+            i += 4;
+            assert_eq!(p2_type, 0x01);
+            let p2_payload = &bc[i..i + p2_payload_size];
+            i += p2_payload_size;
+            assert_eq!(std::str::from_utf8(p2_payload).unwrap(), "b");
+        }
     }
 }

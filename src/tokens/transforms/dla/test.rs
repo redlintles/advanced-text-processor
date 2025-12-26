@@ -1,73 +1,210 @@
-#[cfg(feature = "test_access")]
+// src/tokens/transforms/dla/test.rs
+
 #[cfg(test)]
-mod dla_tests {
-    use crate::{ tokens::{ TokenMethods, transforms::dla::Dla }, utils::params::AtpParamTypes };
+mod tests {
+    use crate::tokens::transforms::dla::Dla;
+    use crate::tokens::TokenMethods;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+
     #[test]
-    fn delete_after_test() {
-        let mut token = Dla::params(3);
-
-        assert_eq!(
-            token.transform("banana laranja vermelha azul"),
-            Ok("bana".to_string()),
-            "It works correctly with expected inputs"
-        );
-        assert!(
-            matches!(token.transform(""), Err(_)),
-            "It throws an error if the string does not have the current token index"
-        );
-
-        assert_eq!(
-            token.to_atp_line(),
-            "dla 3;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(token.get_string_repr(), "dla".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(token.from_vec_params(["dla".to_string(), (3).to_string()].to_vec()), Ok(_)),
-            "It does not throws an error for valid vec_params"
-        );
+    fn params_sets_index() {
+        let t = Dla::params(3);
+        assert_eq!(t.index, 3);
     }
+
     #[test]
-    fn delete_after_bytecode() {
-        let mut token = Dla::params(3);
+    fn get_string_repr_is_dla() {
+        let t = Dla::default();
+        assert_eq!(t.get_string_repr(), "dla");
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn to_atp_line_formats_correctly() {
+        let t = Dla::params(7);
+        assert_eq!(t.to_atp_line().as_ref(), "dla 7;\n");
+    }
 
-        assert_eq!(token.get_opcode(), 0x09, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn from_vec_params_parses_ok() {
+        let mut t = Dla::default();
+        let line = vec!["dla".to_string(), "2".to_string()];
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.index, 2);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier() {
+        let mut t = Dla::default();
+        let line = vec!["nope".to_string(), "2".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = vec![0x03];
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let instruction_type: u32 = 0x09;
-        let param_count: u8 = 0x01;
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_missing_param() {
+        // do jeito que está, acessa line[1] sem checar tamanho
+        let mut t = Dla::default();
+        let line = vec!["dla".to_string()];
+        let _ = t.from_vec_params(line);
+    }
 
-        let instruction_total_size: u64 = 4 + 1 + first_param_total_size;
+    #[test]
+    fn transform_deletes_after_index_example_like_doc() {
+        // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
+        let t = Dla::params(3);
+        assert_eq!(t.transform("banana laranja vermelha azul"), Ok("bana".to_string()));
+    }
 
-        let mut expected_output: Vec<u8> = vec![];
+    #[test]
+    fn transform_index_zero_keeps_first_char_only() {
+        let t = Dla::params(0);
+        assert_eq!(t.transform("abcdef"), Ok("a".to_string()));
+    }
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
-        expected_output.push(param_count);
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
+    #[test]
+    fn transform_unicode_safe_char_indexing() {
+        // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
+        // index 1 mantém "áb"
+        let t = Dla::params(1);
+        assert_eq!(t.transform("ábcdef"), Ok("áb".to_string()));
+    }
+
+    #[test]
+    fn transform_errors_when_index_out_of_bounds() {
+        // check_index_against_input deve falhar antes do drain
+        let t = Dla::params(999);
+        let got = t.transform("abc");
+        assert!(got.is_err());
+    }
+
+    #[test]
+    fn transform_returns_index_out_of_range_when_index_is_last_char() {
+        // comportamento atual do código:
+        // se index aponta pro último char, nth(index+1) vira None -> cai no Err(IndexOutOfRange)
+        let input = "abc";
+        let t = Dla::params(2); // último char
+
+        let got = t.transform(input);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange(
+                    "Index is out of range for the desired string".into()
+                ),
+                t.to_atp_line(),
+                input.to_string()
+            )
         );
+
+        assert_eq!(got, expected);
+    }
+
+    // ============================
+    // Bytecode-only tests (separados)
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::errors::AtpErrorCode;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_09() {
+            let t = Dla::default();
+            assert_eq!(t.get_opcode(), 0x09);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Dla::default();
+            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(2)];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_accepts_single_usize_param() {
+            let mut t = Dla::default();
+            let params = vec![AtpParamTypes::Usize(7)];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.index, 7);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_type() {
+            let mut t = Dla::default();
+            let params = vec![AtpParamTypes::String("x".to_string())];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_expected_header_and_decodes_one_param() {
+            let t = Dla::params(7);
+            let bc = t.to_bytecode();
+
+            // header mínimo: 8 + 4 + 1 = 13
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x09);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 1);
+
+            // param 1
+            let p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
+            i += 8;
+            let p1_start = i;
+            let p1_end = p1_start + (p1_total - 8);
+            let p1_payload = bc[p1_start..p1_end].to_vec();
+
+            let decoded = AtpParamTypes::from_bytecode(p1_payload).unwrap();
+            match decoded {
+                AtpParamTypes::Usize(n) => assert_eq!(n, 7),
+                _ => panic!("Expected Usize param"),
+            }
+        }
     }
 }

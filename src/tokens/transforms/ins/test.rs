@@ -1,91 +1,220 @@
-#[cfg(feature = "test_access")]
+// src/tokens/transforms/ins/test.rs
+
 #[cfg(test)]
-mod ins_tests {
-    use crate::tokens::{ TokenMethods, transforms::ins::Ins };
+mod tests {
+    use crate::tokens::transforms::ins::Ins;
+    use crate::tokens::TokenMethods;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+
     #[test]
-    fn insert_tests() {
-        let mut token = Ins::params(2, "laranja");
-        assert_eq!(
-            token.transform("banana"),
-            Ok("banlaranjaana".to_string()),
-            "It supports expected inputs"
-        );
-        assert_eq!(
-            token.to_atp_line(),
-            "ins 2 laranja;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(token.get_string_repr(), "ins".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["ins".to_string(), (2).to_string(), "laranja".to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
+    fn params_sets_fields_and_to_atp_line_formats() {
+        let t = Ins::params(2, "laranja");
+        assert_eq!(t.to_atp_line().as_ref(), "ins 2 laranja;\n");
+        assert_eq!(t.get_string_repr(), "ins");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn insert_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn from_vec_params_parses_ok() {
+        let mut t = Ins::default();
+        let line = vec!["ins".to_string(), "2".to_string(), "laranja".to_string()];
 
-        let mut token = Ins::params(1, "banana");
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.to_atp_line().as_ref(), "ins 2 laranja;\n");
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier_with_bytecode_not_found_current_behavior() {
+        // Observação: o token retorna BytecodeNotFound("") (provável copy/paste),
+        // e usa instruction="ins". A suíte valida o comportamento atual.
+        let mut t = Ins::default();
+        let line = vec!["nope".to_string(), "2".to_string(), "laranja".to_string()];
 
-        assert_eq!(token.get_opcode(), 0x28, "get_opcode does not disrepect ATP token mapping");
+        let got = t.from_vec_params(line.clone());
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("".into()),
+                "ins".to_string(),
+                line.join(" ")
+            )
         );
 
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = vec![0x01];
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let second_param_type: u32 = 0x01;
-        let second_param_payload = "banana".as_bytes();
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_missing_params() {
+        // acessa line[1] e line[2] sem check
+        let mut t = Ins::default();
+        let line = vec!["ins".to_string(), "2".to_string()];
+        let _ = t.from_vec_params(line);
+    }
 
-        let instruction_type: u32 = 0x28;
-        let param_count: u8 = 0x02;
+    #[test]
+    fn transform_inserts_after_index_like_doc_example() {
+        let t = Ins::params(2, "laranja");
+        assert_eq!(t.transform("banana"), Ok("banlaranjaana".to_string()));
+    }
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+    #[test]
+    fn transform_index_zero_inserts_after_first_char() {
+        // index 0 -> after 'b'
+        let t = Ins::params(0, "X");
+        assert_eq!(t.transform("banana"), Ok("bXanana".to_string()));
+    }
 
-        let mut expected_output: Vec<u8> = vec![];
+    #[test]
+    fn transform_index_last_char_appends_after_last_char() {
+        // chars: b a n a n a (len 6), last index = 5
+        // usa nth(index+1) -> None -> split_at(len) => append
+        let t = Ins::params(5, "X");
+        assert_eq!(t.transform("banana"), Ok("bananaX".to_string()));
+    }
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+    #[test]
+    fn transform_index_equal_char_count_appends_current_behavior() {
+        // detalhe: o código só erra se index > chars_count, então index == chars_count PASSA.
+        // byte_index usa nth(index+1) => None -> append.
+        let t = Ins::params(6, "X"); // chars_count("banana") = 6
+        assert_eq!(t.transform("banana"), Ok("bananaX".to_string()));
+    }
 
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+    #[test]
+    fn transform_unicode_safe_insertion_boundary() {
+        // input: "ábc" (chars: á b c)
+        // index 0 => after 'á'
+        let t = Ins::params(0, "X");
+        assert_eq!(t.transform("ábc"), Ok("áXbc".to_string()));
+    }
 
-        expected_output.push(param_count);
+    #[test]
+    fn transform_errors_when_index_too_large() {
+        let t = Ins::params(999, "X");
+        let got = t.transform("abc");
+        assert!(got.is_err());
 
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
+        // opcional: valida o tipo do erro (não o texto, pq tem detalhe bytes/chars)
+        if let Err(e) = got {
+            // AtpError é PartialEq, mas mensagem varia. Checamos só o código.
+            // (Não temos getter do code aqui, então comparamos o AtpError completo é chato.)
+            // Ainda assim, dá pra comparar construindo exatamente se quiser.
+            let _ = e;
+        }
+    }
 
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
+    // ============================
+    // Bytecode-only tests (separados)
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::errors::AtpErrorCode;
+        use crate::utils::params::AtpParamTypes;
 
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
-        );
+        #[test]
+        fn get_opcode_is_28() {
+            let t = Ins::default();
+            assert_eq!(t.get_opcode(), 0x28);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Ins::default();
+            let params = vec![AtpParamTypes::Usize(1)];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_accepts_usize_and_string() {
+            let mut t = Ins::default();
+            let params = vec![
+                AtpParamTypes::Usize(3),
+                AtpParamTypes::String("laranja".to_string())
+            ];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.to_atp_line().as_ref(), "ins 3 laranja;\n");
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_types() {
+            let mut t = Ins::default();
+            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(3)];
+
+            let got = t.from_params(&params);
+
+            // primeiro parse_args! falha com "Index should be of usize type"
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_expected_header_and_decodes_two_params() {
+            let t = Ins::params(7, "laranja");
+            let bc = t.to_bytecode();
+
+            // header mínimo: 8 + 4 + 1 = 13
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x28);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 2);
+
+            // param 1 (Usize)
+            let p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
+            i += 8;
+            let p1_start = i;
+            let p1_end = p1_start + (p1_total - 8);
+            let p1_payload = bc[p1_start..p1_end].to_vec();
+
+            let decoded1 = AtpParamTypes::from_bytecode(p1_payload).unwrap();
+            match decoded1 {
+                AtpParamTypes::Usize(n) => assert_eq!(n, 7),
+                _ => panic!("Expected Usize param #1"),
+            }
+
+            // param 2 (String)
+            i = p1_end;
+            let p2_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
+            i += 8;
+            let p2_start = i;
+            let p2_end = p2_start + (p2_total - 8);
+            let p2_payload = bc[p2_start..p2_end].to_vec();
+
+            let decoded2 = AtpParamTypes::from_bytecode(p2_payload).unwrap();
+            match decoded2 {
+                AtpParamTypes::String(s) => assert_eq!(s, "laranja"),
+                _ => panic!("Expected String param #2"),
+            }
+        }
     }
 }

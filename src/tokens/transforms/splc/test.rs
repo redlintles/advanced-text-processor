@@ -1,78 +1,127 @@
-#[cfg(feature = "test_access")]
+#![cfg(feature = "test_access")]
+
 #[cfg(test)]
-mod splc_tests {
-    use crate::tokens::{ TokenMethods, transforms::splc::Splc };
+mod tests {
+    use crate::tokens::{ transforms::splc::Splc, TokenMethods };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+
     #[test]
-    fn split_characters_tests() {
-        let mut token = Splc::default();
-        assert_eq!(
-            token.transform("banana"),
-            Ok("b a n a n a".to_string()),
-            "It supports expected inputs"
-        );
-        assert_eq!(
-            token.to_atp_line(),
-            "splc;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(
-            token.get_string_repr(),
-            "splc".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(token.from_vec_params(["splc".to_string()].to_vec()), Ok(_)),
-            "It does not throws an error for valid vec_params"
-        );
-        assert_eq!(
-            token.transform("banana"),
-            Ok("b a n a n a".to_string()),
-            "It works correctly after re-parsing"
-        );
+    fn get_string_repr_is_splc() {
+        let t = Splc::default();
+        assert_eq!(t.get_string_repr(), "splc");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn split_characters_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn to_atp_line_is_correct() {
+        let t = Splc::default();
+        assert_eq!(t.to_atp_line().as_ref(), "splc;\n");
+    }
 
-        let mut token = Splc::default();
+    #[test]
+    fn transform_splits_ascii_chars() {
+        let t = Splc::default();
+        assert_eq!(t.transform("banana").unwrap(), "b a n a n a");
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![];
+    #[test]
+    fn transform_keeps_existing_spaces_as_chars() {
+        let t = Splc::default();
+        assert_eq!(t.transform("a b").unwrap(), "a   b");
+        // explicação: chars = ['a',' ','b'] => "a" + " " + " " + " " + "b" => "a␠␠␠b"
+    }
 
-        assert_eq!(token.get_opcode(), 0x23, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn transform_unicode_chars_ok() {
+        let t = Splc::default();
+        assert_eq!(t.transform("áβ🍌").unwrap(), "á β 🍌");
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+    #[test]
+    fn transform_empty_is_empty() {
+        let t = Splc::default();
+        assert_eq!(t.transform("").unwrap(), "");
+    }
+
+    #[test]
+    fn from_vec_params_accepts_splc() {
+        let mut t = Splc::default();
+        let line = vec!["splc".to_string()];
+        assert_eq!(t.from_vec_params(line), Ok(()));
+    }
+
+    #[test]
+    fn from_vec_params_rejects_wrong_token() {
+        let mut t = Splc::default();
+        let line = vec!["sp1c".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        assert_eq!(
-            token.to_bytecode(),
-            vec![
-                // Instruction total size
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x0d,
-                // Instruction Type
-                0x00,
-                0x00,
-                0x00,
-                0x23,
-                // Param Count
-                0x00
-            ],
-            "Conversion to bytecode instruction works perfectly!"
-        );
+        assert_eq!(got, expected);
+    }
+
+    // ============================
+    // Bytecode tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_0x23() {
+            let t = Splc::default();
+            assert_eq!(t.get_opcode(), 0x23);
+        }
+
+        #[test]
+        fn from_params_accepts_empty() {
+            let mut t = Splc::default();
+            let params: Vec<AtpParamTypes> = vec![];
+            assert_eq!(t.from_params(&params), Ok(()));
+        }
+
+        #[test]
+        fn from_params_rejects_any_params() {
+            let mut t = Splc::default();
+            let params = vec![AtpParamTypes::Usize(1)];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_contains_opcode_and_zero_params() {
+            let t = Splc::default();
+            let bc = t.to_bytecode();
+
+            // Formato esperado: [u64 total_size_be][u32 opcode_be][u8 param_count]...
+            assert!(bc.len() >= 13);
+
+            let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;
+            assert_eq!(total_size, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[8..12].try_into().unwrap());
+            assert_eq!(opcode, 0x23);
+
+            let param_count = bc[12] as usize;
+            assert_eq!(param_count, 0);
+        }
     }
 }

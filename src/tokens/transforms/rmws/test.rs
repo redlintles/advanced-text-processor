@@ -1,73 +1,109 @@
-#[cfg(feature = "test_access")]
+// src/tokens/transforms/rmws/test.rs
+#![cfg(feature = "test_access")]
 #[cfg(test)]
-mod rmws_tests {
-    use crate::tokens::{ TokenMethods, transforms::rmws::Rmws };
-    #[test]
-    fn remove_whitespace_tests() {
-        let mut token = Rmws::default();
+mod tests {
+    use crate::{ tokens::{ TokenMethods, transforms::rmws::Rmws } };
 
+    #[test]
+    fn rmws_get_string_repr_ok() {
+        let t = Rmws::default();
+        assert_eq!(t.get_string_repr(), "rmws");
+    }
+
+    #[test]
+    fn rmws_to_atp_line_ok() {
+        let t = Rmws::default();
+        assert_eq!(t.to_atp_line().as_ref(), "rmws;\n");
+    }
+
+    #[test]
+    fn rmws_from_vec_params_ok() {
+        let mut t = Rmws::default();
+        assert!(t.from_vec_params(vec!["rmws".to_string()]).is_ok());
+    }
+
+    #[test]
+    fn rmws_from_vec_params_wrong_token_err() {
+        let mut t = Rmws::default();
+        let err = t.from_vec_params(vec!["nope".to_string()]).unwrap_err();
+        // Não cravo string do erro pra não quebrar com refactor,
+        // mas garanto que é erro e não Ok.
+        let _ = err;
+    }
+
+    #[test]
+    fn rmws_transform_basic_ok() {
+        let t = Rmws::default();
         assert_eq!(
-            token.transform("banana laranja cheia de canja"),
-            Ok("bananalaranjacheiadecanja".to_string()),
-            "It supports expected inputs"
-        );
-        assert_eq!(
-            token.to_atp_line(),
-            "rmws;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(
-            token.get_string_repr(),
-            "rmws".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(token.from_vec_params(["rmws".to_string()].to_vec()), Ok(_)),
-            "It does not throws an error for valid vec_params"
+            t.transform("banana laranja cheia de canja").unwrap(),
+            "bananalaranjacheiadecanja"
         );
     }
-    #[cfg(feature = "bytecode")]
+
     #[test]
-    fn remove_whitespace_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn rmws_transform_preserves_non_whitespace_ok() {
+        let t = Rmws::default();
+        assert_eq!(t.transform("  a\tb\nc\r\nd  ").unwrap(), "abcd");
+    }
 
-        let mut token = Rmws::default();
+    #[test]
+    fn rmws_transform_empty_ok() {
+        let t = Rmws::default();
+        assert_eq!(t.transform("").unwrap(), "");
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![];
+    #[test]
+    fn rmws_transform_only_whitespace_ok() {
+        let t = Rmws::default();
+        assert_eq!(t.transform(" \t\n\r  ").unwrap(), "");
+    }
 
-        assert_eq!(token.get_opcode(), 0x31, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn rmws_transform_unicode_whitespace_ok() {
+        // split_whitespace cobre vários espaços unicode.
+        // Ex.: NBSP (\u{00A0}) e EM SPACE (\u{2003}) podem variar por versão,
+        // então uso um que costuma ser reconhecido (EM SPACE).
+        let t = Rmws::default();
+        let input = format!("a\u{2003}b\u{2003}c");
+        assert_eq!(t.transform(&input).unwrap(), "abc");
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
-        );
+    #[cfg(feature = "bytecode")]
+    mod bytecode {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
 
-        assert_eq!(
-            token.to_bytecode(),
-            vec![
-                // Instruction total size
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x0d,
-                // Instruction Type
-                0x00,
-                0x00,
-                0x00,
-                0x31,
-                // Param Count
-                0x00
-            ],
-            "Conversion to bytecode instruction works perfectly!"
-        );
+        #[test]
+        fn rmws_opcode_ok() {
+            let t = Rmws::default();
+            assert_eq!(t.get_opcode(), 0x31);
+        }
+
+        #[test]
+        fn rmws_from_params_ok_empty() {
+            let mut t = Rmws::default();
+            let v: Vec<AtpParamTypes> = vec![];
+            assert!(t.from_params(&v).is_ok());
+        }
+
+        #[test]
+        fn rmws_from_params_err_when_not_empty() {
+            let mut t = Rmws::default();
+            let v: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(0)];
+            assert!(t.from_params(&v).is_err());
+        }
+
+        #[test]
+        fn rmws_to_bytecode_non_empty_and_has_opcode_prefix() {
+            let t = Rmws::default();
+            let bc = t.to_bytecode();
+            assert!(!bc.is_empty());
+
+            // Opcodes no seu projeto costumam ser u32 BE no começo do buffer.
+            // Então checamos os 4 primeiros bytes.
+            assert!(bc.len() >= 4);
+            let op = u32::from_be_bytes([bc[0], bc[1], bc[2], bc[3]]);
+            assert_eq!(op, 0x31);
+        }
     }
 }

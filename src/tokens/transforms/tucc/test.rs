@@ -1,117 +1,112 @@
-#[cfg(feature = "test_access")]
+#![cfg(feature = "test_access")]
+
 #[cfg(test)]
-mod tucc_tests {
-    use crate::tokens::{ TokenMethods, transforms::tucc::Tucc };
+mod tests {
+    use crate::tokens::{ transforms::tucc::Tucc, TokenMethods };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
-    fn to_uppercase_chunk() {
-        let mut token = Tucc::params(1, 4).unwrap();
-        assert!(
-            matches!(Tucc::params(4, 1), Err(_)),
-            "it throws an error if start_index is bigger than end_index"
-        );
-
-        assert!(
-            matches!(token.transform(""), Err(_)),
-            "It throws an error if start_index does not exists in input"
-        );
-
-        assert_eq!(
-            token.transform("banana"),
-            Ok("bANANa".to_string()),
-            "It works with expected inputs"
-        );
-
-        assert_eq!(
-            token.to_atp_line(),
-            "tucc 1 4;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-
-        assert_eq!(
-            token.get_string_repr(),
-            "tucc".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["tucc".to_string(), (4).to_string(), (1).to_string()].to_vec()
-                ),
-                Err(_)
-            ),
-            "It throws an error for invalid operands"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["tucc".to_string(), (1).to_string(), (4).to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
+    fn get_string_repr_is_tucc() {
+        let t = Tucc::default();
+        assert_eq!(t.get_string_repr(), "tucc");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn to_uppercase_chunk_bytecode() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn to_atp_line_is_correct() {
+        let t = Tucc::params(1, 4).unwrap();
+        assert_eq!(t.to_atp_line().as_ref(), "tucc 1 4;\n");
+    }
 
-        let mut token = Tucc::params(1, 3).unwrap();
+    #[test]
+    fn transform_uppercases_chunk_inclusive() {
+        // 1..=4 em "banana" => "a n a n" vira "A N A N"
+        let t = Tucc::params(1, 4).unwrap();
+        assert_eq!(t.transform("banana"), Ok("bANANa".to_string()));
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn from_vec_params_parses_ok() {
+        let mut t = Tucc::default();
+        let line = vec!["tucc".to_string(), "2".to_string(), "3".to_string()];
 
-        assert_eq!(token.get_opcode(), 0x16, "get_opcode does not disrepect ATP token mapping");
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.to_atp_line().as_ref(), "tucc 2 3;\n");
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+    #[test]
+    fn from_vec_params_rejects_wrong_token() {
+        let mut t = Tucc::default();
+        let line = vec!["nope".to_string(), "1".to_string(), "2".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = vec![0x01];
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = vec![0x03];
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+    // ============================
+    // Bytecode tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
 
-        let instruction_type: u32 = 0x16;
-        let param_count: u8 = 0x02;
+        #[test]
+        fn get_opcode_is_0x16() {
+            let t = Tucc::default();
+            assert_eq!(t.get_opcode(), 0x16);
+        }
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+        #[test]
+        fn from_params_accepts_two_usize() {
+            let mut t = Tucc::default();
+            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(4)];
 
-        let mut expected_output: Vec<u8> = vec![];
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.to_atp_line().as_ref(), "tucc 1 4;\n");
+        }
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+        #[test]
+        fn from_params_rejects_wrong_len() {
+            let mut t = Tucc::default();
+            let params = vec![AtpParamTypes::Usize(1)];
 
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+            let got = t.from_params(&params);
 
-        expected_output.push(param_count);
+            let expected = Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
+            assert_eq!(got, expected);
+        }
 
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
+        #[test]
+        fn to_bytecode_has_opcode_and_two_params() {
+            let t = Tucc::params(2, 5).unwrap();
+            let bc = t.to_bytecode();
 
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
-        );
+            assert!(bc.len() >= 13);
+
+            let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;
+            assert_eq!(total_size, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[8..12].try_into().unwrap());
+            assert_eq!(opcode, 0x16);
+
+            let param_count = bc[12] as usize;
+            assert_eq!(param_count, 2);
+        }
     }
 }

@@ -1,78 +1,211 @@
-#[cfg(feature = "test_access")]
+#![cfg(feature = "test_access")]
+
 #[cfg(test)]
-mod rtr_tests {
+mod tests {
     use crate::tokens::{ TokenMethods, transforms::rtr::Rtr };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+
     #[test]
-    fn rotate_right_tests() {
-        let mut token = Rtr::params(2);
-
-        assert_eq!(
-            token.transform("banana"),
-            Ok("nabana".to_string()),
-            "It supports expected inputs"
-        );
-        assert_eq!(
-            token.to_atp_line(),
-            "rtr 2;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(token.get_string_repr(), "rtr".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(token.from_vec_params(["rtr".to_string(), (2).to_string()].to_vec()), Ok(_)),
-            "It does not throws an error for valid vec_params"
-        );
-
-        assert_eq!(
-            token.transform("banana"),
-            Ok("nabana".to_string()),
-            "from_vec_params parses the argument list correctly"
-        );
+    fn get_string_repr_is_rtr() {
+        let t = Rtr::default();
+        assert_eq!(t.get_string_repr(), "rtr");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn rotate_right_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn to_atp_line_contains_times() {
+        let t = Rtr::params(2);
+        assert_eq!(t.to_atp_line().as_ref(), "rtr 2;\n");
+    }
 
-        let mut token = Rtr::params(3);
+    #[test]
+    fn transform_rotates_right_basic() {
+        let t = Rtr::params(2);
+        assert_eq!(t.transform("banana").unwrap(), "nabana");
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn transform_times_zero_returns_same() {
+        let t = Rtr::params(0);
+        assert_eq!(t.transform("banana").unwrap(), "banana");
+    }
 
-        assert_eq!(token.get_opcode(), 0x0f, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn transform_times_equal_len_returns_same() {
+        let t = Rtr::params(6);
+        assert_eq!(t.transform("banana").unwrap(), "banana");
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+    #[test]
+    fn transform_times_greater_than_len_uses_modulo() {
+        let t = Rtr::params(7); // 7 % 6 = 1
+        assert_eq!(t.transform("banana").unwrap(), "abanan");
+    }
+
+    #[test]
+    fn transform_single_char_always_same() {
+        let t = Rtr::params(999);
+        assert_eq!(t.transform("x").unwrap(), "x");
+    }
+
+    #[test]
+    fn transform_unicode_safe_rotation() {
+        // "áβç" rotate right 1 => "çáβ"
+        let t = Rtr::params(1);
+        assert_eq!(t.transform("áβç").unwrap(), "çáβ");
+    }
+
+    #[test]
+    fn transform_empty_input_returns_error() {
+        let t = Rtr::params(1);
+
+        let got = t.transform("");
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::InvalidParameters("Input is empty".into()),
+                t.to_atp_line(),
+                "\" \""
+            )
         );
 
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = vec![0x03];
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let instruction_type: u32 = 0x0f;
-        let param_count: u8 = 0x01;
+    #[test]
+    fn from_vec_params_parses_times() {
+        let mut t = Rtr::default();
 
-        let instruction_total_size: u64 = 4 + 1 + first_param_total_size;
+        let line = vec!["rtr".to_string(), "4".to_string()];
 
-        let mut expected_output: Vec<u8> = vec![];
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.times, 4);
+    }
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
-        expected_output.push(param_count);
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
+    #[test]
+    fn from_vec_params_rejects_wrong_token() {
+        let mut t = Rtr::default();
+
+        let line = vec!["nope".to_string(), "3".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_non_numeric_times() {
+        let mut t = Rtr::default();
+
+        let line = vec!["rtr".to_string(), "NaN".to_string()];
+
+        assert!(t.from_vec_params(line).is_err());
+    }
+
+    // Documenta comportamento atual: indexação direta
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_missing_times() {
+        let mut t = Rtr::default();
+        let line = vec!["rtr".to_string()];
+        let _ = t.from_vec_params(line);
+    }
+
+    // ============================
+    // Bytecode tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_0x0f() {
+            let t = Rtr::default();
+            assert_eq!(t.get_opcode(), 0x0f);
+        }
+
+        #[test]
+        fn from_params_parses_single_usize() {
+            let mut t = Rtr::default();
+
+            let params = vec![AtpParamTypes::Usize(5)];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.times, 5);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Rtr::default();
+
+            let params = vec![];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_type() {
+            let mut t = Rtr::default();
+
+            let params = vec![AtpParamTypes::String("x".to_string())];
+
+            assert!(t.from_params(&params).is_err());
+        }
+
+        #[test]
+        fn to_bytecode_contains_opcode_and_one_param() {
+            let t = Rtr::params(3);
+            let bc = t.to_bytecode();
+
+            assert!(!bc.is_empty());
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x0f);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 1);
+
+            // Param: Usize
+            let _p_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+
+            let p_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(p_type, 0x02);
+
+            let p_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
+            i += 4;
+            assert_eq!(p_size, 8);
+
+            let payload = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            assert_eq!(payload, 3);
+        }
     }
 }

@@ -1,95 +1,199 @@
+// src/tokens/transforms/padr/test.rs
+
 #[cfg(test)]
-#[cfg(feature = "test_access")]
-mod padr_tests {
-    use crate::tokens::{ TokenMethods, transforms::padr::Padr };
-    #[test]
-    fn pad_right_tests() {
-        let mut token = Padr::params("xy", 7);
-        assert_eq!(
-            token.transform("banana"),
-            Ok("bananax".to_string()),
-            "It supports expected inputs"
-        );
+mod tests {
+    use crate::tokens::transforms::padr::Padr;
+    use crate::tokens::TokenMethods;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-        assert_eq!(
-            token.to_atp_line(),
-            "padr xy 7;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-        assert_eq!(
-            token.get_string_repr(),
-            "padr".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["padr".to_string(), "xy".to_string(), (7).to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
+    #[test]
+    fn get_string_repr_is_padr() {
+        let t = Padr::default();
+        assert_eq!(t.get_string_repr(), "padr");
     }
-    #[cfg(feature = "bytecode")]
+
     #[test]
-    fn pad_right_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn to_atp_line_matches_params() {
+        let t = Padr::params("xy", 7);
+        assert_eq!(t.to_atp_line().as_ref(), "padr xy 7;\n");
+    }
 
-        let mut token = Padr::params("banana", 1);
+    #[test]
+    fn transform_returns_input_unchanged_if_already_at_or_above_max_len() {
+        let t = Padr::params("xy", 3);
+        assert_eq!(t.transform("banana"), Ok("banana".to_string())); // len 6 >= 3
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn transform_pads_right_until_max_len_doc_example() {
+        // "banana" tem 6 chars, max_len=7 => precisa de 1 char de padding.
+        // extend_string("xy", 1) => "x" (pelo exemplo da doc)
+        let t = Padr::params("xy", 7);
+        assert_eq!(t.transform("banana"), Ok("bananax".to_string()));
+    }
 
-        assert_eq!(token.get_opcode(), 0x2f, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn transform_pads_right_multiple_chars() {
+        // 6 -> 10 precisa de 4 chars
+        // extend_string("xy", 4) => "xyxy" (comportamento esperado de repetição)
+        let t = Padr::params("xy", 10);
+        assert_eq!(t.transform("banana"), Ok("bananaxyxy".to_string()));
+    }
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+    #[test]
+    fn from_vec_params_accepts_padr_identifier_but_does_not_parse_fields_current_behavior() {
+        // OBS: implementação atual só checa line[0] == "padr" e retorna Ok(())
+        // sem atribuir text/max_len.
+        let mut t = Padr::params("zz", 99);
+
+        let line = vec!["padr".to_string(), "xy".to_string(), "7".to_string()];
+        assert_eq!(t.from_vec_params(line), Ok(()));
+
+        // Continua igual (não parseia nada)
+        assert_eq!(t.text, "zz".to_string());
+        assert_eq!(t.max_len, 99);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier() {
+        let mut t = Padr::default();
+        let line = vec!["nope".to_string(), "xy".to_string(), "7".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        let first_param_type: u32 = 0x01;
-        let first_param_payload = "banana".as_bytes();
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = vec![0x01];
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_line_is_empty() {
+        // acesso direto a line[0]
+        let mut t = Padr::default();
+        let line: Vec<String> = vec![];
+        let _ = t.from_vec_params(line);
+    }
 
-        let instruction_type: u32 = 0x2f;
-        let param_count: u8 = 0x02;
+    // ============================
+    // Bytecode-only tests (separados)
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::errors::AtpErrorCode;
+        use crate::utils::params::AtpParamTypes;
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+        #[test]
+        fn get_opcode_is_30() {
+            let t = Padr::default();
+            assert_eq!(t.get_opcode(), 0x30);
+        }
 
-        let mut expected_output: Vec<u8> = vec![];
+        #[test]
+        fn from_params_accepts_text_then_max_len() {
+            let mut t = Padr::default();
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+            let params = vec![AtpParamTypes::String("xy".to_string()), AtpParamTypes::Usize(7)];
 
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.text, "xy".to_string());
+            assert_eq!(t.max_len, 7);
+        }
 
-        expected_output.push(param_count);
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Padr::default();
 
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
+            let params = vec![AtpParamTypes::String("xy".to_string())];
 
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
+            let got = t.from_params(&params);
 
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
-        );
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_param_types() {
+            let mut t = Padr::default();
+
+            // invertido propositalmente
+            let params = vec![AtpParamTypes::Usize(7), AtpParamTypes::String("xy".to_string())];
+
+            let got = t.from_params(&params);
+
+            // parse_args! retorna InvalidParameters com a msg do callsite
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters(
+                        "Text_to_insert should be of String type".into()
+                    ),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_expected_header_and_two_params_in_correct_order() {
+            let t = Padr::params("xy", 7);
+            let bc = t.to_bytecode();
+
+            // header mínimo: 8 + 4 + 1 = 13
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x30);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 2);
+
+            // Param 1: String("xy")
+            let _p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            let p1_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            let p1_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
+            i += 4;
+            assert_eq!(p1_type, 0x01);
+            let p1_payload = &bc[i..i + p1_payload_size];
+            i += p1_payload_size;
+            assert_eq!(std::str::from_utf8(p1_payload).unwrap(), "xy");
+
+            // Param 2: Usize(7)
+            let _p2_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            let p2_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            let p2_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
+            i += 4;
+            assert_eq!(p2_type, 0x02);
+            let p2_payload = &bc[i..i + p2_payload_size];
+            i += p2_payload_size;
+            assert_eq!(usize::from_be_bytes(p2_payload.try_into().unwrap()), 7);
+        }
     }
 }

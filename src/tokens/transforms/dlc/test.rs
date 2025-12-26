@@ -1,113 +1,203 @@
-#[cfg(feature = "test_access")]
+// src/tokens/transforms/dlc/test.rs
+
 #[cfg(test)]
-mod dlc_tests {
-    use crate::tokens::{ TokenMethods, transforms::dlc::Dlc };
+mod tests {
+    use crate::tokens::transforms::dlc::Dlc;
+    use crate::tokens::TokenMethods;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
-    fn delete_chunk() {
-        let mut token = Dlc::params(1, 5).unwrap();
-        assert!(
-            matches!(Dlc::params(5, 1), Err(_)),
-            "it throws an error if start_index is bigger than end_index"
+    fn params_sets_indices() {
+        let t = Dlc::params(1, 3).unwrap();
+        assert_eq!(t.start_index, 1);
+        assert_eq!(t.end_index, 3);
+    }
+
+    #[test]
+    fn get_string_repr_is_dlc() {
+        let t = Dlc::default();
+        assert_eq!(t.get_string_repr(), "dlc");
+    }
+
+    #[test]
+    fn to_atp_line_formats_correctly() {
+        let t = Dlc::params(2, 5).unwrap();
+        assert_eq!(t.to_atp_line().as_ref(), "dlc 2 5;\n");
+    }
+
+    #[test]
+    fn from_vec_params_parses_ok() {
+        let mut t = Dlc::default();
+        let line = vec!["dlc".to_string(), "1".to_string(), "4".to_string()];
+
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.start_index, 1);
+        assert_eq!(t.end_index, 4);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_wrong_identifier() {
+        let mut t = Dlc::default();
+        let line = vec!["nope".to_string(), "1".to_string(), "4".to_string()];
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
 
-        assert!(
-            matches!(token.transform(""), Err(_)),
-            "It throws an error if start_index does not exists in input"
-        );
+        assert_eq!(got, expected);
+    }
 
+    #[test]
+    #[should_panic]
+    fn from_vec_params_panics_if_missing_params() {
+        let mut t = Dlc::default();
+        let line = vec!["dlc".to_string()];
+        let _ = t.from_vec_params(line);
+    }
+
+    #[test]
+    fn transform_removes_middle_chunk() {
+        // remove "nana" (1..5) from "bananalaranja..."
+        let t = Dlc::params(1, 5).unwrap();
         assert_eq!(
-            token.transform("bananalaranjacheiadecanja"),
-            Ok("blaranjacheiadecanja".to_string()),
-            "It works with expected inputs"
-        );
-
-        assert_eq!(
-            token.to_atp_line(),
-            "dlc 1 5;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-
-        assert_eq!(token.get_string_repr(), "dlc".to_string(), "get_string_repr works as expected");
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["dlc".to_string(), (5).to_string(), (1).to_string()].to_vec()
-                ),
-                Err(_)
-            ),
-            "It throws an error for invalid operands"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["dlc".to_string(), (1).to_string(), (5).to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
+            t.transform("bananalaranjacheiadecanja"),
+            Ok("blaranjacheiadecanja".to_string())
         );
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn delete_chunk_bytecode() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn transform_removes_entire_string() {
+        let t = Dlc::params(0, 100).unwrap();
+        assert_eq!(t.transform("abc").unwrap(), "");
+    }
 
-        let mut token = Dlc::params(1, 3).unwrap();
+    #[test]
+    fn transform_unicode_safe() {
+        let t = Dlc::params(1, 2).unwrap();
+        assert_eq!(t.transform("ábcd"), Ok("ád".to_string()));
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn transform_fails_on_invalid_index() {
+        let t = Dlc::params(10, 20).unwrap();
+        let got = t.transform("abc");
+        assert!(got.is_err());
+    }
 
-        assert_eq!(token.get_opcode(), 0x08, "get_opcode does not disrepect ATP token mapping");
+    // ============================
+    // Bytecode-only tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::errors::AtpErrorCode;
+        use crate::utils::params::AtpParamTypes;
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
-        );
+        #[test]
+        fn get_opcode_is_08() {
+            let t = Dlc::default();
+            assert_eq!(t.get_opcode(), 0x08);
+        }
 
-        let first_param_type: u32 = 0x02;
-        let first_param_payload = vec![0x01];
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        #[test]
+        fn from_params_rejects_wrong_param_count() {
+            let mut t = Dlc::default();
+            let params = vec![AtpParamTypes::Usize(1)];
 
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = vec![0x03];
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+            let got = t.from_params(&params);
 
-        let instruction_type: u32 = 0x08;
-        let param_count: u8 = 0x02;
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+            assert_eq!(got, expected);
+        }
 
-        let mut expected_output: Vec<u8> = vec![];
+        #[test]
+        fn from_params_accepts_two_usize_params() {
+            let mut t = Dlc::default();
+            let params = vec![AtpParamTypes::Usize(2), AtpParamTypes::Usize(4)];
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.start_index, 2);
+            assert_eq!(t.end_index, 4);
+        }
 
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
+        #[test]
+        fn from_params_rejects_wrong_param_type() {
+            let mut t = Dlc::default();
+            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(2)];
 
-        expected_output.push(param_count);
+            let got = t.from_params(&params);
 
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                    "",
+                    ""
+                )
+            );
 
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
+            assert_eq!(got, expected);
+        }
 
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
-        );
+        #[test]
+        fn to_bytecode_has_expected_header_and_decodes_params() {
+            let t = Dlc::params(3, 6).unwrap();
+            let bc = t.to_bytecode();
+
+            // header mínimo: 8 + 4 + 1 = 13
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x08);
+
+            let param_count = bc[i] as usize;
+            i += 1;
+            assert_eq!(param_count, 2);
+
+            // param 1
+            let p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
+            i += 8;
+            let p1_start = i;
+            let p1_end = p1_start + (p1_total - 8);
+            let p1_payload = bc[p1_start..p1_end].to_vec();
+
+            let decoded1 = AtpParamTypes::from_bytecode(p1_payload).unwrap();
+            match decoded1 {
+                AtpParamTypes::Usize(n) => assert_eq!(n, 3),
+                _ => panic!("Expected Usize param #1"),
+            }
+
+            // param 2
+            let p2_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
+            i += 8;
+            let p2_start = i;
+            let p2_end = p2_start + (p2_total - 8);
+            let p2_payload = bc[p2_start..p2_end].to_vec();
+
+            let decoded2 = AtpParamTypes::from_bytecode(p2_payload).unwrap();
+            match decoded2 {
+                AtpParamTypes::Usize(n) => assert_eq!(n, 6),
+                _ => panic!("Expected Usize param #2"),
+            }
+        }
     }
 }

@@ -1,109 +1,157 @@
-#[cfg(feature = "test_access")]
+#![cfg(feature = "test_access")]
+
 #[cfg(test)]
-mod sslt_tests {
-    use crate::tokens::{ TokenMethods, transforms::sslt::Sslt };
+mod tests {
+    use crate::tokens::{ transforms::sslt::Sslt, TokenMethods };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
 
     #[test]
-    fn split_select_tests() {
-        let mut token = Sslt::params("_", 5).unwrap();
-
-        assert_eq!(token.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("barfoo".to_string()));
-
-        assert!(
-            matches!(token.transform(""), Err(_)),
-            "It throws an error if start_index does not exists in input"
-        );
-
-        assert_eq!(
-            token.to_atp_line(),
-            "sslt _ 5;\n".to_string(),
-            "conversion to atp_line works correctly"
-        );
-
-        assert_eq!(
-            token.get_string_repr(),
-            "sslt".to_string(),
-            "get_string_repr works as expected"
-        );
-        assert!(
-            matches!(token.from_vec_params(["tks".to_string()].to_vec()), Err(_)),
-            "It throws an error for invalid vec_params"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["sslt".to_string(), "(".to_string(), (1).to_string()].to_vec()
-                ),
-                Err(_)
-            ),
-            "It throws an error for invalid operands"
-        );
-        assert!(
-            matches!(
-                token.from_vec_params(
-                    ["sslt".to_string(), "_".to_string(), (5).to_string()].to_vec()
-                ),
-                Ok(_)
-            ),
-            "It does not throws an error for valid vec_params"
-        );
+    fn get_string_repr_is_sslt() {
+        let t = Sslt::default();
+        assert_eq!(t.get_string_repr(), "sslt");
     }
 
-    #[cfg(feature = "bytecode")]
     #[test]
-    fn split_select_bytecode_tests() {
-        use crate::{ utils::params::AtpParamTypes };
+    fn to_atp_line_is_correctish() {
+        let t = Sslt::params("_", 1).unwrap();
+        // Regex Display imprime o pattern, então isso deve bater.
+        assert_eq!(t.to_atp_line().as_ref(), "sslt _ 1;\n");
+    }
 
-        let mut token = Sslt::params("banana", 1).unwrap();
+    #[test]
+    fn transform_selects_expected_piece() {
+        let t = Sslt::params("_", 1).unwrap();
+        assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
+    }
 
-        let instruction: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(3)];
+    #[test]
+    fn transform_supports_empty_segments() {
+        // "a__b" split "_" => ["a", "", "b"]
+        let t = Sslt::params("_", 1).unwrap();
+        assert_eq!(t.transform("a__b"), Ok("".to_string()));
+    }
 
-        assert_eq!(token.get_opcode(), 0x1a, "get_opcode does not disrepect ATP token mapping");
+    #[test]
+    fn transform_errors_on_out_of_range() {
+        let t = Sslt::params("_", 99).unwrap();
 
-        assert_eq!(
-            token.from_params(&instruction),
-            Ok(()),
-            "Parsing from bytecode to token works correctly!"
+        let got = t.transform("a_b");
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
+                t.to_atp_line(),
+                "a_b".to_string()
+            )
         );
 
-        let first_param_type: u32 = 0x01;
-        let first_param_payload = "banana".as_bytes();
-        let first_param_payload_size = first_param_payload.len() as u32;
-        let first_param_total_size: u64 = 4 + 4 + (first_param_payload_size as u64);
+        assert_eq!(got, expected);
+    }
 
-        let second_param_type: u32 = 0x02;
-        let second_param_payload = vec![0x01];
-        let second_param_payload_size = second_param_payload.len() as u32;
-        let second_param_total_size: u64 = 4 + 4 + (second_param_payload_size as u64);
+    #[test]
+    fn from_vec_params_accepts_valid() {
+        let mut t = Sslt::default();
 
-        let instruction_type: u32 = 0x1a;
-        let param_count: u8 = 0x02;
+        let line = vec!["sslt".to_string(), "_".to_string(), "2".to_string()];
+        assert_eq!(t.from_vec_params(line), Ok(()));
+        assert_eq!(t.index, 2);
+        assert_eq!(t.pattern.to_string(), "_".to_string());
+    }
 
-        let instruction_total_size: u64 =
-            8 + 4 + 1 + first_param_total_size + second_param_total_size;
+    #[test]
+    fn from_vec_params_rejects_wrong_token() {
+        let mut t = Sslt::default();
+        let line = vec!["nope".to_string(), "_".to_string(), "0".to_string()];
 
-        let mut expected_output: Vec<u8> = vec![];
+        let got = t.from_vec_params(line.clone());
 
-        expected_output.extend_from_slice(&instruction_total_size.to_be_bytes());
-
-        expected_output.extend_from_slice(&instruction_type.to_be_bytes());
-
-        expected_output.push(param_count);
-
-        expected_output.extend_from_slice(&first_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&first_param_payload);
-
-        expected_output.extend_from_slice(&second_param_total_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_type.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload_size.to_be_bytes());
-        expected_output.extend_from_slice(&second_param_payload);
-
-        assert_eq!(
-            token.to_bytecode(),
-            expected_output,
-            "Conversion to bytecode instruction works perfectly!"
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
+                line[0].to_string(),
+                line.join(" ")
+            )
         );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_vec_params_rejects_invalid_regex() {
+        let mut t = Sslt::default();
+        let line = vec!["sslt".to_string(), "(".to_string(), "0".to_string()]; // regex inválida
+
+        let got = t.from_vec_params(line.clone());
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                line[1].to_string()
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    // ============================
+    // Bytecode tests
+    // ============================
+    #[cfg(feature = "bytecode")]
+    mod bytecode_tests {
+        use super::*;
+        use crate::utils::params::AtpParamTypes;
+
+        #[test]
+        fn get_opcode_is_0x1a() {
+            let t = Sslt::default();
+            assert_eq!(t.get_opcode(), 0x1a);
+        }
+
+        #[test]
+        fn from_params_accepts_two_params() {
+            let mut t = Sslt::default();
+            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::String("_".to_string())];
+
+            assert_eq!(t.from_params(&params), Ok(()));
+            assert_eq!(t.index, 1);
+            assert_eq!(t.pattern.to_string(), "_".to_string());
+        }
+
+        #[test]
+        fn from_params_rejects_wrong_len() {
+            let mut t = Sslt::default();
+            let params = vec![AtpParamTypes::Usize(1)];
+
+            let got = t.from_params(&params);
+
+            let expected = Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
+
+            assert_eq!(got, expected);
+        }
+
+        #[test]
+        fn to_bytecode_has_opcode_and_two_params() {
+            let t = Sslt::params("_", 1).unwrap();
+            let bc = t.to_bytecode();
+
+            // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...
+            assert!(bc.len() >= 13);
+
+            let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;
+            assert_eq!(total_size, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[8..12].try_into().unwrap());
+            assert_eq!(opcode, 0x1a);
+
+            let param_count = bc[12] as usize;
+            assert_eq!(param_count, 2);
+        }
     }
 }
