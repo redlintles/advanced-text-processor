@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use crate::utils::errors::AtpError;
+use std::borrow::Cow;
 
 pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
     let mut parsed_chunk = String::from(chunk);
@@ -11,15 +11,13 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, AtpError> {
         Ok(v) => Ok(v),
         Err(_) => {
             let str_chunk = chunk.to_string();
-            Err(
-                AtpError::new(
-                    super::errors::AtpErrorCode::TextParsingError(
-                        "String to usize Parsing failed".into()
-                    ),
-                    Cow::Owned(str_chunk),
-                    chunk.to_string()
-                )
-            )
+            Err(AtpError::new(
+                super::errors::AtpErrorCode::TextParsingError(
+                    "String to usize Parsing failed".into(),
+                ),
+                Cow::Owned(str_chunk),
+                chunk.to_string(),
+            ))
         }
     }
 }
@@ -58,17 +56,15 @@ pub fn extend_string(input: &str, max_len: usize) -> String {
 }
 
 pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, AtpError> {
-    Ok(
-        input
-            .char_indices()
-            .nth(index)
-            .map(|(i, _)| i)
-            .ok_or_else(||
-                AtpError::new(
-                    super::errors::AtpErrorCode::IndexOutOfRange("".into()),
-                    Cow::Borrowed("Get safe utf-8 char index"),
-                    input.to_string()
-                )
-            )?
-    )
+    Ok(input
+        .char_indices()
+        .nth(index)
+        .map(|(i, _)| i)
+        .ok_or_else(|| {
+            AtpError::new(
+                super::errors::AtpErrorCode::IndexOutOfRange("".into()),
+                Cow::Borrowed("Get safe utf-8 char index"),
+                input.to_string(),
+            )
+        })?)
 }

@@ -1,11 +1,11 @@
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod benchmark {
-    use std::time::Instant;
     use atp::builder::{
-        atp_builder::{ AtpBuilder, AtpBuilderDocs },
-        atp_processor::{ AtpProcessorMethods },
+        atp_builder::{AtpBuilder, AtpBuilderDocs},
+        atp_processor::AtpProcessorMethods,
     };
+    use std::time::Instant;
 
     use atp::utils::errors::AtpError;
 
@@ -152,7 +152,9 @@ pub mod benchmark {
 
             let string_to_process = "Banana Laranja cheia de canja";
 
-            processor.process_all(&identifier, string_to_process).unwrap();
+            processor
+                .process_all(&identifier, string_to_process)
+                .unwrap();
 
             let elapsed = start.elapsed().as_secs_f64();
 

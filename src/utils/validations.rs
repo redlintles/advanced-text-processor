@@ -1,72 +1,59 @@
-use std::{ borrow::Cow, path::Path };
+use std::{borrow::Cow, path::Path};
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::{AtpError, AtpErrorCode};
 
 pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
     let parsed_ext = ext.unwrap_or("atp");
 
     // canonicalize() exige que o path exista; isso é ok aqui porque queremos validar um arquivo real.
-    let path = path
-        .canonicalize()
-        .map_err(|e| {
-            AtpError::new(
-                AtpErrorCode::ValidationError("Path canonicalization failed".into()),
-                Cow::Borrowed("canonicalize"),
-                format!("{:?} - {}", path, e)
-            )
-        })?;
+    let path = path.canonicalize().map_err(|e| {
+        AtpError::new(
+            AtpErrorCode::ValidationError("Path canonicalization failed".into()),
+            Cow::Borrowed("canonicalize"),
+            format!("{:?} - {}", path, e),
+        )
+    })?;
 
     // Extensão
-    let os_ext = path
-        .extension()
-        .and_then(|x| x.to_str())
-        .ok_or_else(|| {
-            AtpError::new(
-                AtpErrorCode::ValidationError("No file extension found".into()),
-                Cow::Borrowed("check_file_path"),
-                path.to_string_lossy().to_string()
-            )
-        })?;
+    let os_ext = path.extension().and_then(|x| x.to_str()).ok_or_else(|| {
+        AtpError::new(
+            AtpErrorCode::ValidationError("No file extension found".into()),
+            Cow::Borrowed("check_file_path"),
+            path.to_string_lossy().to_string(),
+        )
+    })?;
 
     if os_ext != parsed_ext {
-        return Err(
-            AtpError::new(
-                AtpErrorCode::ValidationError("Wrong file extension".into()),
-                Cow::Borrowed("check_file_path"),
-                path.to_string_lossy().to_string()
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::ValidationError("Wrong file extension".into()),
+            Cow::Borrowed("check_file_path"),
+            path.to_string_lossy().to_string(),
+        ));
     }
 
     // Diretório pai (redundante depois do canonicalize, mas mantém a intenção explícita)
-    let parent = path
-        .parent()
-        .ok_or_else(|| {
-            AtpError::new(
-                AtpErrorCode::ValidationError("Path has no parent directory".into()),
-                Cow::Borrowed("check_file_path"),
-                path.to_string_lossy().to_string()
-            )
-        })?;
+    let parent = path.parent().ok_or_else(|| {
+        AtpError::new(
+            AtpErrorCode::ValidationError("Path has no parent directory".into()),
+            Cow::Borrowed("check_file_path"),
+            path.to_string_lossy().to_string(),
+        )
+    })?;
 
     if !parent.exists() {
-        return Err(
-            AtpError::new(
-                AtpErrorCode::ValidationError("Parent directory does not exist".into()),
-                Cow::Borrowed("check_file_path"),
-                parent.to_string_lossy().to_string()
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::ValidationError("Parent directory does not exist".into()),
+            Cow::Borrowed("check_file_path"),
+            parent.to_string_lossy().to_string(),
+        ));
     }
 
     if path.is_dir() {
-        return Err(
-            AtpError::new(
-                AtpErrorCode::ValidationError("Path is a directory, not a file".into()),
-                Cow::Borrowed("check_file_path"),
-                path.to_string_lossy().to_string()
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::ValidationError("Path is a directory, not a file".into()),
+            Cow::Borrowed("check_file_path"),
+            path.to_string_lossy().to_string(),
+        ));
     }
 
     Ok(())
@@ -84,18 +71,16 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), AtpError> {
 pub fn check_chunk_bound_indexes(
     start_index: usize,
     end_index: usize,
-    check_against: Option<&str>
+    check_against: Option<&str>,
 ) -> Result<(), AtpError> {
     // regra estrutural (independente do texto)
     if start_index >= end_index {
         let fmt_err = format!("check_chunk_bound_indexes {} {};", start_index, end_index);
-        return Err(
-            AtpError::new(
-                AtpErrorCode::InvalidIndex("Start index must be smaller than end index".into()),
-                Cow::Owned(fmt_err),
-                format!("Start Index: {}, End Index: {}", start_index, end_index)
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::InvalidIndex("Start index must be smaller than end index".into()),
+            Cow::Owned(fmt_err),
+            format!("Start Index: {}, End Index: {}", start_index, end_index),
+        ));
     }
 
     if let Some(text) = check_against {
@@ -103,28 +88,22 @@ pub fn check_chunk_bound_indexes(
 
         // start precisa existir
         if !(0..total_chars).contains(&start_index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "Start index does not exist in current string!".into()
-                    ),
-                    Cow::Borrowed("check_chunk_bound_indexes"),
-                    text.to_string()
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::IndexOutOfRange(
+                    "Start index does not exist in current string!".into(),
+                ),
+                Cow::Borrowed("check_chunk_bound_indexes"),
+                text.to_string(),
+            ));
         }
 
         // end também precisa existir
         if !(0..total_chars).contains(&end_index) {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        "End index does not exist in current string!".into()
-                    ),
-                    Cow::Borrowed("check_chunk_bound_indexes"),
-                    text.to_string()
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::IndexOutOfRange("End index does not exist in current string!".into()),
+                Cow::Borrowed("check_chunk_bound_indexes"),
+                text.to_string(),
+            ));
         }
     }
 
@@ -134,20 +113,19 @@ pub fn check_chunk_bound_indexes(
 pub fn check_index_against_input(index: usize, input: &str) -> Result<(), AtpError> {
     let character_count = input.chars().count();
     if !(0..character_count).contains(&index) {
-        return Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange(
-                    format!(
-                        "Index {} does not exist for {}, only indexes between 0-{} are allowed!",
-                        index,
-                        input,
-                        character_count.saturating_sub(1)
-                    ).into()
-                ),
-                Cow::Borrowed("check_index_against_input"),
-                input.to_string()
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange(
+                format!(
+                    "Index {} does not exist for {}, only indexes between 0-{} are allowed!",
+                    index,
+                    input,
+                    character_count.saturating_sub(1)
+                )
+                .into(),
+            ),
+            Cow::Borrowed("check_index_against_input"),
+            input.to_string(),
+        ));
     }
 
     Ok(())
@@ -157,13 +135,11 @@ pub fn check_index_against_words(index: usize, input: &str) -> Result<(), AtpErr
     let word_count = input.split_whitespace().count();
 
     if word_count == 0 {
-        return Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange("Input has no words".into()),
-                Cow::Borrowed("check_index_against_words"),
-                input.to_string()
-            )
-        );
+        return Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange("Input has no words".into()),
+            Cow::Borrowed("check_index_against_words"),
+            input.to_string(),
+        ));
     }
 
     if !(0..word_count).contains(&index) {
@@ -185,36 +161,136 @@ pub fn check_index_against_words(index: usize, input: &str) -> Result<(), AtpErr
     Ok(())
 }
 
-pub fn check_vec_len(v: &Vec<String>, max_size: usize) -> Result<(), AtpError> {
-    if v.len() == max_size {
+pub fn check_vec_len<T>(
+    v: &[T],
+    expected_len: usize,
+    ctx: impl Into<Cow<'static, str>>,
+    payload: impl Into<String>,
+) -> Result<(), AtpError> {
+    if v.len() == expected_len {
         Ok(())
     } else {
-        Err(
-            AtpError::new(
-                AtpErrorCode::InvalidArgumentNumber(
-                    format!(
-                        "Only {} arguments are allowed for this instruction, passed {}",
-                        max_size,
-                        v.len()
-                    ).into()
-                ),
-                Cow::Borrowed("check_vec_len"),
-                v.join(" ")
-            )
-        )
+        Err(AtpError::new(
+            AtpErrorCode::InvalidArgumentNumber(
+                format!(
+                    "Only {} arguments are allowed for this instruction, passed {}",
+                    expected_len,
+                    v.len()
+                )
+                .into(),
+            ),
+            ctx.into(),
+            payload.into(),
+        ))
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{ fs, time::{ SystemTime, UNIX_EPOCH } };
+    use std::{
+        fs,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
     fn unique_tmp_dir(prefix: &str) -> std::path::PathBuf {
-        let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
         let mut p = std::env::temp_dir();
         p.push(format!("{}_{}_{}", prefix, std::process::id(), nanos));
         p
+    }
+
+    #[cfg(test)]
+    mod check_vec_len_tests {
+        use super::check_vec_len;
+
+        #[test]
+        fn check_vec_len_ok_for_string_vec() {
+            let v = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+
+            let result = check_vec_len(&v, 3, "check_vec_len", v.join(" "));
+
+            assert!(result.is_ok());
+        }
+
+        #[test]
+        fn check_vec_len_err_for_string_vec() {
+            let v = vec!["a".to_string(), "b".to_string()];
+
+            let result = check_vec_len(&v, 3, "check_vec_len", v.join(" "));
+
+            assert!(result.is_err());
+
+            // Se AtpError tiver Display, isso geralmente vira uma checagem bem útil
+            let err = result.unwrap_err();
+            let msg = format!("{err}");
+
+            // Não assumo a estrutura interna do AtpError, então valido por mensagem
+            assert!(
+                msg.contains("Only 3 arguments are allowed") || msg.contains("Only 3 arguments")
+            );
+            assert!(msg.contains("passed 2") || msg.contains("passed 2"));
+        }
+
+        #[test]
+        fn check_vec_len_is_generic_for_any_type() {
+            let v: Vec<u32> = vec![10, 20, 30, 40];
+
+            let ok = check_vec_len(v.as_slice(), 4, "check_vec_len(u32)", "payload-u32");
+            assert!(ok.is_ok());
+
+            let err = check_vec_len(v.as_slice(), 3, "check_vec_len(u32)", "payload-u32");
+            assert!(err.is_err());
+        }
+
+        #[cfg(feature = "bytecode")]
+        mod bytecode_tests {
+            use super::check_vec_len;
+            use crate::utils::params::AtpParamTypes;
+
+            #[test]
+            fn check_vec_len_ok_for_atpparamtypes_vec() {
+                let instruction: Vec<AtpParamTypes> = vec![
+                    AtpParamTypes::Usize(1),
+                    AtpParamTypes::String("abc".to_string()),
+                ];
+
+                let result = check_vec_len(
+                    instruction.as_slice(),
+                    2,
+                    "check_vec_len(bytecode)",
+                    "<bytecode>",
+                );
+
+                assert!(result.is_ok());
+            }
+
+            #[test]
+            fn check_vec_len_err_for_atpparamtypes_vec() {
+                let instruction: Vec<AtpParamTypes> = vec![
+                    AtpParamTypes::Usize(1),
+                    AtpParamTypes::String("abc".to_string()),
+                ];
+
+                let result = check_vec_len(
+                    instruction.as_slice(),
+                    1,
+                    "check_vec_len(bytecode)",
+                    "<bytecode>",
+                );
+
+                assert!(result.is_err());
+
+                let err = result.unwrap_err();
+                let msg = format!("{err}");
+                assert!(
+                    msg.contains("Only 1 arguments are allowed") || msg.contains("Only 1 argument")
+                );
+                assert!(msg.contains("passed 2") || msg.contains("passed 2"));
+            }
+        }
     }
 
     mod check_file_path_tests {
@@ -356,29 +432,6 @@ mod tests {
         #[test]
         fn err_when_input_empty() {
             assert!(check_index_against_input(0, "").is_err());
-        }
-    }
-
-    mod check_vec_len_tests {
-        use super::*;
-
-        #[test]
-        fn ok_when_len_matches() {
-            let v = vec!["a".to_string(), "b".to_string()];
-            assert!(check_vec_len(&v, 2).is_ok());
-        }
-
-        #[test]
-        fn err_when_len_does_not_match() {
-            let v = vec!["a".to_string(), "b".to_string()];
-            assert!(check_vec_len(&v, 1).is_err());
-            assert!(check_vec_len(&v, 3).is_err());
-        }
-
-        #[test]
-        fn ok_for_empty_vec_when_expected_zero() {
-            let v: Vec<String> = vec![];
-            assert!(check_vec_len(&v, 0).is_ok());
         }
     }
 

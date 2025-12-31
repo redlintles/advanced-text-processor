@@ -1,9 +1,9 @@
-use crate::tokens::{ TokenMethods };
+use crate::tokens::TokenMethods;
 
 use crate::tokens::transforms::*;
 use crate::utils::errors::AtpError;
 
-use super::atp_processor::{ AtpProcessorMethods, AtpProcessor };
+use super::atp_processor::{AtpProcessor, AtpProcessorMethods};
 
 #[derive(Default, Clone)]
 pub struct AtpBuilder {
@@ -65,9 +65,7 @@ pub trait AtpBuilderDocs: Sized {
 
 impl AtpBuilder {
     pub fn new() -> AtpBuilder {
-        AtpBuilder {
-            tokens: Vec::new(),
-        }
+        AtpBuilder { tokens: Vec::new() }
     }
 
     pub fn build(&self) -> (AtpProcessor, String) {
@@ -310,7 +308,8 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn delete_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(dlc::Dlc::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(dlc::Dlc::params(start_index, end_index)?));
         Ok(self)
     }
     /// RAW - Replace All With
@@ -340,12 +339,11 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn replace_all_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
-        self.tokens.push(
-            Box::new(match raw::Raw::params(pattern, text_to_replace) {
+        self.tokens
+            .push(Box::new(match raw::Raw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            }));
 
         self
     }
@@ -376,12 +374,11 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn replace_first_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
-        self.tokens.push(
-            Box::new(match rfw::Rfw::params(pattern, text_to_replace) {
+        self.tokens
+            .push(Box::new(match rfw::Rfw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            }));
         self
     }
     /// RLW - Replace Last With
@@ -410,12 +407,11 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn replace_last_with(mut self, pattern: &str, text_to_replace: &str) -> Self {
-        self.tokens.push(
-            Box::new(match rlw::Rlw::params(pattern, text_to_replace) {
+        self.tokens
+            .push(Box::new(match rlw::Rlw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            }));
         self
     }
     /// RNW - Replace Nth With
@@ -446,12 +442,12 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn replace_nth_with(mut self, pattern: &str, text_to_replace: &str, index: usize) -> Self {
-        self.tokens.push(
-            Box::new(match rnw::Rnw::params(pattern, text_to_replace, index) {
+        self.tokens.push(Box::new(
+            match rnw::Rnw::params(pattern, text_to_replace, index) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            },
+        ));
         self
     }
     /// RCW - Replace Count With
@@ -481,12 +477,12 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn replace_count_with(mut self, pattern: &str, text_to_replace: &str, count: usize) -> Self {
-        self.tokens.push(
-            Box::new(match rcw::Rcw::params(pattern, text_to_replace, count) {
+        self.tokens.push(Box::new(
+            match rcw::Rcw::params(pattern, text_to_replace, count) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            },
+        ));
 
         self
     }
@@ -602,7 +598,8 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn select(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(slt::Slt::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(slt::Slt::params(start_index, end_index)?));
         Ok(self)
     }
 
@@ -755,9 +752,10 @@ impl AtpBuilderDocs for AtpBuilder {
     fn to_uppercase_chunk(
         mut self,
         start_index: usize,
-        end_index: usize
+        end_index: usize,
     ) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(tucc::Tucc::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(tucc::Tucc::params(start_index, end_index)?));
         Ok(self)
     }
     /// TLCC - To Lowercase Chunk
@@ -793,9 +791,10 @@ impl AtpBuilderDocs for AtpBuilder {
     fn to_lowercase_chunk(
         mut self,
         start_index: usize,
-        end_index: usize
+        end_index: usize,
     ) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(tlcc::Tlcc::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(tlcc::Tlcc::params(start_index, end_index)?));
         Ok(self)
     }
 
@@ -886,12 +885,11 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn split_select(mut self, pattern: &str, index: usize) -> Self {
-        self.tokens.push(
-            Box::new(match sslt::Sslt::params(pattern, index) {
+        self.tokens
+            .push(Box::new(match sslt::Sslt::params(pattern, index) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
-            })
-        );
+            }));
         self
     }
     /// CTC - Capitalize Chunk
@@ -924,7 +922,8 @@ impl AtpBuilderDocs for AtpBuilder {
     /// ```
 
     fn capitalize_chunk(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(ctc::Ctc::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(ctc::Ctc::params(start_index, end_index)?));
         Ok(self)
     }
     /// CTR - Capitalize Range
@@ -956,7 +955,8 @@ impl AtpBuilderDocs for AtpBuilder {
     /// );
     /// ```
     fn capitalize_range(mut self, start_index: usize, end_index: usize) -> Result<Self, AtpError> {
-        self.tokens.push(Box::new(ctr::Ctr::params(start_index, end_index)?));
+        self.tokens
+            .push(Box::new(ctr::Ctr::params(start_index, end_index)?));
         Ok(self)
     }
     /// CTS - Capitalize Single Word
@@ -1227,7 +1227,8 @@ impl AtpBuilderDocs for AtpBuilder {
     /// assert_eq!(processor.process_all(&id,&input), Ok("ba laranjanana".to_string()));
     /// ```
     fn insert(mut self, index: usize, text_to_insert: &str) -> Self {
-        self.tokens.push(Box::new(ins::Ins::params(index, text_to_insert)));
+        self.tokens
+            .push(Box::new(ins::Ins::params(index, text_to_insert)));
         self
     }
 

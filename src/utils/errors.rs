@@ -1,6 +1,6 @@
 use std::borrow::Cow;
-use std::fmt::Display;
 use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Default, Clone)]
 pub struct ErrorManager {
@@ -23,16 +23,16 @@ impl Display for AtpError {
         write!(
             f,
             "Erro: {}\nInstruction: {}\n,Input: {}\n",
-            self.error_code,
-            self.instruction,
-            self.input
+            self.error_code, self.instruction, self.input
         )
     }
 }
 
 impl AtpError {
     pub fn new<I, T>(error_code: AtpErrorCode, instruction: I, input: T) -> Self
-        where I: Into<Cow<'static, str>>, T: Into<Cow<'static, str>>
+    where
+        I: Into<Cow<'static, str>>,
+        T: Into<Cow<'static, str>>,
     {
         AtpError {
             error_code,
@@ -90,7 +90,12 @@ pub enum AtpErrorCode {
 
 impl Display for AtpErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\n\tCódigo: {}\n\tMensagem: {}\n", self.get_error_code(), self.get_message())
+        write!(
+            f,
+            "\n\tCódigo: {}\n\tMensagem: {}\n",
+            self.get_error_code(),
+            self.get_message()
+        )
     }
 }
 
@@ -120,7 +125,7 @@ impl AtpErrorCode {
 
     pub fn get_message(&self) -> String {
         match self {
-            | Self::FileNotFound(x)
+            Self::FileNotFound(x)
             | Self::IndexOutOfRange(x)
             | Self::InvalidIndex(x)
             | Self::InvalidOperands(x)
@@ -145,10 +150,14 @@ impl AtpErrorCode {
 pub fn token_array_not_found(identifier: &str) -> impl Fn() -> AtpError {
     let message = AtpError::new(
         AtpErrorCode::TokenArrayNotFound(
-            format!("Token array not found, is {} a valid identifier for this processor?", identifier).into()
+            format!(
+                "Token array not found, is {} a valid identifier for this processor?",
+                identifier
+            )
+            .into(),
         ),
         Cow::Borrowed("get identifier"),
-        Cow::Borrowed("")
+        Cow::Borrowed(""),
     );
     move || message.clone()
 }
