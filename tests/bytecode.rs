@@ -1,9 +1,9 @@
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod bytecode {
-    use std::{fs::File, io::Read, path::Path};
+    use std::{ fs::File, io::Read, path::Path };
 
-    use atp::{builder::atp_processor::AtpProcessorMethods, tokens::TokenMethods};
+    use atp::{ builder::atp_processor::AtpProcessorMethods, tokens::TokenMethods };
 
     #[cfg(test)]
     mod write_bytecode_to_file_tests {
@@ -49,16 +49,9 @@ pub mod bytecode {
                 todo!()
             }
 
-            fn from_vec_params(
-                &mut self,
-                _line: Vec<String>,
-            ) -> Result<(), atp::utils::errors::AtpError> {
-                todo!()
-            }
-
             fn from_params(
                 &mut self,
-                _instruction: &Vec<atp::utils::params::AtpParamTypes>,
+                _instruction: &Vec<atp::utils::params::AtpParamTypes>
             ) -> Result<(), atp::utils::errors::AtpError> {
                 todo!()
             }
@@ -80,12 +73,7 @@ pub mod bytecode {
         /// Helper: create an empty file first so `canonicalize()` doesn't fail in `check_file_path`.
         fn touch(path: &PathBuf) {
             // create(true) + truncate(true) ensures it exists and is empty
-            fs::OpenOptions::new()
-                .create(true)
-                .truncate(true)
-                .write(true)
-                .open(path)
-                .unwrap();
+            fs::OpenOptions::new().create(true).truncate(true).write(true).open(path).unwrap();
         }
 
         #[test]
@@ -100,7 +88,7 @@ pub mod bytecode {
                 Box::new(DummyToken::new("tok1", &[0xaa, 0xbb])),
                 Box::new(DummyToken::new("tok2", &[0x10])),
                 Box::new(DummyToken::new("tok3", &[])),
-                Box::new(DummyToken::new("tok4", &[0xff, 0x00, 0x01])),
+                Box::new(DummyToken::new("tok4", &[0xff, 0x00, 0x01]))
             ];
 
             write_bytecode_to_file(&path, tokens).unwrap();
@@ -114,10 +102,13 @@ pub mod bytecode {
             assert_eq!(count, 4);
 
             let expected_payload: Vec<u8> = vec![
-                0xaa, 0xbb, // tok1
+                0xaa,
+                0xbb, // tok1
                 0x10, // tok2
                 // tok3 empty
-                0xff, 0x00, 0x01, // tok4
+                0xff,
+                0x00,
+                0x01 // tok4
             ];
             assert_eq!(rest, expected_payload.as_slice());
         }
@@ -149,16 +140,17 @@ pub mod bytecode {
             // This ensures the error is about extension, not about "no such file".
             touch(&path);
 
-            let tokens: Vec<Box<dyn TokenMethods>> =
-                vec![Box::new(DummyToken::new("tok", &[1, 2, 3]))];
+            let tokens: Vec<Box<dyn TokenMethods>> = vec![
+                Box::new(DummyToken::new("tok", &[1, 2, 3]))
+            ];
 
             let err = write_bytecode_to_file(&path, tokens).unwrap_err();
 
             let msg = format!("{err:?}");
             assert!(
-                msg.contains("ValidationError")
-                    || msg.contains("check_file_path")
-                    || msg.contains("atpbc"),
+                msg.contains("ValidationError") ||
+                    msg.contains("check_file_path") ||
+                    msg.contains("atpbc"),
                 "expected an extension/path validation error, got: {msg}"
             );
         }
@@ -185,13 +177,9 @@ pub mod bytecode {
     #[test]
     fn test_write_bytecode_to_file() {
         use atp::bytecode::writer::write_bytecode_to_file;
-        use atp::tokens::transforms::{atb::Atb, ate::Ate, rpt::Rpt};
+        use atp::tokens::transforms::{ atb::Atb, ate::Ate, rpt::Rpt };
         use tempfile::Builder;
-        let file = Builder::new()
-            .suffix(".atpbc")
-            .prefix("output_")
-            .tempfile()
-            .unwrap();
+        let file = Builder::new().suffix(".atpbc").prefix("output_").tempfile().unwrap();
 
         let path = file.path();
 
@@ -202,7 +190,7 @@ pub mod bytecode {
             Box::new(Ate {
                 text: "Laranja".to_string(),
             }),
-            Box::new(Rpt { times: 3 as usize }),
+            Box::new(Rpt { times: 3 as usize })
         ];
 
         let _ = write_bytecode_to_file(path, tokens);
@@ -215,7 +203,8 @@ pub mod bytecode {
         let expected_content = "0x01 Banana\n0x02 Laranja\n0x0d 3\n";
 
         assert_eq!(
-            content, expected_content,
+            content,
+            expected_content,
             "Unexpected Output in test_write_to_file: content differs"
         );
     }
@@ -223,7 +212,8 @@ pub mod bytecode {
     #[test]
     fn test_read_bytecode_from_file() {
         use atp::{
-            builder::atp_processor::AtpProcessor, bytecode::reader::read_bytecode_from_file,
+            builder::atp_processor::AtpProcessor,
+            bytecode::reader::read_bytecode_from_file,
         };
         let tokens = match read_bytecode_from_file(Path::new("./banana.atpbc")) {
             Ok(x) => x,
@@ -238,9 +228,7 @@ pub mod bytecode {
 
         let identifier = processor.add_transform(tokens.to_vec());
 
-        let output = processor
-            .process_all_bytecode_with_debug(&identifier, input)
-            .unwrap();
+        let output = processor.process_all_bytecode_with_debug(&identifier, input).unwrap();
 
         assert_eq!(output, expected_output);
     }

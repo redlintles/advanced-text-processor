@@ -2,7 +2,8 @@
 #[cfg(test)]
 pub mod benchmark {
     use atp::builder::{
-        atp_builder::{AtpBuilder, AtpBuilderDocs},
+        AtpBuilderMethods,
+        atp_builder::{ AtpBuilder },
         atp_processor::AtpProcessorMethods,
     };
     use std::time::Instant;
@@ -152,9 +153,7 @@ pub mod benchmark {
 
             let string_to_process = "Banana Laranja cheia de canja";
 
-            processor
-                .process_all(&identifier, string_to_process)
-                .unwrap();
+            processor.process_all(&identifier, string_to_process).unwrap();
 
             let elapsed = start.elapsed().as_secs_f64();
 
