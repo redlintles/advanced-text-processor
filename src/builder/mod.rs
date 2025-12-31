@@ -1,11 +1,15 @@
 pub mod atp_builder;
 pub mod atp_processor;
+pub mod conditional_builder;
 
+use crate::builder::conditional_builder::ConditionalBuilderEach;
+use crate::tokens::instructions::ifdc;
 use crate::tokens::{ transforms::*, TokenMethods };
 use crate::utils::errors::{ AtpError };
+use crate::utils::params::AtpParamTypes;
 
 pub trait AtpBuilderMethods: Sized {
-    fn push_token(&mut self, t: Box<dyn TokenMethods>);
+    fn push_token(&mut self, t: Box<dyn TokenMethods>) -> Result<(), AtpError>;
 
     /// TBS - Trim Both Sides
     ///
@@ -26,9 +30,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana".to_string()));
     /// ```
-    fn trim_both_sides(&mut self) -> &mut Self {
-        self.push_token(Box::new(tbs::Tbs::default()));
-        self
+    fn trim_both_sides(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tbs::Tbs::default()))?;
+        Ok(self)
     }
 
     /// TLS - Trim Left Side
@@ -50,9 +54,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana  ".to_string()));
     /// ```
-    fn trim_left_side(&mut self) -> &mut Self {
-        self.push_token(Box::new(tls::Tls::default()));
-        self
+    fn trim_left_side(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tls::Tls::default()))?;
+        Ok(self)
     }
     /// TRS - Trim Right Side
     ///
@@ -73,9 +77,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("  banana".to_string()));
     /// ```
-    fn trim_right_side(&mut self) -> &mut Self {
-        self.push_token(Box::new(trs::Trs::default()));
-        self
+    fn trim_right_side(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(trs::Trs::default()))?;
+        Ok(self)
     }
     /// ATE - Add To End
     ///
@@ -95,9 +99,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana!".to_string()));
     /// ```
-    fn add_to_end(&mut self, text: &str) -> &mut Self {
-        self.push_token(Box::new(ate::Ate::params(text)));
-        self
+    fn add_to_end(&mut self, text: &str) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(ate::Ate::params(text)))?;
+        Ok(self)
     }
     /// ATB - Add To Beginning
     ///
@@ -118,9 +122,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id, input), Ok("xbanana".to_string()));
     /// ```
 
-    fn add_to_beginning(&mut self, text: &str) -> &mut Self {
-        self.push_token(Box::new(atb::Atb::params(text)));
-        self
+    fn add_to_beginning(&mut self, text: &str) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(atb::Atb::params(text)))?;
+        Ok(self)
     }
     /// DLF - Delete First
     ///
@@ -141,9 +145,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id, input), Ok("anana".to_string()));
     /// ```
 
-    fn delete_first(&mut self) -> &mut Self {
-        self.push_token(Box::new(dlf::Dlf::default()));
-        self
+    fn delete_first(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(dlf::Dlf::default()))?;
+        Ok(self)
     }
     /// DLL - Delete Last
     ///
@@ -164,9 +168,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id, input), Ok("banan".to_string()));
     /// ```
 
-    fn delete_last(&mut self) -> &mut Self {
-        self.push_token(Box::new(dll::Dll::default()));
-        self
+    fn delete_last(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(dll::Dll::default()))?;
+        Ok(self)
     }
     /// DLA - Delete After
     ///
@@ -188,9 +192,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id, input), Ok("ban".to_string()));
     /// ```
 
-    fn delete_after(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(dla::Dla::params(index)));
-        self
+    fn delete_after(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(dla::Dla::params(index)))?;
+        Ok(self)
     }
     /// DLB - Delete Before
     ///
@@ -212,9 +216,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id, input), Ok("ana".to_string()));
     /// ```
 
-    fn delete_before(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(dlb::Dlb::params(index)));
-        self
+    fn delete_before(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(dlb::Dlb::params(index)))?;
+        Ok(self)
     }
     /// DLC - Delete Chunk
     ///
@@ -242,7 +246,7 @@ pub trait AtpBuilderMethods: Sized {
         start_index: usize,
         end_index: usize
     ) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(dlc::Dlc::params(start_index, end_index)?));
+        self.push_token(Box::new(dlc::Dlc::params(start_index, end_index)?))?;
         Ok(self)
     }
     /// RAW - Replace All With
@@ -271,15 +275,19 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn replace_all_with(&mut self, pattern: &str, text_to_replace: &str) -> &mut Self {
+    fn replace_all_with(
+        &mut self,
+        pattern: &str,
+        text_to_replace: &str
+    ) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match raw::Raw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
+        )?;
 
-        self
+        Ok(self)
     }
     /// RFW - Replace First With
     ///
@@ -307,14 +315,18 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn replace_first_with(&mut self, pattern: &str, text_to_replace: &str) -> &mut Self {
+    fn replace_first_with(
+        &mut self,
+        pattern: &str,
+        text_to_replace: &str
+    ) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match rfw::Rfw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
-        self
+        )?;
+        Ok(self)
     }
     /// RLW - Replace Last With
     ///
@@ -341,14 +353,18 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn replace_last_with(&mut self, pattern: &str, text_to_replace: &str) -> &mut Self {
+    fn replace_last_with(
+        &mut self,
+        pattern: &str,
+        text_to_replace: &str
+    ) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match rlw::Rlw::params(pattern, text_to_replace) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
-        self
+        )?;
+        Ok(self)
     }
     /// RNW - Replace Nth With
     ///
@@ -382,14 +398,14 @@ pub trait AtpBuilderMethods: Sized {
         pattern: &str,
         text_to_replace: &str,
         index: usize
-    ) -> &mut Self {
+    ) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match rnw::Rnw::params(pattern, text_to_replace, index) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
-        self
+        )?;
+        Ok(self)
     }
     /// RCW - Replace Count With
     ///
@@ -422,15 +438,15 @@ pub trait AtpBuilderMethods: Sized {
         pattern: &str,
         text_to_replace: &str,
         count: usize
-    ) -> &mut Self {
+    ) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match rcw::Rcw::params(pattern, text_to_replace, count) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
+        )?;
 
-        self
+        Ok(self)
     }
     /// RTL - Rotate Left
     ///
@@ -457,9 +473,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn rotate_left(&mut self, times: usize) -> &mut Self {
-        self.push_token(Box::new(rtl::Rtl::params(times)));
-        self
+    fn rotate_left(&mut self, times: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(rtl::Rtl::params(times)))?;
+        Ok(self)
     }
     /// RTR - Rotate Right
     ///
@@ -486,9 +502,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn rotate_right(&mut self, times: usize) -> &mut Self {
-        self.push_token(Box::new(rtr::Rtr::params(times)));
-        self
+    fn rotate_right(&mut self, times: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(rtr::Rtr::params(times)))?;
+        Ok(self)
     }
     /// RPT - Repeat
     ///
@@ -514,9 +530,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn repeat(&mut self, times: usize) -> &mut Self {
-        self.push_token(Box::new(rpt::Rpt::params(times)));
-        self
+    fn repeat(&mut self, times: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(rpt::Rpt::params(times)))?;
+        Ok(self)
     }
 
     /// SLT - Select
@@ -544,7 +560,7 @@ pub trait AtpBuilderMethods: Sized {
     /// ```
 
     fn select(&mut self, start_index: usize, end_index: usize) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(slt::Slt::params(start_index, end_index)?));
+        self.push_token(Box::new(slt::Slt::params(start_index, end_index)?))?;
         Ok(self)
     }
 
@@ -572,9 +588,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_uppercase_all(&mut self) -> &mut Self {
-        self.push_token(Box::new(tua::Tua::default()));
-        self
+    fn to_uppercase_all(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tua::Tua::default()))?;
+        Ok(self)
     }
     /// TLA - To Lowercase All
     ///
@@ -600,9 +616,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_lowercase_all(&mut self) -> &mut Self {
-        self.push_token(Box::new(tla::Tla::default()));
-        self
+    fn to_lowercase_all(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tla::Tla::default()))?;
+        Ok(self)
     }
     /// TUCS - To Uppercase Single
     ///
@@ -630,9 +646,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_uppercase_single(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(tucs::Tucs::params(index)));
-        self
+    fn to_uppercase_single(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tucs::Tucs::params(index)))?;
+        Ok(self)
     }
     /// TLCS - To Lowercase Single
     ///
@@ -660,9 +676,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_lowercase_single(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(tlcs::Tlcs::params(index)));
-        self
+    fn to_lowercase_single(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tlcs::Tlcs::params(index)))?;
+        Ok(self)
     }
     /// TUCC - To Uppercase Chunk
     ///
@@ -699,7 +715,7 @@ pub trait AtpBuilderMethods: Sized {
         start_index: usize,
         end_index: usize
     ) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(tucc::Tucc::params(start_index, end_index)?));
+        self.push_token(Box::new(tucc::Tucc::params(start_index, end_index)?))?;
         Ok(self)
     }
     /// TLCC - To Lowercase Chunk
@@ -737,7 +753,7 @@ pub trait AtpBuilderMethods: Sized {
         start_index: usize,
         end_index: usize
     ) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(tlcc::Tlcc::params(start_index, end_index)?));
+        self.push_token(Box::new(tlcc::Tlcc::params(start_index, end_index)?))?;
         Ok(self)
     }
 
@@ -767,9 +783,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn capitalize_first_word(&mut self) -> &mut Self {
-        self.push_token(Box::new(cfw::Cfw::default()));
-        self
+    fn capitalize_first_word(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(cfw::Cfw::default()))?;
+        Ok(self)
     }
     /// CLW - Capitalize Last Word
     ///
@@ -796,9 +812,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn capitalize_last_word(&mut self) -> &mut Self {
-        self.push_token(Box::new(clw::Clw::default()));
-        self
+    fn capitalize_last_word(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(clw::Clw::default()))?;
+        Ok(self)
     }
 
     /// SSLT - Split Select
@@ -827,14 +843,14 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn split_select(&mut self, pattern: &str, index: usize) -> &mut Self {
+    fn split_select(&mut self, pattern: &str, index: usize) -> Result<&mut Self, AtpError> {
         self.push_token(
             Box::new(match sslt::Sslt::params(pattern, index) {
                 Ok(x) => x,
                 Err(e) => panic!("{}", e),
             })
-        );
-        self
+        )?;
+        Ok(self)
     }
     /// CTC - Capitalize Chunk
     ///
@@ -870,7 +886,7 @@ pub trait AtpBuilderMethods: Sized {
         start_index: usize,
         end_index: usize
     ) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(ctc::Ctc::params(start_index, end_index)?));
+        self.push_token(Box::new(ctc::Ctc::params(start_index, end_index)?))?;
         Ok(self)
     }
     /// CTR - Capitalize Range
@@ -906,7 +922,7 @@ pub trait AtpBuilderMethods: Sized {
         start_index: usize,
         end_index: usize
     ) -> Result<&mut Self, AtpError> {
-        self.push_token(Box::new(ctr::Ctr::params(start_index, end_index)?));
+        self.push_token(Box::new(ctr::Ctr::params(start_index, end_index)?))?;
         Ok(self)
     }
     /// CTS - Capitalize Single Word
@@ -934,9 +950,9 @@ pub trait AtpBuilderMethods: Sized {
     ///     Ok("hello brave World".to_string())
     /// );
     /// ```
-    fn capitalize_single_word(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(cts::Cts::params(index)));
-        self
+    fn capitalize_single_word(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(cts::Cts::params(index)))?;
+        Ok(self)
     }
     /// URLE - URL Encode
     ///
@@ -963,9 +979,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_url_encoded(&mut self) -> &mut Self {
-        self.push_token(Box::new(urle::Urle::default()));
-        self
+    fn to_url_encoded(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(urle::Urle::default()))?;
+        Ok(self)
     }
     /// URLD - URL Decode
     ///
@@ -992,9 +1008,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_url_decoded(&mut self) -> &mut Self {
-        self.push_token(Box::new(urld::Urld::default()));
-        self
+    fn to_url_decoded(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(urld::Urld::default()))?;
+        Ok(self)
     }
 
     /// REV - Reverse Text
@@ -1018,9 +1034,9 @@ pub trait AtpBuilderMethods: Sized {
     ///     Ok("cba".to_string())
     /// );
     /// ```
-    fn to_reverse(&mut self) -> &mut Self {
-        self.push_token(Box::new(rev::Rev::default()));
-        self
+    fn to_reverse(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(rev::Rev::default()))?;
+        Ok(self)
     }
     /// SPLC - Split Characters
     ///
@@ -1045,9 +1061,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn split_characters(&mut self) -> &mut Self {
-        self.push_token(Box::new(splc::Splc::default()));
-        self
+    fn split_characters(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(splc::Splc::default()))?;
+        Ok(self)
     }
 
     /// HTMLE - HTML Escape
@@ -1075,9 +1091,9 @@ pub trait AtpBuilderMethods: Sized {
     /// );
     /// ```
 
-    fn to_html_escaped(&mut self) -> &mut Self {
-        self.push_token(Box::new(htmle::Htmle::default()));
-        self
+    fn to_html_escaped(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(htmle::Htmle::default()))?;
+        Ok(self)
     }
     /// HTMLU - HTML Unescape
     ///
@@ -1103,9 +1119,9 @@ pub trait AtpBuilderMethods: Sized {
     ///     Ok("<b>Hi</b>".to_string())
     /// );
     /// ```
-    fn to_html_unescaped(&mut self) -> &mut Self {
-        self.push_token(Box::new(htmlu::Htmlu::default()));
-        self
+    fn to_html_unescaped(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(htmlu::Htmlu::default()))?;
+        Ok(self)
     }
 
     /// To Json Escaped
@@ -1128,9 +1144,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id,&input), Ok("\"{banana: '10'}\"".to_string()));
     /// ```
 
-    fn to_json_escaped(&mut self) -> &mut Self {
-        self.push_token(Box::new(jsone::Jsone::default()));
-        self
+    fn to_json_escaped(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jsone::Jsone::default()))?;
+        Ok(self)
     }
     /// To Json Unescaped
     ///
@@ -1151,9 +1167,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("{banana: '10'}".to_string()));
     /// ```
-    fn to_json_unescaped(&mut self) -> &mut Self {
-        self.push_token(Box::new(jsonu::Jsonu::default()));
-        self
+    fn to_json_unescaped(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jsonu::Jsonu::default()))?;
+        Ok(self)
     }
 
     /// Insert
@@ -1176,9 +1192,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("ba laranjanana".to_string()));
     /// ```
-    fn insert(&mut self, index: usize, text_to_insert: &str) -> &mut Self {
-        self.push_token(Box::new(ins::Ins::params(index, text_to_insert)));
-        self
+    fn insert(&mut self, index: usize, text_to_insert: &str) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(ins::Ins::params(index, text_to_insert)))?;
+        Ok(self)
     }
 
     /// To Lowercase Word
@@ -1200,9 +1216,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BANANA laranja CHEIA DE CANJA".to_string()));
     /// ```
-    fn to_lowercase_word(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(tlcw::Tlcw::params(index)));
-        self
+    fn to_lowercase_word(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tlcw::Tlcw::params(index)))?;
+        Ok(self)
     }
     /// To Uppercase Word
     ///
@@ -1223,9 +1239,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana LARANJA cheia de canja".to_string()));
     /// ```
-    fn to_uppercase_word(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(tucw::Tucw::params(index)));
-        self
+    fn to_uppercase_word(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(tucw::Tucw::params(index)))?;
+        Ok(self)
     }
 
     /// Join to kebab-case
@@ -1249,9 +1265,9 @@ pub trait AtpBuilderMethods: Sized {
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana-laranja-cheia-de-canja".to_string()));
     ///
 
-    fn join_to_kebab_case(&mut self) -> &mut Self {
-        self.push_token(Box::new(jkbc::Jkbc::default()));
-        self
+    fn join_to_kebab_case(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jkbc::Jkbc::default()))?;
+        Ok(self)
     }
     /// Join to snake_case
     ///
@@ -1273,9 +1289,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana_laranja_cheia_de_canja".to_string()));
     ///
-    fn join_to_snake_case(&mut self) -> &mut Self {
-        self.push_token(Box::new(jsnc::Jsnc::default()));
-        self
+    fn join_to_snake_case(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jsnc::Jsnc::default()))?;
+        Ok(self)
     }
     /// Join to camelCase
     ///
@@ -1297,9 +1313,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananaLaranjaCheiaDeCanja".to_string()));
     /// ```
-    fn join_to_camel_case(&mut self) -> &mut Self {
-        self.push_token(Box::new(jcmc::Jcmc::default()));
-        self
+    fn join_to_camel_case(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jcmc::Jcmc::default()))?;
+        Ok(self)
     }
     /// Join to PascalCase
     ///
@@ -1321,9 +1337,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BananaLaranjaCheiaDeCanja".to_string()));
     /// ```
-    fn join_to_pascal_case(&mut self) -> &mut Self {
-        self.push_token(Box::new(jpsc::Jpsc::default()));
-        self
+    fn join_to_pascal_case(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(jpsc::Jpsc::default()))?;
+        Ok(self)
     }
     /// PADL - Pad Left
     ///
@@ -1344,9 +1360,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("xbanana".to_string()));
     /// ```
-    fn pad_left(&mut self, text: &str, times: usize) -> &mut Self {
-        self.push_token(Box::new(padl::Padl::params(text, times)));
-        self
+    fn pad_left(&mut self, text: &str, times: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(padl::Padl::params(text, times)))?;
+        Ok(self)
     }
     /// PADR - Pad Right
     ///
@@ -1367,9 +1383,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananax".to_string()));
     /// ```
-    fn pad_right(&mut self, text: &str, times: usize) -> &mut Self {
-        self.push_token(Box::new(padr::Padr::params(text, times)));
-        self
+    fn pad_right(&mut self, text: &str, times: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(padr::Padr::params(text, times)))?;
+        Ok(self)
     }
     /// RMWS - Remove Whitespace
     ///
@@ -1386,9 +1402,9 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananalaranjacheiadecanja".to_string()));
     /// ```
-    fn remove_whitespace(&mut self) -> &mut Self {
-        self.push_token(Box::new(rmws::Rmws::default()));
-        self
+    fn remove_whitespace(&mut self) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(rmws::Rmws::default()))?;
+        Ok(self)
     }
 
     /// DLS - Delete Single
@@ -1408,8 +1424,28 @@ pub trait AtpBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
     /// ```
-    fn delete_single(&mut self, index: usize) -> &mut Self {
-        self.push_token(Box::new(dls::Dls::params(index)));
-        self
+    fn delete_single(&mut self, index: usize) -> Result<&mut Self, AtpError> {
+        self.push_token(Box::new(dls::Dls::params(index)))?;
+        Ok(self)
+    }
+}
+
+pub trait AtpConditionalMethods: AtpBuilderMethods {
+    fn if_do_contains_each<F>(&mut self, value: &str, f: F) -> Result<&mut Self, AtpError>
+        where F: FnOnce(&mut ConditionalBuilderEach)
+    {
+        let params = vec![AtpParamTypes::String(value.to_string())];
+        let token: Box<dyn TokenMethods> = Box::new(ifdc::Ifdc::default());
+        let mut conditional_builder = ConditionalBuilderEach::new(token, params);
+
+        f(&mut conditional_builder);
+
+        let result = conditional_builder.build();
+
+        for token in result.into_iter() {
+            self.push_token(token)?;
+        }
+
+        Ok(self)
     }
 }
