@@ -5,10 +5,10 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
+use crate::utils::errors::{AtpError, AtpErrorCode};
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
 
 /// RCW - Replace Count With
 ///
@@ -61,34 +61,18 @@ impl Default for Rcw {
 
 impl TokenMethods for Rcw {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count).into()
+        format!(
+            "rcw {} {} {};\n",
+            self.pattern, self.text_to_replace, self.count
+        )
+        .into()
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(self.pattern.replacen(input, self.count, &self.text_to_replace).to_string())
-    }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "rcw;"
-
-        if line[0] == "rcw" {
-            self.pattern = Regex::new(&line[1]).map_err(|_|
-                AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed creating regex".into()),
-                    line[0].to_string(),
-                    line.join(" ")
-                )
-            )?;
-            self.text_to_replace = line[2].clone();
-            self.count = string_to_usize(&line[3])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
+        Ok(self
+            .pattern
+            .replacen(input, self.count, &self.text_to_replace)
+            .to_string())
     }
 
     fn get_string_repr(&self) -> &'static str {
@@ -98,34 +82,27 @@ impl TokenMethods for Rcw {
     fn get_opcode(&self) -> u32 {
         0x10
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 3 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
-        let pattern_payload = parse_args!(
-            instruction,
-            0,
-            String,
-            "Pattern should be of string type"
-        );
+        let pattern_payload =
+            parse_args!(instruction, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_|
+        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
                 AtpErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",
-                pattern_payload.clone()
+                pattern_payload.clone(),
             )
-        )?;
+        })?;
 
         self.text_to_replace = parse_args!(
             instruction,
@@ -141,11 +118,14 @@ impl TokenMethods for Rcw {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::String(self.pattern.to_string()),
-            AtpParamTypes::String(self.text_to_replace.clone()),
-            AtpParamTypes::Usize(self.count),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::String(self.pattern.to_string()),
+                AtpParamTypes::String(self.text_to_replace.clone()),
+                AtpParamTypes::Usize(self.count),
+            ]
+        );
         result
     }
 }

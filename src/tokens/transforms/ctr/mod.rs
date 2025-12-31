@@ -3,14 +3,13 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::utils::errors::{AtpError, AtpErrorCode};
+#[cfg(feature = "bytecode")]
+use crate::utils::params::AtpParamTypes;
 use crate::{
-    tokens::TokenMethods,
-    utils::transforms::{ capitalize, string_to_usize },
+    tokens::TokenMethods, utils::transforms::capitalize,
     utils::validations::check_chunk_bound_indexes,
 };
-use crate::utils::errors::{ AtpError, AtpErrorCode };
-#[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -65,32 +64,16 @@ impl TokenMethods for Ctr {
             .split_whitespace()
             .enumerate()
             .map(|(i, c)| {
-                if (self.start_index..=end).contains(&i) { capitalize(c) } else { c.to_string() }
+                if (self.start_index..=end).contains(&i) {
+                    capitalize(c)
+                } else {
+                    c.to_string()
+                }
             })
             .collect::<Vec<_>>()
             .join(" ");
 
         Ok(result)
-    }
-
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "ctr" {
-            let start_index = string_to_usize(&line[1])?;
-            let end_index = string_to_usize(&line[2])?;
-            check_chunk_bound_indexes(start_index, end_index, None)?;
-
-            self.start_index = start_index;
-            self.end_index = end_index;
-
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
@@ -100,18 +83,15 @@ impl TokenMethods for Ctr {
     fn get_opcode(&self) -> u32 {
         0x1c
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
@@ -122,10 +102,13 @@ impl TokenMethods for Ctr {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::Usize(self.start_index),
-            AtpParamTypes::Usize(self.end_index),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::Usize(self.start_index),
+                AtpParamTypes::Usize(self.end_index),
+            ]
+        );
         result
     }
 }

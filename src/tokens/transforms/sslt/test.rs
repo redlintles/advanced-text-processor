@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ transforms::sslt::Sslt, TokenMethods };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::sslt::Sslt};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_sslt() {
@@ -21,7 +21,10 @@ mod tests {
     #[test]
     fn transform_selects_expected_piece() {
         let t = Sslt::params("_", 1).unwrap();
-        assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
+        assert_eq!(
+            t.transform("foobar_foo_bar_bar_foo_barfoo"),
+            Ok("foo".to_string())
+        );
     }
 
     #[test]
@@ -37,59 +40,11 @@ mod tests {
 
         let got = t.transform("a_b");
 
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
-                t.to_atp_line(),
-                "a_b".to_string()
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    fn from_vec_params_accepts_valid() {
-        let mut t = Sslt::default();
-
-        let line = vec!["sslt".to_string(), "_".to_string(), "2".to_string()];
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.index, 2);
-        assert_eq!(t.pattern.to_string(), "_".to_string());
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Sslt::default();
-        let line = vec!["nope".to_string(), "_".to_string(), "0".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_invalid_regex() {
-        let mut t = Sslt::default();
-        let line = vec!["sslt".to_string(), "(".to_string(), "0".to_string()]; // regex inválida
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                line[1].to_string()
-            )
-        );
+        let expected = Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
+            t.to_atp_line(),
+            "a_b".to_string(),
+        ));
 
         assert_eq!(got, expected);
     }
@@ -111,7 +66,10 @@ mod tests {
         #[test]
         fn from_params_accepts_two_params() {
             let mut t = Sslt::default();
-            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::String("_".to_string())];
+            let params = vec![
+                AtpParamTypes::Usize(1),
+                AtpParamTypes::String("_".to_string()),
+            ];
 
             assert_eq!(t.from_params(&params), Ok(()));
             assert_eq!(t.index, 1);
@@ -125,13 +83,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

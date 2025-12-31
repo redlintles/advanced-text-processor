@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::ctr::Ctr;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::ctr::Ctr;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_accepts_valid_range() {
@@ -23,43 +23,6 @@ mod tests {
     fn to_atp_line_formats_correctly() {
         let t = Ctr::params(2, 7).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "ctr 2 7;\n");
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Ctr::default();
-        let line = vec!["ctr".to_string(), "1".to_string(), "3".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.start_index, 1);
-        assert_eq!(t.end_index, 3);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Ctr::default();
-        let line = vec!["nope".to_string(), "1".to_string(), "3".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_params() {
-        // do jeito que está, acessa line[1]/line[2] sem checar tamanho
-        let mut t = Ctr::default();
-        let line = vec!["ctr".to_string()];
-        let _ = t.from_vec_params(line);
     }
 
     #[test]
@@ -119,13 +82,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -143,17 +104,18 @@ mod tests {
         #[test]
         fn from_params_rejects_wrong_param_type() {
             let mut t = Ctr::default();
-            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(7)];
+            let params = vec![
+                AtpParamTypes::String("x".to_string()),
+                AtpParamTypes::Usize(7),
+            ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

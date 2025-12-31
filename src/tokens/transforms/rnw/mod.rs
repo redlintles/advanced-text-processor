@@ -9,11 +9,14 @@ use regex::Regex;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::string_to_usize,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 /// RLW - Replace Last With
 ///
 /// Replace the `nth`` ocurrency of `pattern` in `input` with `text_to_replace`
@@ -65,7 +68,11 @@ impl Default for Rnw {
 
 impl TokenMethods for Rnw {
     fn to_atp_line(&self) -> Cow<'static, str> {
-        format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index).into()
+        format!(
+            "rnw {} {} {};\n",
+            self.pattern, self.text_to_replace, self.index
+        )
+        .into()
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
@@ -82,9 +89,8 @@ impl TokenMethods for Rnw {
         }
 
         if let Some((start, end)) = idx {
-            let mut result = String::with_capacity(
-                input.len() - (end - start) + self.text_to_replace.len()
-            );
+            let mut result =
+                String::with_capacity(input.len() - (end - start) + self.text_to_replace.len());
             result.push_str(&input[..start]);
             result.push_str(&self.text_to_replace);
             result.push_str(&input[end..]);
@@ -92,30 +98,6 @@ impl TokenMethods for Rnw {
         }
         Ok(input.to_string())
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "rnw;"
-
-        if line[0] == "rnw" {
-            self.pattern = Regex::new(&line[1]).map_err(|_|
-                AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed creating regex".into()),
-                    line[0].to_string(),
-                    line.join(" ")
-                )
-            )?;
-            self.text_to_replace = line[2].clone();
-            self.index = string_to_usize(&line[3])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
-
     fn get_string_repr(&self) -> &'static str {
         "rnw"
     }
@@ -123,32 +105,25 @@ impl TokenMethods for Rnw {
     fn get_opcode(&self) -> u32 {
         0x1f
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 3 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
-        let pattern_payload = parse_args!(
-            instruction,
-            0,
-            String,
-            "Pattern should be of string type"
-        );
+        let pattern_payload =
+            parse_args!(instruction, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_|
+        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
                 AtpErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",
-                pattern_payload.clone()
+                pattern_payload.clone(),
             )
-        )?;
+        })?;
 
         self.text_to_replace = parse_args!(
             instruction,
@@ -164,11 +139,14 @@ impl TokenMethods for Rnw {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::String(self.pattern.to_string()),
-            AtpParamTypes::String(self.text_to_replace.clone()),
-            AtpParamTypes::Usize(self.index),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::String(self.pattern.to_string()),
+                AtpParamTypes::String(self.text_to_replace.clone()),
+                AtpParamTypes::Usize(self.index),
+            ]
+        );
         result
     }
 }

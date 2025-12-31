@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::padl::Padl;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::padl::Padl;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_padl() {
@@ -40,47 +40,6 @@ mod tests {
         assert_eq!(t.transform("banana"), Ok("xyxybanana".to_string()));
     }
 
-    #[test]
-    fn from_vec_params_accepts_padl_identifier_but_does_not_parse_fields_current_behavior() {
-        // OBS: implementação atual só checa line[0] == "padl" e retorna Ok(())
-        // sem atribuir text/max_len.
-        let mut t = Padl::params("zz", 99);
-
-        let line = vec!["padl".to_string(), "xy".to_string(), "7".to_string()];
-        assert_eq!(t.from_vec_params(line), Ok(()));
-
-        // Continua igual (não parseia nada)
-        assert_eq!(t.text, "zz".to_string());
-        assert_eq!(t.max_len, 99);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Padl::default();
-        let line = vec!["nope".to_string(), "xy".to_string(), "7".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_line_is_empty() {
-        // acesso direto a line[0]
-        let mut t = Padl::default();
-        let line: Vec<String> = vec![];
-        let _ = t.from_vec_params(line);
-    }
-
     // ============================
     // Bytecode-only tests (separados)
     // ============================
@@ -100,7 +59,10 @@ mod tests {
         fn from_params_accepts_text_then_max_len() {
             let mut t = Padl::default();
 
-            let params = vec![AtpParamTypes::String("xy".to_string()), AtpParamTypes::Usize(7)];
+            let params = vec![
+                AtpParamTypes::String("xy".to_string()),
+                AtpParamTypes::Usize(7),
+            ];
 
             assert_eq!(t.from_params(&params), Ok(()));
             assert_eq!(t.text, "xy".to_string());
@@ -115,13 +77,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -131,20 +91,19 @@ mod tests {
             let mut t = Padl::default();
 
             // invertido propositalmente
-            let params = vec![AtpParamTypes::Usize(7), AtpParamTypes::String("xy".to_string())];
+            let params = vec![
+                AtpParamTypes::Usize(7),
+                AtpParamTypes::String("xy".to_string()),
+            ];
 
             let got = t.from_params(&params);
 
             // parse_args! retorna InvalidParameters com a msg do callsite
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters(
-                        "Text_to_insert should be of String type".into()
-                    ),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Text_to_insert should be of String type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -211,20 +170,16 @@ mod tests {
 
             let params_as_emitted_by_to_bytecode_today = vec![
                 AtpParamTypes::Usize(7),
-                AtpParamTypes::String("xy".to_string())
+                AtpParamTypes::String("xy".to_string()),
             ];
 
             let got = t.from_params(&params_as_emitted_by_to_bytecode_today);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters(
-                        "Text_to_insert should be of String type".into()
-                    ),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Text_to_insert should be of String type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

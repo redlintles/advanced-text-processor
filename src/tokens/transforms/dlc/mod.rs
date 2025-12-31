@@ -4,14 +4,13 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
-    utils::transforms::string_to_usize,
+    tokens::TokenMethods, utils::transforms::string_to_usize,
     utils::validations::check_chunk_bound_indexes,
 };
 
+use crate::utils::errors::{AtpError, AtpErrorCode};
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::params::AtpParamTypes;
 /// Dlc - Delete Chunk
 ///
 /// Deletes an specific subslice of `input` delimited by `start_index` and `end_index`(inclusive)
@@ -89,26 +88,6 @@ impl TokenMethods for Dlc {
 
         Ok(format!("{}{}", before, after))
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "dlc;"
-
-        if line[0] == "dlc" {
-            let start_index = string_to_usize(&line[1])?;
-            let end_index = string_to_usize(&line[2])?;
-
-            check_chunk_bound_indexes(start_index, end_index, None)?;
-            self.start_index = start_index;
-            self.end_index = end_index;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
 
     fn get_string_repr(&self) -> &'static str {
         "dlc"
@@ -117,18 +96,15 @@ impl TokenMethods for Dlc {
     fn get_opcode(&self) -> u32 {
         0x08
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
@@ -139,10 +115,13 @@ impl TokenMethods for Dlc {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::Usize(self.start_index),
-            AtpParamTypes::Usize(self.end_index),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::Usize(self.start_index),
+                AtpParamTypes::Usize(self.end_index),
+            ]
+        );
         result
     }
 }

@@ -4,8 +4,8 @@ use crate::utils::errors::AtpError;
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
-pub mod transforms;
 pub mod instructions;
+pub mod transforms;
 
 /// TokenMethods
 ///
@@ -26,14 +26,8 @@ pub trait TokenMethods: TokenMethodsClone + Send + Sync {
     /// Converts the token to a string representation without parameters, to be used in the mappings
     fn get_string_repr(&self) -> &'static str;
 
-    /// from_vec_params
-    ///
-    /// Fills the token object params based on a String vec send by the lexer
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError>;
-
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError>;
     /// BytecodeMethods
-    #[cfg(feature = "bytecode")]
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError>;
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8>;
 
@@ -45,7 +39,10 @@ pub trait TokenMethodsClone {
     fn clone_box(&self) -> Box<dyn TokenMethods>;
 }
 
-impl<T> TokenMethodsClone for T where T: 'static + TokenMethods + Clone {
+impl<T> TokenMethodsClone for T
+where
+    T: 'static + TokenMethods + Clone,
+{
     fn clone_box(&self) -> Box<dyn TokenMethods> {
         Box::new(self.clone())
     }

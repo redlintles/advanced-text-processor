@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod common {
-    use crate::tokens::{ transforms::atb::Atb, TokenMethods };
+    use crate::tokens::{TokenMethods, transforms::atb::Atb};
 
     #[test]
     fn params_sets_text() {
@@ -42,35 +42,14 @@ mod common {
         let t = Atb::default();
         assert_eq!(t.get_string_repr(), "atb");
     }
-
-    #[test]
-    fn from_vec_params_sets_text_when_tag_matches() {
-        let mut t = Atb::default();
-        t.from_vec_params(vec!["atb".into(), "hello".into()]).unwrap();
-        assert_eq!(t.text, "hello");
-        assert_eq!(t.transform(" world").unwrap(), "hello world");
-    }
-
-    #[test]
-    fn from_vec_params_returns_error_when_tag_mismatch_and_does_not_mutate() {
-        let mut t = Atb::params("initial");
-        let res = t.from_vec_params(vec!["nope".into(), "hello".into()]);
-        assert!(res.is_err());
-        assert_eq!(t.text, "initial");
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_when_missing_param() {
-        // Documenta o comportamento atual (line[1] sem check de len)
-        let mut t = Atb::default();
-        let _ = t.from_vec_params(vec!["atb".into()]);
-    }
 }
 
 #[cfg(all(test, feature = "bytecode"))]
 mod bytecode {
-    use crate::{ tokens::{ transforms::atb::Atb, TokenMethods }, utils::params::AtpParamTypes };
+    use crate::{
+        tokens::{TokenMethods, transforms::atb::Atb},
+        utils::params::AtpParamTypes,
+    };
 
     // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
     // [type: u32][payload_size: u32][payload: bytes]
@@ -95,7 +74,10 @@ mod bytecode {
 
         match parsed {
             AtpParamTypes::String(s) => assert_eq!(s, "abc"),
-            other => panic!("Expected String, got type code {}", other.get_param_type_code()),
+            other => panic!(
+                "Expected String, got type code {}",
+                other.get_param_type_code()
+            ),
         }
     }
 
@@ -107,7 +89,10 @@ mod bytecode {
 
         match parsed {
             AtpParamTypes::Usize(x) => assert_eq!(x, 123),
-            other => panic!("Expected Usize, got type code {}", other.get_param_type_code()),
+            other => panic!(
+                "Expected Usize, got type code {}",
+                other.get_param_type_code()
+            ),
         }
     }
 
@@ -126,7 +111,7 @@ mod bytecode {
         let mut t = Atb::default();
         let params = vec![
             AtpParamTypes::String("a".to_string()),
-            AtpParamTypes::String("b".to_string())
+            AtpParamTypes::String("b".to_string()),
         ];
 
         let err = t.from_params(&params).unwrap_err();

@@ -3,16 +3,16 @@ pub mod test;
 
 use std::borrow::Cow;
 
+#[cfg(feature = "bytecode")]
+use crate::utils::params::AtpParamTypes;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{ AtpError, AtpErrorCode },
+        errors::{AtpError, AtpErrorCode},
         transforms::string_to_usize,
-        validations::{ check_index_against_input, check_index_against_words, check_vec_len },
+        validations::{check_index_against_input, check_index_against_words, check_vec_len},
     },
 };
-#[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
 
 /// TLCW - To Lowercase Word
 ///
@@ -49,50 +49,34 @@ impl TokenMethods for Tlcw {
 
     fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
         check_index_against_words(self.index, input)?;
-        Ok(
-            input
-                .split_whitespace()
-                .enumerate()
-                .map(|(i, w)| {
-                    if i == self.index { w.to_lowercase() } else { w.to_string() }
-                })
-                .collect::<Vec<_>>()
-                .join(" ")
-                .to_string()
-        )
+        Ok(input
+            .split_whitespace()
+            .enumerate()
+            .map(|(i, w)| {
+                if i == self.index {
+                    w.to_lowercase()
+                } else {
+                    w.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+            .to_string())
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), crate::utils::errors::AtpError> {
-        check_vec_len(&line, 2)?;
-        if line[0] == "tlcw" {
-            self.index = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x29
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

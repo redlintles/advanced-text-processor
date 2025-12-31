@@ -2,53 +2,15 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::ins::Ins;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::ins::Ins;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_sets_fields_and_to_atp_line_formats() {
         let t = Ins::params(2, "laranja");
         assert_eq!(t.to_atp_line().as_ref(), "ins 2 laranja;\n");
         assert_eq!(t.get_string_repr(), "ins");
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Ins::default();
-        let line = vec!["ins".to_string(), "2".to_string(), "laranja".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.to_atp_line().as_ref(), "ins 2 laranja;\n");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier_with_bytecode_not_found_current_behavior() {
-        // Observação: o token retorna BytecodeNotFound("") (provável copy/paste),
-        // e usa instruction="ins". A suíte valida o comportamento atual.
-        let mut t = Ins::default();
-        let line = vec!["nope".to_string(), "2".to_string(), "laranja".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("".into()),
-                "ins".to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_params() {
-        // acessa line[1] e line[2] sem check
-        let mut t = Ins::default();
-        let line = vec!["ins".to_string(), "2".to_string()];
-        let _ = t.from_vec_params(line);
     }
 
     #[test]
@@ -125,13 +87,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -141,7 +101,7 @@ mod tests {
             let mut t = Ins::default();
             let params = vec![
                 AtpParamTypes::Usize(3),
-                AtpParamTypes::String("laranja".to_string())
+                AtpParamTypes::String("laranja".to_string()),
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));
@@ -151,18 +111,19 @@ mod tests {
         #[test]
         fn from_params_rejects_wrong_param_types() {
             let mut t = Ins::default();
-            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(3)];
+            let params = vec![
+                AtpParamTypes::String("x".to_string()),
+                AtpParamTypes::Usize(3),
+            ];
 
             let got = t.from_params(&params);
 
             // primeiro parse_args! falha com "Index should be of usize type"
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

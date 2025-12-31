@@ -2,7 +2,7 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::{ tokens::{ TokenMethods, transforms::rmws::Rmws } };
+    use crate::tokens::{TokenMethods, transforms::rmws::Rmws};
 
     #[test]
     fn rmws_get_string_repr_ok() {
@@ -14,21 +14,6 @@ mod tests {
     fn rmws_to_atp_line_ok() {
         let t = Rmws::default();
         assert_eq!(t.to_atp_line().as_ref(), "rmws;\n");
-    }
-
-    #[test]
-    fn rmws_from_vec_params_ok() {
-        let mut t = Rmws::default();
-        assert!(t.from_vec_params(vec!["rmws".to_string()]).is_ok());
-    }
-
-    #[test]
-    fn rmws_from_vec_params_wrong_token_err() {
-        let mut t = Rmws::default();
-        let err = t.from_vec_params(vec!["nope".to_string()]).unwrap_err();
-        // Não cravo string do erro pra não quebrar com refactor,
-        // mas garanto que é erro e não Ok.
-        let _ = err;
     }
 
     #[test]

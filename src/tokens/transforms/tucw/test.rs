@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ transforms::tucw::Tucw, TokenMethods };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::tucw::Tucw};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_tucw() {
@@ -24,33 +24,6 @@ mod tests {
             t.transform("banana laranja cheia de canja"),
             Ok("banana LARANJA cheia de canja".to_string())
         );
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Tucw::default();
-        let line = vec!["tucw".to_string(), "3".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.to_atp_line().as_ref(), "tucw 3;\n");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Tucw::default();
-        let line = vec!["nope".to_string(), "1".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
     }
 
     // ============================
@@ -83,13 +56,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

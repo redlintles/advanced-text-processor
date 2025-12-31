@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::jsonu::Jsonu;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::jsonu::Jsonu;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jsonu() {
@@ -16,41 +16,6 @@ mod tests {
     fn to_atp_line_is_constant() {
         let t = Jsonu::default();
         assert_eq!(t.to_atp_line().as_ref(), "jsonu;\n");
-    }
-
-    #[test]
-    fn from_vec_params_accepts_jsonu_identifier() {
-        let mut t = Jsonu::default();
-        let line = vec!["jsonu".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Jsonu::default();
-        let line = vec!["nope".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_line_is_empty() {
-        // acessa line[0] sem checar tamanho
-        let mut t = Jsonu::default();
-        let line: Vec<String> = vec![];
-        let _ = t.from_vec_params(line);
     }
 
     #[test]
@@ -97,13 +62,11 @@ mod tests {
 
         let got = t.transform(input);
 
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
-                "serde_json::from_str",
-                input.to_string()
-            )
-        );
+        let expected = Err(AtpError::new(
+            AtpErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
+            "serde_json::from_str",
+            input.to_string(),
+        ));
 
         assert_eq!(got, expected);
     }
@@ -154,13 +117,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

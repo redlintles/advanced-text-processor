@@ -6,14 +6,14 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{ AtpError, AtpErrorCode },
+        errors::{AtpError, AtpErrorCode},
         transforms::string_to_usize,
-        validations::{ check_index_against_input, check_vec_len },
+        validations::{check_index_against_input, check_vec_len},
     },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// TUCS - To Uppercase Single
 ///
@@ -37,9 +37,7 @@ pub struct Tucs {
 
 impl Tucs {
     pub fn params(index: usize) -> Self {
-        Tucs {
-            index,
-        }
+        Tucs { index }
     }
 }
 
@@ -56,44 +54,33 @@ impl TokenMethods for Tucs {
         let result: String = input
             .char_indices()
             .map(|(i, c)| {
-                if i == self.index { c.to_uppercase().to_string() } else { c.to_string() }
+                if i == self.index {
+                    c.to_uppercase().to_string()
+                } else {
+                    c.to_string()
+                }
             })
             .collect();
         Ok(result)
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        check_vec_len(&line, 2)?;
-        if line[0] == "tucs" {
-            self.index = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x14
     }
-    #[cfg(feature = "bytecode")]
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
-        if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+        check_vec_len(&params, 1, "tucs", "")?;
+        if params.len() != 1 {
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
-        self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
+        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
         Ok(())
     }
     #[cfg(feature = "bytecode")]

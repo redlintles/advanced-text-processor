@@ -6,9 +6,9 @@ use std::borrow::Cow;
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_index_against_input;
-use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
+use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::{AtpError, AtpErrorCode};
 
 /// Dla - Delete After
 /// Delete all characters after `index` in the specified `input`
@@ -32,9 +32,7 @@ pub struct Dla {
 
 impl Dla {
     pub fn params(index: usize) -> Self {
-        Dla {
-            index,
-        }
+        Dla { index }
     }
 }
 
@@ -47,39 +45,15 @@ impl TokenMethods for Dla {
         check_index_against_input(self.index, input)?;
 
         let mut s = String::from(input);
-        if
-            let Some(byte_index) = s
-                .char_indices()
-                .nth(self.index + 1)
-                .map(|(i, _)| i)
-        {
+        if let Some(byte_index) = s.char_indices().nth(self.index + 1).map(|(i, _)| i) {
             s.drain(byte_index..);
             return Ok(s);
         }
-        Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange(
-                    "Index is out of range for the desired string".into()
-                ),
-                self.to_atp_line(),
-                input.to_string()
-            )
-        )
-    }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "dla;"
-
-        if line[0] == "dla" {
-            self.index = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
+        Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange("Index is out of range for the desired string".into()),
+            self.to_atp_line(),
+            input.to_string(),
+        ))
     }
 
     fn get_string_repr(&self) -> &'static str {
@@ -89,18 +63,15 @@ impl TokenMethods for Dla {
     fn get_opcode(&self) -> u32 {
         0x09
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

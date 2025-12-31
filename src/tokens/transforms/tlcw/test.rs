@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ transforms::tlcw::Tlcw, TokenMethods };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::tlcw::Tlcw};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_tlcw() {
@@ -29,34 +29,10 @@ mod tests {
     #[test]
     fn transform_index_zero_lowercases_first_word() {
         let t = Tlcw::params(0);
-        assert_eq!(t.transform("BANANA LARANJA"), Ok("banana LARANJA".to_string()));
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Tlcw::default();
-        let line = vec!["tlcw".to_string(), "3".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.to_atp_line().as_ref(), "tlcw 3;\n");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Tlcw::default();
-        let line = vec!["nope".to_string(), "1".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
+        assert_eq!(
+            t.transform("BANANA LARANJA"),
+            Ok("banana LARANJA".to_string())
         );
-
-        assert_eq!(got, expected);
     }
 
     // ============================
@@ -89,13 +65,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

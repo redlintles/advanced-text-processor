@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::jpsc::Jpsc;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::jpsc::Jpsc;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jpsc() {
@@ -16,41 +16,6 @@ mod tests {
     fn to_atp_line_is_constant() {
         let t = Jpsc::default();
         assert_eq!(t.to_atp_line().as_ref(), "jpsc;\n");
-    }
-
-    #[test]
-    fn from_vec_params_accepts_jpsc_identifier() {
-        let mut t = Jpsc::default();
-        let line = vec!["jpsc".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Jpsc::default();
-        let line = vec!["nope".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_line_is_empty() {
-        // acessa line[0] sem checar tamanho
-        let mut t = Jpsc::default();
-        let line: Vec<String> = vec![];
-        let _ = t.from_vec_params(line);
     }
 
     #[test]
@@ -88,7 +53,10 @@ mod tests {
     fn transform_unicode_preserved() {
         let t = Jpsc::default();
         // depende do capitalize() do seu projeto; esperado típico:
-        assert_eq!(t.transform("maçã com canela"), Ok("MaçãComCanela".to_string()));
+        assert_eq!(
+            t.transform("maçã com canela"),
+            Ok("MaçãComCanela".to_string())
+        );
     }
 
     // ============================
@@ -121,13 +89,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

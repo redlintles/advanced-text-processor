@@ -5,11 +5,15 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::capitalize,
+        validations::check_vec_len,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 /// Token `Clw` — Capitalize Last Word
 ///
 /// Capitalizes the last word of `input`
@@ -32,27 +36,12 @@ impl TokenMethods for Clw {
     fn get_string_repr(&self) -> &'static str {
         "clw"
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "clw" {
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         let mut v: Vec<String> = input
             .split(' ')
             .rev()
             .enumerate()
-
-            .map(|(i, c)| {
-                if i == 0 { capitalize(c) } else { c.to_string() }
-            })
+            .map(|(i, c)| if i == 0 { capitalize(c) } else { c.to_string() })
             .collect::<Vec<_>>();
 
         v.reverse();
@@ -66,18 +55,18 @@ impl TokenMethods for Clw {
     fn get_opcode(&self) -> u32 {
         0x19
     }
-    #[cfg(feature = "bytecode")]
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        if instruction.len() == 0 {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::utils::params::AtpParamTypesJoin;
+
+        check_vec_len(&params, 1, "atb", params.join(""));
+        if params.len() == 0 {
             return Ok(());
         } else {
-            Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            )
+            Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ))
         }
     }
     #[cfg(feature = "bytecode")]

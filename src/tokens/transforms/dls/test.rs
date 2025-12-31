@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::dls::Dls;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::dls::Dls;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_sets_index() {
@@ -22,42 +22,6 @@ mod tests {
     fn to_atp_line_formats_correctly() {
         let t = Dls::params(7);
         assert_eq!(t.to_atp_line().as_ref(), "dls 7;\n");
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Dls::default();
-        let line = vec!["dls".to_string(), "2".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.index, 2);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_missing_param_via_check_vec_len() {
-        let mut t = Dls::default();
-        let line = vec!["dls".to_string()];
-
-        let got = t.from_vec_params(line);
-        assert!(got.is_err());
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Dls::default();
-        let line = vec!["nope".to_string(), "2".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
     }
 
     #[test]
@@ -122,13 +86,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -149,13 +111,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

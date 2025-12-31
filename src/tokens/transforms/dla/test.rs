@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::dla::Dla;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::dla::Dla;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_sets_index() {
@@ -25,46 +25,13 @@ mod tests {
     }
 
     #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Dla::default();
-        let line = vec!["dla".to_string(), "2".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.index, 2);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Dla::default();
-        let line = vec!["nope".to_string(), "2".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_param() {
-        // do jeito que está, acessa line[1] sem checar tamanho
-        let mut t = Dla::default();
-        let line = vec!["dla".to_string()];
-        let _ = t.from_vec_params(line);
-    }
-
-    #[test]
     fn transform_deletes_after_index_example_like_doc() {
         // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
         let t = Dla::params(3);
-        assert_eq!(t.transform("banana laranja vermelha azul"), Ok("bana".to_string()));
+        assert_eq!(
+            t.transform("banana laranja vermelha azul"),
+            Ok("bana".to_string())
+        );
     }
 
     #[test]
@@ -98,15 +65,11 @@ mod tests {
 
         let got = t.transform(input);
 
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange(
-                    "Index is out of range for the desired string".into()
-                ),
-                t.to_atp_line(),
-                input.to_string()
-            )
-        );
+        let expected = Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange("Index is out of range for the desired string".into()),
+            t.to_atp_line(),
+            input.to_string(),
+        ));
 
         assert_eq!(got, expected);
     }
@@ -133,13 +96,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -160,13 +121,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

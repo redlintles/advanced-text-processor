@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::ctc::Ctc;
     use crate::tokens::TokenMethods;
+    use crate::tokens::transforms::ctc::Ctc;
     use crate::utils::errors::AtpError;
 
     #[test]
@@ -26,40 +26,13 @@ mod tests {
     }
 
     #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Ctc::default();
-        let line = vec!["ctc".to_string(), "1".to_string(), "5".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.start_index, 1);
-        assert_eq!(t.end_index, 5);
-    }
-
-    #[test]
-    fn from_vec_params_returns_error_on_wrong_identifier() {
-        let mut t = Ctc::default();
-        let line = vec!["nope".to_string(), "1".to_string(), "5".to_string()];
-
-        // não cravo AtpErrorCode aqui porque o token usa caminho fully-qualified em runtime,
-        // mas a presença do Err já valida a branch.
-        let got = t.from_vec_params(line);
-        assert!(got.is_err());
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_params() {
-        // do jeito que está, acessa line[1]/line[2] sem checar tamanho
-        let mut t = Ctc::default();
-        let line = vec!["ctc".to_string()];
-        let _ = t.from_vec_params(line);
-    }
-
-    #[test]
     fn transform_capitalizes_chunk_simple_letters() {
         // exemplo do doc: 1..5 em "bananabananosa" => "bAnanabananosa"
         let t = Ctc::params(1, 5).unwrap();
-        assert_eq!(t.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
+        assert_eq!(
+            t.transform("bananabananosa"),
+            Ok("bAnanabananosa".to_string())
+        );
     }
 
     #[test]
@@ -106,7 +79,7 @@ mod tests {
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::{ AtpErrorCode };
+        use crate::utils::errors::AtpErrorCode;
         use crate::utils::params::AtpParamTypes;
 
         #[test]
@@ -122,13 +95,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -146,17 +117,18 @@ mod tests {
         #[test]
         fn from_params_rejects_wrong_param_type() {
             let mut t = Ctc::default();
-            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(5)];
+            let params = vec![
+                AtpParamTypes::String("x".to_string()),
+                AtpParamTypes::Usize(5),
+            ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

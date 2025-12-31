@@ -5,11 +5,14 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::capitalize,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// JPSC - Join to PascalCase
 ///
@@ -40,44 +43,24 @@ impl TokenMethods for Jpsc {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         let v = input.split_whitespace().collect::<Vec<_>>();
 
-        let processed = v
-            .iter()
-            .map(|w| { capitalize(w) })
-            .collect::<Vec<_>>()
-            .join("");
+        let processed = v.iter().map(|w| capitalize(w)).collect::<Vec<_>>().join("");
 
         Ok(processed)
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "jpsc" {
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2e
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
     }
     #[cfg(feature = "bytecode")]

@@ -5,11 +5,14 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::string_to_usize,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// RPT - Repeat
 ///
@@ -44,20 +47,6 @@ impl TokenMethods for Rpt {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(input.repeat(self.times))
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "rpt" {
-            self.times = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
 
     fn get_string_repr(&self) -> &'static str {
         "rpt"
@@ -66,18 +55,15 @@ impl TokenMethods for Rpt {
     fn get_opcode(&self) -> u32 {
         0x0d
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");

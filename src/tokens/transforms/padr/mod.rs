@@ -5,11 +5,14 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::extend_string,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 /// PADR - Pad Right
 ///
 /// Repeats `text` characters until `max_len` is reached, and then insert the result at the end of `input`
@@ -60,38 +63,27 @@ impl TokenMethods for Padr {
 
         Ok(format!("{}{}", input, s))
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "padr" {
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x30
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
-        self.text = parse_args!(instruction, 0, String, "Text_to_insert should be of String type");
+        self.text = parse_args!(
+            instruction,
+            0,
+            String,
+            "Text_to_insert should be of String type"
+        );
         self.max_len = parse_args!(instruction, 1, Usize, "Index should be of usize type");
 
         return Ok(());
@@ -99,10 +91,13 @@ impl TokenMethods for Padr {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::String(self.text.clone()),
-            AtpParamTypes::Usize(self.max_len),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::String(self.text.clone()),
+                AtpParamTypes::Usize(self.max_len),
+            ]
+        );
         result
     }
 }

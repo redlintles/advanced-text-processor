@@ -5,11 +5,14 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::string_to_usize,
+    },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 /// RTR - Rotate Right
 ///
 /// Rotates `input` to the right `n` times
@@ -31,34 +34,28 @@ pub struct Rtr {
 
 impl Rtr {
     pub fn params(times: usize) -> Rtr {
-        Rtr {
-            times,
-        }
+        Rtr { times }
     }
 }
 
 impl TokenMethods for Rtr {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidParameters("Input is empty".into()),
-                    self.to_atp_line(),
-                    "\" \""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::InvalidParameters("Input is empty".into()),
+                self.to_atp_line(),
+                "\" \"",
+            ));
         }
 
         let chars: Vec<char> = input.chars().collect();
         let len = chars.len();
         let times = self.times % len;
 
-        Ok(
-            chars[len - times..]
-                .iter()
-                .chain(&chars[..len - times])
-                .collect()
-        )
+        Ok(chars[len - times..]
+            .iter()
+            .chain(&chars[..len - times])
+            .collect())
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
@@ -68,35 +65,20 @@ impl TokenMethods for Rtr {
         "rtr"
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "rtr" {
-            self.times = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0f
     }
-    #[cfg(feature = "bytecode")]
+
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");

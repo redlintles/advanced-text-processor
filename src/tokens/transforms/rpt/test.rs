@@ -1,8 +1,8 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ TokenMethods, transforms::rpt::Rpt };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::rpt::Rpt};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_rpt() {
@@ -32,54 +32,6 @@ mod tests {
     fn transform_empty_input_still_empty() {
         let t = Rpt::params(5);
         assert_eq!(t.transform("").unwrap(), "");
-    }
-
-    #[test]
-    fn from_vec_params_parses_times() {
-        let mut t = Rpt::default();
-
-        let line = vec!["rpt".to_string(), "4".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.times, 4);
-        assert_eq!(t.transform("a").unwrap(), "aaaa");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Rpt::default();
-
-        let line = vec!["nope".to_string(), "3".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_non_numeric_times() {
-        let mut t = Rpt::default();
-
-        let line = vec!["rpt".to_string(), "NaN".to_string()];
-
-        assert!(t.from_vec_params(line).is_err());
-    }
-
-    // Documenta comportamento atual: indexação direta -> panic se faltar argumento
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_times() {
-        let mut t = Rpt::default();
-        let line = vec!["rpt".to_string()];
-        let _ = t.from_vec_params(line);
     }
 
     // ============================
@@ -114,13 +66,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

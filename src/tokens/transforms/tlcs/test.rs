@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ transforms::tlcs::Tlcs, TokenMethods };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::tlcs::Tlcs};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_tlcs() {
@@ -28,33 +28,6 @@ mod tests {
         // Índices por CHAR: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
         let t = Tlcs::params(3);
         assert_eq!(t.transform("banÀna"), Ok("banàna".to_string()));
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Tlcs::default();
-        let line = vec!["tlcs".to_string(), "2".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.to_atp_line().as_ref(), "tlcs 2;\n");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Tlcs::default();
-        let line = vec!["nope".to_string(), "1".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
     }
 
     // ============================
@@ -87,13 +60,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

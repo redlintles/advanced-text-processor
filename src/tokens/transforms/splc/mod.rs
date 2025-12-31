@@ -5,9 +5,9 @@ use std::borrow::Cow;
 
 use crate::tokens::TokenMethods;
 
+use crate::utils::errors::{AtpError, AtpErrorCode};
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// SPLC - Split Characters
 ///
@@ -34,43 +34,26 @@ impl TokenMethods for Splc {
         "splc;\n".into()
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "splc" {
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(
-            input
-                .chars()
-                .map(|c| c.to_string())
-                .collect::<Vec<_>>()
-                .join(" ")
-        )
+        Ok(input
+            .chars()
+            .map(|c| c.to_string())
+            .collect::<Vec<_>>()
+            .join(" "))
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x23
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
     }
     #[cfg(feature = "bytecode")]

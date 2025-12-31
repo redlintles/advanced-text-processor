@@ -6,14 +6,14 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{ AtpError, AtpErrorCode },
+        errors::{AtpError, AtpErrorCode},
         transforms::string_to_usize,
-        validations::{ check_index_against_input, check_vec_len },
+        validations::{check_index_against_input, check_vec_len},
     },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// DLS - Delete Single
 ///
@@ -37,9 +37,7 @@ pub struct Dls {
 
 impl Dls {
     pub fn params(index: usize) -> Self {
-        Dls {
-            index,
-        }
+        Dls { index }
     }
 }
 
@@ -53,51 +51,32 @@ impl TokenMethods for Dls {
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
-        Ok(
-            input
-                .chars()
-                .enumerate()
-                .filter_map(|(i, c)| {
-                    if self.index == i {
-                        return None;
-                    } else {
-                        return Some(c);
-                    }
-                })
-                .collect()
-        )
+        Ok(input
+            .chars()
+            .enumerate()
+            .filter_map(|(i, c)| {
+                if self.index == i {
+                    return None;
+                } else {
+                    return Some(c);
+                }
+            })
+            .collect())
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        check_vec_len(&line, 2)?;
-        if line[0] == "dls" {
-            self.index = string_to_usize(&line[1])?;
-            return Ok(());
-        }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x32
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ transforms::slt::Slt, TokenMethods };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::{TokenMethods, transforms::slt::Slt};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_slt() {
@@ -13,7 +13,10 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Slt { start_index: 1, end_index: 3 };
+        let t = Slt {
+            start_index: 1,
+            end_index: 3,
+        };
         assert_eq!(t.to_atp_line().as_ref(), "slt 1 3;\n");
     }
 
@@ -38,36 +41,12 @@ mod tests {
     }
 
     #[test]
-    fn from_vec_params_accepts_valid() {
-        let mut t = Slt::default();
-        let line = vec!["slt".to_string(), "1".to_string(), "3".to_string()];
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.start_index, 1);
-        assert_eq!(t.end_index, 3);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_token() {
-        let mut t = Slt::default();
-        let line = vec!["sll".to_string(), "1".to_string(), "3".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
     fn transform_rejects_invalid_bounds() {
         // start > end deve falhar (quem define isso é seu check_chunk_bound_indexes)
-        let t = Slt { start_index: 5, end_index: 1 };
+        let t = Slt {
+            start_index: 5,
+            end_index: 1,
+        };
         assert!(matches!(t.transform("banana"), Err(_)));
     }
 
@@ -101,20 +80,21 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
 
         #[test]
         fn to_bytecode_contains_opcode_and_two_params() {
-            let t = Slt { start_index: 1, end_index: 3 };
+            let t = Slt {
+                start_index: 1,
+                end_index: 3,
+            };
             let bc = t.to_bytecode();
 
             // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...

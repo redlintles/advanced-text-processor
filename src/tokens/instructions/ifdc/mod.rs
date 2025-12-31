@@ -1,17 +1,18 @@
 #[cfg(feature = "test_access")]
 pub mod test;
 
-use std::{ borrow::Cow };
+use std::borrow::Cow;
 
 use crate::{
     globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     to_bytecode,
     tokens::{ TokenMethods, transforms::dlf::Dlf },
+    utils::validations::check_vec_len,
 };
 
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// Ifdc - If Do Contains
 ///
@@ -36,7 +37,10 @@ pub struct Ifdc {
 
 impl Default for Ifdc {
     fn default() -> Self {
-        Ifdc { text: "teste".to_string(), inner: Box::new(Dlf::default()) }
+        Ifdc {
+            text: "teste".to_string(),
+            inner: Box::new(Dlf::default()),
+        }
     }
 }
 
@@ -54,48 +58,6 @@ impl TokenMethods for Ifdc {
         format!("ifdc {} do {}", self.text, self.inner.to_atp_line()).into()
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line.get(0).map(|s| s.as_str()) == Some("ifdc") {
-            if line.len() < 4 || line.get(2).map(|s| s.as_str()) != Some("do") {
-                return Err(
-                    AtpError::new(
-                        AtpErrorCode::InvalidParameters(
-                            "Expected: ifdc <text> do <token...>".into()
-                        ),
-                        "ifdc".to_string(),
-                        line.join(" ")
-                    )
-                );
-            }
-
-            self.text = line[1].clone();
-            let inner_token_text = line[3..].to_vec();
-
-            let query_result = TOKEN_TABLE.find((
-                QuerySource::Identifier(inner_token_text[0].clone().into()),
-                QueryTarget::Token,
-            ))?;
-
-            match query_result {
-                TargetValue::Token(inner_token_ref) => {
-                    let mut inner_token = inner_token_ref.into_box();
-                    inner_token.from_vec_params(inner_token_text)?;
-                    self.inner = inner_token;
-                }
-                _ => unreachable!("Invalid query result"),
-            }
-
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                "ifdc".to_string(),
-                line.join(" ")
-            )
-        )
-    }
     fn get_string_repr(&self) -> &'static str {
         "ifdc"
     }
@@ -112,11 +74,14 @@ impl TokenMethods for Ifdc {
     fn get_opcode(&self) -> u32 {
         0x33
     }
-    #[cfg(feature = "bytecode")]
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::{ parse_args, utils::validations::check_vec_len };
 
-        if instruction.len() != 2 {
+        use crate::utils::params::AtpParamTypesJoin;
+
+        check_vec_len(&params, 1, "atb", params.join(""));
+
+        if params.len() != 2 {
             return Err(
                 AtpError::new(
                     AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
@@ -126,9 +91,9 @@ impl TokenMethods for Ifdc {
             );
         }
 
-        self.text = parse_args!(instruction, 0, String, "");
+        self.text = parse_args!(params, 0, String, "");
 
-        self.inner = parse_args!(instruction, 1, Token, "");
+        self.inner = parse_args!(params, 1, Token, "");
 
         Ok(())
     }

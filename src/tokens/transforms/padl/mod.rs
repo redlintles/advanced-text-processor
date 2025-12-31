@@ -5,13 +5,16 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
+    utils::{
+        errors::{AtpError, AtpErrorCode},
+        transforms::extend_string,
+    },
 };
 
 use crate::parse_args;
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// PADL - Pad Left
 ///
@@ -63,36 +66,25 @@ impl TokenMethods for Padl {
 
         Ok(format!("{}{}", s, input))
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "padl" {
-            return Ok(());
-        }
-
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid Parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2f
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
-        self.text = parse_args!(instruction, 0, String, "Text_to_insert should be of String type");
+        self.text = parse_args!(
+            instruction,
+            0,
+            String,
+            "Text_to_insert should be of String type"
+        );
         self.max_len = parse_args!(instruction, 1, Usize, "Index should be of usize type");
 
         return Ok(());
@@ -100,10 +92,13 @@ impl TokenMethods for Padl {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::String(self.text.clone()),
-            AtpParamTypes::Usize(self.max_len),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::String(self.text.clone()),
+                AtpParamTypes::Usize(self.max_len),
+            ]
+        );
         result
     }
 }

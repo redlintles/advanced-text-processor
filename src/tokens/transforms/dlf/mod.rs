@@ -3,10 +3,13 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    tokens::TokenMethods,
+    utils::errors::{AtpError, AtpErrorCode},
+};
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 /// DLF - Delete First
 ///
 /// Deletes the first character of `input`
@@ -46,21 +49,6 @@ impl TokenMethods for Dlf {
         Ok(input[cut..].to_string())
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "dlf;"
-
-        if line[0] == "dlf" {
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
-
     fn get_string_repr(&self) -> &'static str {
         "dlf"
     }
@@ -68,18 +56,15 @@ impl TokenMethods for Dlf {
     fn get_opcode(&self) -> u32 {
         0x03
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
     }
     #[cfg(feature = "bytecode")]

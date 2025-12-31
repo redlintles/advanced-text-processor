@@ -5,10 +5,13 @@ use std::borrow::Cow;
 
 use html_escape::encode_text;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    tokens::TokenMethods,
+    utils::errors::{AtpError, AtpErrorCode},
+};
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// HTMLE - HTML Escape
 ///
@@ -39,34 +42,20 @@ impl TokenMethods for Htmle {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         Ok(encode_text(input).to_string())
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "htmle" {
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x24
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
     }
     #[cfg(feature = "bytecode")]

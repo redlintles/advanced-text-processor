@@ -3,11 +3,11 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::utils::errors::{AtpError, AtpErrorCode};
 #[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::utils::validations::{ check_index_against_input, check_vec_len };
-use crate::{ tokens::TokenMethods, utils::transforms::string_to_usize };
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::validations::{check_index_against_input, check_vec_len};
+use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
 
 /// Dlb - Delete Before
 /// Delete all characters before `index` in the specified `input`
@@ -31,9 +31,7 @@ pub struct Dlb {
 
 impl Dlb {
     pub fn params(index: usize) -> Self {
-        Dlb {
-            index,
-        }
+        Dlb { index }
     }
 }
 
@@ -47,48 +45,24 @@ impl TokenMethods for Dlb {
 
         check_index_against_input(self.index, input)?;
 
-        if
-            let Some(byte_index) = s
-                .char_indices()
-                .nth(self.index)
-                .map(|(i, _)| i)
-        {
+        if let Some(byte_index) = s.char_indices().nth(self.index).map(|(i, _)| i) {
             s.drain(0..byte_index);
             return Ok(s);
         }
 
-        Err(
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange(
-                    format!(
-                        "Supported indexes 0-{}, entered index {}",
-                        input.chars().count().saturating_sub(1),
-                        self.index
-                    ).into()
-                ),
-                self.to_atp_line(),
-                input.to_string()
-            )
-        )
+        Err(AtpError::new(
+            AtpErrorCode::IndexOutOfRange(
+                format!(
+                    "Supported indexes 0-{}, entered index {}",
+                    input.chars().count().saturating_sub(1),
+                    self.index
+                )
+                .into(),
+            ),
+            self.to_atp_line(),
+            input.to_string(),
+        ))
     }
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        // "dlb;"
-
-        check_vec_len(&line, 2)?;
-
-        if line[0] == "dlb" {
-            self.index = string_to_usize(&line[1])?;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
-
     fn get_string_repr(&self) -> &'static str {
         "dlb"
     }
@@ -96,18 +70,15 @@ impl TokenMethods for Dlb {
     fn get_opcode(&self) -> u32 {
         0x0a
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

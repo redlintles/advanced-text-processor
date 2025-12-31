@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::transforms::ate::Ate;
     use crate::tokens::TokenMethods;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::tokens::transforms::ate::Ate;
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_sets_text() {
@@ -42,42 +42,6 @@ mod tests {
         assert_eq!(t.transform(""), Ok("bar".to_string()));
     }
 
-    #[test]
-    fn from_vec_params_parses_ok_when_identifier_matches() {
-        let mut t = Ate::default();
-        let line = vec!["ate".to_string(), " bar".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.text, " bar".to_string());
-    }
-
-    #[test]
-    fn from_vec_params_returns_token_not_found_when_identifier_differs() {
-        let mut t = Ate::default();
-        let line = vec!["not_ate".to_string(), " bar".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line.join(" "),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_missing_text_param() {
-        // do jeito que está hoje, line[1] causa panic se só vier "ate"
-        let mut t = Ate::default();
-        let line = vec!["ate".to_string()];
-        let _ = t.from_vec_params(line);
-    }
-
     // ============================
     // Bytecode-only tests (separados)
     // ============================
@@ -97,18 +61,16 @@ mod tests {
             let mut t = Ate::default();
             let params = vec![
                 AtpParamTypes::String("a".to_string()),
-                AtpParamTypes::String("b".to_string())
+                AtpParamTypes::String("b".to_string()),
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -129,13 +91,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::InvalidParameters("Text should be of string type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::InvalidParameters("Text should be of string type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }

@@ -4,7 +4,7 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::rlw::Rlw;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_rlw() {
@@ -64,71 +64,6 @@ mod tests {
         assert_eq!(t.transform("maçã maçã"), Ok("maçã maçA".to_string()));
     }
 
-    #[test]
-    fn from_vec_params_parses_pattern_and_replacement() {
-        let mut t = Rlw::default();
-        let line = vec!["rlw".to_string(), "a".to_string(), "b".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.pattern.as_str(), "a");
-        assert_eq!(t.text_to_replace, "b".to_string());
-
-        assert_eq!(t.transform("aaaaa"), Ok("aaaab".to_string()));
-    }
-
-    #[test]
-    fn from_vec_params_rejects_invalid_regex() {
-        let mut t = Rlw::default();
-        let line = vec!["rlw".to_string(), "(".to_string(), "b".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TextParsingError("Failed creating regex".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_identifier() {
-        let mut t = Rlw::default();
-        let line = vec!["nope".to_string(), "a".to_string(), "b".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_line_is_empty() {
-        let mut t = Rlw::default();
-        let line: Vec<String> = vec![];
-        let _ = t.from_vec_params(line);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_vec_params_panics_if_line_is_too_short() {
-        // acessa line[2]
-        let mut t = Rlw::default();
-        let line = vec!["rlw".to_string(), "a".to_string()];
-        let _ = t.from_vec_params(line);
-    }
-
     // ============================
     // Bytecode-only tests
     // ============================
@@ -149,7 +84,7 @@ mod tests {
 
             let params = vec![
                 AtpParamTypes::String("a+".to_string()),
-                AtpParamTypes::String("b".to_string())
+                AtpParamTypes::String("b".to_string()),
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));
@@ -165,13 +100,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -182,18 +115,16 @@ mod tests {
 
             let params = vec![
                 AtpParamTypes::Usize(7), // deveria ser String (pattern)
-                AtpParamTypes::String("b".to_string())
+                AtpParamTypes::String("b".to_string()),
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
+                "",
+                "",
+            ));
 
             assert_eq!(got, expected);
         }
@@ -204,18 +135,16 @@ mod tests {
 
             let params = vec![
                 AtpParamTypes::String("(".to_string()),
-                AtpParamTypes::String("b".to_string())
+                AtpParamTypes::String("b".to_string()),
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                    "sslt",
-                    "(".to_string()
-                )
-            );
+            let expected = Err(crate::utils::errors::AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                "(".to_string(),
+            ));
 
             assert_eq!(got, expected);
         }

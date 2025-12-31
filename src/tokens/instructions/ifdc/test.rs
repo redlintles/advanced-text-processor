@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ TokenMethods, transforms::dlf::Dlf };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::tokens::instructions::ifdc::Ifdc;
+    use crate::tokens::{TokenMethods, transforms::dlf::Dlf};
+    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn to_atp_line_ok() {
@@ -20,36 +20,13 @@ mod tests {
         let token = Ifdc::params("xy", Box::new(Dlf::default()));
 
         let a = token.transform("abcxydef");
-        assert!(a.is_ok(), "contains -> inner executed (at least does not fail)");
+        assert!(
+            a.is_ok(),
+            "contains -> inner executed (at least does not fail)"
+        );
 
         let b = token.transform("banana").unwrap();
         assert_eq!(b, "banana".to_string(), "does nothing when not contains");
-    }
-
-    #[test]
-    fn from_vec_params_rejects_wrong_head() {
-        let mut t = Ifdc::default();
-        let line = vec!["nope".to_string(), "xy".to_string(), "do".to_string(), "dlf".to_string()];
-
-        let got = t.from_vec_params(line.clone());
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                "ifdc".to_string(),
-                line.join(" ")
-            )
-        );
-
-        assert_eq!(got, expected);
-    }
-
-    #[test]
-    fn from_vec_params_parses_ok() {
-        let mut t = Ifdc::default();
-        let line = vec!["ifdc".to_string(), "xy".to_string(), "do".to_string(), "dlf".to_string()];
-
-        assert_eq!(t.from_vec_params(line), Ok(()));
-        assert_eq!(t.get_string_repr(), "ifdc");
     }
 
     #[cfg(feature = "bytecode")]
@@ -70,13 +47,11 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            let expected = Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
             assert_eq!(got, expected);
         }
 
@@ -86,7 +61,7 @@ mod tests {
             let params: Vec<AtpParamTypes> = vec![
                 AtpParamTypes::String("xy".to_string()),
                 // depende de como você representa tokens no bytecode:
-                AtpParamTypes::Token(Box::new(Dlf::default()))
+                AtpParamTypes::Token(Box::new(Dlf::default())),
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));

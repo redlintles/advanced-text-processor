@@ -6,14 +6,14 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{ AtpError, AtpErrorCode },
+        errors::{AtpError, AtpErrorCode},
         transforms::string_to_usize,
         validations::check_chunk_bound_indexes,
     },
 };
 
 #[cfg(feature = "bytecode")]
-use crate::{ utils::params::AtpParamTypes };
+use crate::utils::params::AtpParamTypes;
 
 /// TLCC - To Lowercase Chunk
 ///
@@ -59,7 +59,11 @@ impl TokenMethods for Tlcc {
         let total_chars = input.chars().count();
         let last_char_index = total_chars.saturating_sub(1);
 
-        let end = if self.end_index > last_char_index { last_char_index } else { self.end_index };
+        let end = if self.end_index > last_char_index {
+            last_char_index
+        } else {
+            self.end_index
+        };
 
         let result: String = input
             .chars()
@@ -76,41 +80,19 @@ impl TokenMethods for Tlcc {
         Ok(result)
     }
 
-    fn from_vec_params(&mut self, line: Vec<String>) -> Result<(), AtpError> {
-        if line[0] == "tlcc" {
-            let start_index = string_to_usize(&line[1])?;
-            let end_index = string_to_usize(&line[2])?;
-
-            check_chunk_bound_indexes(start_index, end_index, None)?;
-
-            self.start_index = start_index;
-            self.end_index = end_index;
-            return Ok(());
-        }
-        Err(
-            AtpError::new(
-                AtpErrorCode::TokenNotFound("Invalid parser for this token".into()),
-                line[0].to_string(),
-                line.join(" ")
-            )
-        )
-    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x17
     }
-    #[cfg(feature = "bytecode")]
     fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
+            return Err(AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                "",
+            ));
         }
 
         self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
@@ -121,10 +103,13 @@ impl TokenMethods for Tlcc {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
-            AtpParamTypes::Usize(self.start_index),
-            AtpParamTypes::Usize(self.end_index),
-        ]);
+        let result: Vec<u8> = to_bytecode!(
+            self.get_opcode(),
+            [
+                AtpParamTypes::Usize(self.start_index),
+                AtpParamTypes::Usize(self.end_index),
+            ]
+        );
         result
     }
 }
