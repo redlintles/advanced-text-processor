@@ -3,12 +3,8 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::errors::{AtpError, AtpErrorCode},
-};
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// JSNC - Join to Snake Case
@@ -44,11 +40,7 @@ impl TokenMethods for Jsnc {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(input
-            .split_whitespace()
-            .collect::<Vec<_>>()
-            .join("_")
-            .to_lowercase())
+        Ok(input.split_whitespace().collect::<Vec<_>>().join("_").to_lowercase())
     }
 
     #[cfg(feature = "bytecode")]
@@ -59,11 +51,13 @@ impl TokenMethods for Jsnc {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
     }
     #[cfg(feature = "bytecode")]

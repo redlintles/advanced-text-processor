@@ -7,12 +7,11 @@ use crate::utils::errors::AtpError;
 use crate::utils::validations::check_vec_len;
 use crate::{
     tokens::TokenMethods,
-    utils::transforms::{capitalize, string_to_usize},
+    utils::transforms::{ capitalize },
     utils::validations::check_chunk_bound_indexes,
 };
 
-#[cfg(feature = "bytecode")]
-use crate::utils::{errors::AtpErrorCode, params::AtpParamTypes};
+use crate::utils::{ errors::AtpErrorCode, params::AtpParamTypes };
 /// Token `Ctc` — Capitalize Chunk
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
@@ -105,14 +104,16 @@ impl TokenMethods for Ctc {
         use crate::parse_args;
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""));
+        check_vec_len(&params, 1, "atb", params.join(""))?;
 
         if params.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
@@ -123,13 +124,10 @@ impl TokenMethods for Ctc {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::Usize(self.start_index),
-                AtpParamTypes::Usize(self.end_index),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.start_index),
+            AtpParamTypes::Usize(self.end_index),
+        ]);
         result
     }
 }

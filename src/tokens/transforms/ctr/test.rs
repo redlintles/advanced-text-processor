@@ -4,7 +4,7 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::ctr::Ctr;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpError };
 
     #[test]
     fn params_accepts_valid_range() {
@@ -82,11 +82,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }
@@ -104,18 +106,17 @@ mod tests {
         #[test]
         fn from_params_rejects_wrong_param_type() {
             let mut t = Ctr::default();
-            let params = vec![
-                AtpParamTypes::String("x".to_string()),
-                AtpParamTypes::Usize(7),
-            ];
+            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(7)];
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

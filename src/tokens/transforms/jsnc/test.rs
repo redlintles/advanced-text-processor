@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::jsnc::Jsnc;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jsnc() {
@@ -51,10 +50,7 @@ mod tests {
     #[test]
     fn transform_unicode_preserved_and_lowercased() {
         let t = Jsnc::default();
-        assert_eq!(
-            t.transform("Maçã Com Canela"),
-            Ok("maçã_com_canela".to_string())
-        );
+        assert_eq!(t.transform("Maçã Com Canela"), Ok("maçã_com_canela".to_string()));
     }
 
     // ============================
@@ -87,11 +83,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

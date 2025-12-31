@@ -6,13 +6,12 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{AtpError, AtpErrorCode},
+        errors::{ AtpError, AtpErrorCode },
         transforms::capitalize,
         validations::check_vec_len,
     },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 /// Token `Clw` — Capitalize Last Word
 ///
@@ -58,15 +57,17 @@ impl TokenMethods for Clw {
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""));
+        check_vec_len(&params, 1, "atb", params.join(""))?;
         if params.len() == 0 {
             return Ok(());
         } else {
-            Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ))
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            )
         }
     }
     #[cfg(feature = "bytecode")]

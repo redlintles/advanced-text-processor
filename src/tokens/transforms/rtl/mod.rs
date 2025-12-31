@@ -3,11 +3,10 @@ pub mod test;
 
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
+use crate::{ tokens::TokenMethods };
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// RTL - Rotate Left
 ///
@@ -37,18 +36,25 @@ impl Rtl {
 impl TokenMethods for Rtl {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
-            return Err(AtpError::new(
-                AtpErrorCode::InvalidParameters("Input is empty".into()),
-                self.to_atp_line(),
-                "\" \"",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::InvalidParameters("Input is empty".into()),
+                    self.to_atp_line(),
+                    "\" \""
+                )
+            );
         }
 
         let chars: Vec<char> = input.chars().collect();
         let len = chars.len();
         let times = self.times % len;
 
-        Ok(chars[times..].iter().chain(&chars[..times]).collect())
+        Ok(
+            chars[times..]
+                .iter()
+                .chain(&chars[..times])
+                .collect()
+        )
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
@@ -66,11 +72,13 @@ impl TokenMethods for Rtl {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");

@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::jpsc::Jpsc;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jpsc() {
@@ -53,10 +52,7 @@ mod tests {
     fn transform_unicode_preserved() {
         let t = Jpsc::default();
         // depende do capitalize() do seu projeto; esperado típico:
-        assert_eq!(
-            t.transform("maçã com canela"),
-            Ok("MaçãComCanela".to_string())
-        );
+        assert_eq!(t.transform("maçã com canela"), Ok("MaçãComCanela".to_string()));
     }
 
     // ============================
@@ -89,11 +85,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

@@ -5,13 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// Token `Atb` — Add to Beginning
@@ -67,14 +63,16 @@ impl TokenMethods for Atb {
         use crate::parse_args;
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""));
+        check_vec_len(&params, 1, "atb", params.join(""))?;
 
         if params.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.text = parse_args!(params, 0, String, "Text should be of string type");
@@ -85,10 +83,9 @@ impl TokenMethods for Atb {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [AtpParamTypes::String(self.text.clone()),]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::String(self.text.clone()),
+        ]);
         result
     }
 }

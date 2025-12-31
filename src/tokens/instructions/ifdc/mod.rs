@@ -3,15 +3,13 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
-    to_bytecode,
-    tokens::{ TokenMethods, transforms::dlf::Dlf },
-    utils::validations::check_vec_len,
-};
+#[cfg(feature = "bytecode")]
+use crate::to_bytecode;
+
+use crate::{ tokens::{ TokenMethods, transforms::dlf::Dlf } };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
-#[cfg(feature = "bytecode")]
+
 use crate::utils::params::AtpParamTypes;
 
 /// Ifdc - If Do Contains
@@ -79,7 +77,7 @@ impl TokenMethods for Ifdc {
 
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""));
+        check_vec_len(&params, 1, "atb", params.join(""))?;
 
         if params.len() != 2 {
             return Err(

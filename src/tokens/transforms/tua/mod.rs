@@ -3,12 +3,8 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::errors::{AtpError, AtpErrorCode},
-};
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 #[derive(Clone, Copy, Default)]
@@ -33,11 +29,13 @@ impl TokenMethods for Tua {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ))
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            )
         }
     }
     #[cfg(feature = "bytecode")]

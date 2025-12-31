@@ -5,10 +5,9 @@ use std::borrow::Cow;
 
 use crate::tokens::TokenMethods;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// Jsone - Json Escape
 ///
@@ -38,13 +37,17 @@ impl TokenMethods for Jsone {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(serde_json::to_string(input).map_err(|_| {
-            AtpError::new(
-                AtpErrorCode::TextParsingError("Failed to serialize to JSON".into()),
-                "serde_json::to_string".to_string(),
-                input.to_string(),
-            )
-        })?)
+        Ok(
+            serde_json
+                ::to_string(input)
+                .map_err(|_| {
+                    AtpError::new(
+                        AtpErrorCode::TextParsingError("Failed to serialize to JSON".into()),
+                        "serde_json::to_string".to_string(),
+                        input.to_string()
+                    )
+                })?
+        )
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
@@ -54,11 +57,13 @@ impl TokenMethods for Jsone {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
     }
     #[cfg(feature = "bytecode")]

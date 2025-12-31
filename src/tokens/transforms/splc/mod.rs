@@ -5,8 +5,7 @@ use std::borrow::Cow;
 
 use crate::tokens::TokenMethods;
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
-#[cfg(feature = "bytecode")]
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 use crate::utils::params::AtpParamTypes;
 
 /// SPLC - Split Characters
@@ -35,11 +34,13 @@ impl TokenMethods for Splc {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(input
-            .chars()
-            .map(|c| c.to_string())
-            .collect::<Vec<_>>()
-            .join(" "))
+        Ok(
+            input
+                .chars()
+                .map(|c| c.to_string())
+                .collect::<Vec<_>>()
+                .join(" ")
+        )
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
@@ -49,11 +50,13 @@ impl TokenMethods for Splc {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
     }
     #[cfg(feature = "bytecode")]

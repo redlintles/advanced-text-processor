@@ -6,13 +6,11 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-        validations::{check_chunk_bound_indexes, check_vec_len},
+        errors::{ AtpError, AtpErrorCode },
+        validations::{ check_chunk_bound_indexes, check_vec_len },
     },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 /// TUCC - To uppercase Chunk
 ///
@@ -87,11 +85,13 @@ impl TokenMethods for Tucc {
         check_vec_len(&params, 2, "tucc", "")?;
 
         if params.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
@@ -102,13 +102,10 @@ impl TokenMethods for Tucc {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::Usize(self.start_index),
-                AtpParamTypes::Usize(self.end_index),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.start_index),
+            AtpParamTypes::Usize(self.end_index),
+        ]);
         result
     }
 }

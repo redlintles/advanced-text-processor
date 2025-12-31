@@ -6,13 +6,11 @@ use std::borrow::Cow;
 use crate::{
     tokens::TokenMethods,
     utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-        validations::{check_index_against_input, check_vec_len},
+        errors::{ AtpError, AtpErrorCode },
+        validations::{ check_index_against_input, check_vec_len },
     },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// TUCS - To Uppercase Single
@@ -54,11 +52,7 @@ impl TokenMethods for Tucs {
         let result: String = input
             .char_indices()
             .map(|(i, c)| {
-                if i == self.index {
-                    c.to_uppercase().to_string()
-                } else {
-                    c.to_string()
-                }
+                if i == self.index { c.to_uppercase().to_string() } else { c.to_string() }
             })
             .collect();
         Ok(result)
@@ -73,11 +67,13 @@ impl TokenMethods for Tucs {
 
         check_vec_len(&params, 1, "tucs", "")?;
         if params.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(params, 0, Usize, "Index should be of usize type");

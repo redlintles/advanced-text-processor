@@ -5,12 +5,8 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::errors::{AtpError, AtpErrorCode},
-};
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 /// RLW - Replace Last With
 ///
@@ -69,8 +65,9 @@ impl TokenMethods for Rlw {
         if let Some(m) = caps.last() {
             let (start, end) = (m.start(), m.end());
 
-            let mut result =
-                String::with_capacity(input.len() - (end - start) + self.text_to_replace.len());
+            let mut result = String::with_capacity(
+                input.len() - (end - start) + self.text_to_replace.len()
+            );
             result.push_str(&input[..start]);
             result.push_str(&self.text_to_replace);
             result.push_str(&input[end..]);
@@ -90,21 +87,27 @@ impl TokenMethods for Rlw {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
-        let pattern_payload =
-            parse_args!(instruction, 0, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(
+            instruction,
+            0,
+            String,
+            "Pattern should be of string type"
+        );
 
         self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
                 AtpErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",
-                pattern_payload.clone(),
+                pattern_payload.clone()
             )
         })?;
 
@@ -120,13 +123,10 @@ impl TokenMethods for Rlw {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::String(self.pattern.to_string()),
-                AtpParamTypes::String(self.text_to_replace.clone()),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::String(self.pattern.to_string()),
+            AtpParamTypes::String(self.text_to_replace.clone()),
+        ]);
         result
     }
 }

@@ -5,14 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-        validations::{check_index_against_input, check_vec_len},
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::{ check_index_against_input } },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// DLS - Delete Single
@@ -51,17 +46,19 @@ impl TokenMethods for Dls {
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
-        Ok(input
-            .chars()
-            .enumerate()
-            .filter_map(|(i, c)| {
-                if self.index == i {
-                    return None;
-                } else {
-                    return Some(c);
-                }
-            })
-            .collect())
+        Ok(
+            input
+                .chars()
+                .enumerate()
+                .filter_map(|(i, c)| {
+                    if self.index == i {
+                        return None;
+                    } else {
+                        return Some(c);
+                    }
+                })
+                .collect()
+        )
     }
 
     #[cfg(feature = "bytecode")]
@@ -72,11 +69,13 @@ impl TokenMethods for Dls {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

@@ -5,13 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::capitalize,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// JPSC - Join to PascalCase
@@ -43,7 +39,11 @@ impl TokenMethods for Jpsc {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         let v = input.split_whitespace().collect::<Vec<_>>();
 
-        let processed = v.iter().map(|w| capitalize(w)).collect::<Vec<_>>().join("");
+        let processed = v
+            .iter()
+            .map(|w| capitalize(w))
+            .collect::<Vec<_>>()
+            .join("");
 
         Ok(processed)
     }
@@ -56,11 +56,13 @@ impl TokenMethods for Jpsc {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
     }
     #[cfg(feature = "bytecode")]

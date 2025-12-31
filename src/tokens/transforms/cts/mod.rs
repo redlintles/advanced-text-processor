@@ -5,15 +5,11 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        transforms::{capitalize, string_to_usize},
-        validations::{check_index_against_input, check_vec_len},
-    },
+    utils::{ transforms::capitalize, validations::check_index_against_input },
 };
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// Token `Cts` — Capitalize Single
@@ -52,17 +48,16 @@ impl TokenMethods for Cts {
         check_index_against_input(self.index, input)?;
         let v = input.split_whitespace().collect::<Vec<_>>();
 
-        Ok(v.iter()
-            .enumerate()
-            .map(|(index, word)| {
-                if index == self.index {
-                    capitalize(word)
-                } else {
-                    word.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(" "))
+        Ok(
+            v
+                .iter()
+                .enumerate()
+                .map(|(index, word)| {
+                    if index == self.index { capitalize(word) } else { word.to_string() }
+                })
+                .collect::<Vec<_>>()
+                .join(" ")
+        )
     }
 
     fn to_atp_line(&self) -> Cow<'static, str> {
@@ -76,11 +71,13 @@ impl TokenMethods for Cts {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

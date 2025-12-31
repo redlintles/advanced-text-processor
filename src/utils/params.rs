@@ -1,19 +1,17 @@
 use core::str;
-use std::{
-    array::TryFromSliceError,
-    io::{BufReader, Read},
-    sync::Arc,
-};
+use std::{ array::TryFromSliceError, io::{ BufReader, Read }, sync::Arc };
 
 use crate::{
     globals::table::{
-        InstructionParam, ParamType, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue,
+        InstructionParam,
+        ParamType,
+        QuerySource,
+        QueryTarget,
+        TOKEN_TABLE,
+        TargetValue,
     },
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
 pub enum AtpParamTypes {
@@ -47,17 +45,19 @@ impl AtpParamTypes {
 
     pub fn from_expected(
         expected: Arc<[InstructionParam]>,
-        chunks: &[String],
+        chunks: &[String]
     ) -> Result<Vec<AtpParamTypes>, AtpError> {
         let (parsed, consumed) = Self::parse_with_cursor(expected, chunks, 0)?;
 
         // ✅ se você quiser ser rígido: não pode sobrar chunk “solto”
         if consumed != chunks.len() {
-            return Err(AtpError::new(
-                AtpErrorCode::TextParsingError("Extra parameters after parsing".into()),
-                "AtpParamTypes::from_expected",
-                format!("consumed={}, total={}", consumed, chunks.len()),
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::TextParsingError("Extra parameters after parsing".into()),
+                    "AtpParamTypes::from_expected",
+                    format!("consumed={}, total={}", consumed, chunks.len())
+                )
+            );
         }
 
         Ok(parsed)
@@ -66,32 +66,36 @@ impl AtpParamTypes {
     fn parse_with_cursor(
         expected: Arc<[InstructionParam]>,
         chunks: &[String],
-        mut i: usize,
+        mut i: usize
     ) -> Result<(Vec<AtpParamTypes>, usize), AtpError> {
         let mut out = Vec::with_capacity(expected.len());
 
         for p in expected.iter() {
             match p.param_type {
                 ParamType::String => {
-                    let s = chunks.get(i).ok_or_else(|| {
-                        AtpError::new(
-                            AtpErrorCode::TextParsingError("Missing String parameter".into()),
-                            "AtpParamTypes::parse_with_cursor",
-                            format!("index={}", i),
-                        )
-                    })?;
+                    let s = chunks
+                        .get(i)
+                        .ok_or_else(|| {
+                            AtpError::new(
+                                AtpErrorCode::TextParsingError("Missing String parameter".into()),
+                                "AtpParamTypes::parse_with_cursor",
+                                format!("index={}", i)
+                            )
+                        })?;
                     out.push(AtpParamTypes::String(s.clone()));
                     i += 1;
                 }
 
                 ParamType::Usize => {
-                    let s = chunks.get(i).ok_or_else(|| {
-                        AtpError::new(
-                            AtpErrorCode::TextParsingError("Missing Usize parameter".into()),
-                            "AtpParamTypes::parse_with_cursor",
-                            format!("index={}", i),
-                        )
-                    })?;
+                    let s = chunks
+                        .get(i)
+                        .ok_or_else(|| {
+                            AtpError::new(
+                                AtpErrorCode::TextParsingError("Missing Usize parameter".into()),
+                                "AtpParamTypes::parse_with_cursor",
+                                format!("index={}", i)
+                            )
+                        })?;
                     out.push(AtpParamTypes::Usize(string_to_usize(s)?));
                     i += 1;
                 }
@@ -103,34 +107,41 @@ impl AtpParamTypes {
                         .ok_or_else(|| {
                             AtpError::new(
                                 AtpErrorCode::TextParsingError(
-                                    "Missing nested token identifier".into(),
+                                    "Missing nested token identifier".into()
                                 ),
                                 "AtpParamTypes::parse_with_cursor",
-                                format!("index={}", i),
+                                format!("index={}", i)
                             )
                         })?
                         .clone();
                     i += 1;
 
                     // 2) pegar params esperados do token aninhado
-                    let nested_expected = match TOKEN_TABLE.find((
-                        QuerySource::Identifier(nested_id.clone().into()),
-                        QueryTarget::Params,
-                    ))? {
+                    let nested_expected = match
+                        TOKEN_TABLE.find((
+                            QuerySource::Identifier(nested_id.clone().into()),
+                            QueryTarget::Params,
+                        ))?
+                    {
                         TargetValue::Params(p) => p,
                         _ => unreachable!("Invalid Query result (Params)"),
                     };
 
                     // 3) parsear params do token aninhado consumindo do mesmo slice
-                    let (nested_params, next_i) =
-                        Self::parse_with_cursor(nested_expected, chunks, i)?;
+                    let (nested_params, next_i) = Self::parse_with_cursor(
+                        nested_expected,
+                        chunks,
+                        i
+                    )?;
                     i = next_i;
 
                     // 4) instanciar token aninhado e aplicar params
-                    let nested_token_ref = match TOKEN_TABLE.find((
-                        QuerySource::Identifier(nested_id.clone().into()),
-                        QueryTarget::Token,
-                    ))? {
+                    let nested_token_ref = match
+                        TOKEN_TABLE.find((
+                            QuerySource::Identifier(nested_id.clone().into()),
+                            QueryTarget::Token,
+                        ))?
+                    {
                         TargetValue::Token(t) => t,
                         _ => unreachable!("Invalid Query result (Token)"),
                     };
@@ -154,13 +165,15 @@ impl AtpParamTypes {
         let mut reader = BufReader::new(&bytecode[..]);
 
         let mut param_type_bytes = [0u8; 4];
-        reader.read_exact(&mut param_type_bytes).map_err(|e| {
-            AtpError::new(
-                AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                "read_bytecode_from_file",
-                e.to_string(),
-            )
-        })?;
+        reader
+            .read_exact(&mut param_type_bytes)
+            .map_err(|e| {
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                    "read_bytecode_from_file",
+                    e.to_string()
+                )
+            })?;
 
         let param_type = u32::from_be_bytes(param_type_bytes);
 
@@ -172,7 +185,7 @@ impl AtpParamTypes {
                 AtpError::new(
                     AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                     "read_bytecode_from_file",
-                    e.to_string(),
+                    e.to_string()
                 )
             })?;
 
@@ -180,41 +193,44 @@ impl AtpParamTypes {
 
         let mut param_payload_bytes = vec![0u8; param_payload_size];
 
-        reader.read_exact(&mut param_payload_bytes).map_err(|e| {
-            AtpError::new(
-                AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                "read_bytecode_from_file",
-                e.to_string(),
-            )
-        })?;
+        reader
+            .read_exact(&mut param_payload_bytes)
+            .map_err(|e| {
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                    "read_bytecode_from_file",
+                    e.to_string()
+                )
+            })?;
 
         match param_type {
             0x01 => {
-                let text = str::from_utf8(&param_payload_bytes).map_err(|e| {
-                    AtpError::new(
-                        crate::utils::errors::AtpErrorCode::BytecodeParamParsingError(
-                            "Failed Parsing Bytes to UTF8 String".into(),
-                        ),
-                        "AtpParamTypes.from_bytecode()",
-                        e.to_string(),
-                    )
-                })?;
+                let text = str
+                    ::from_utf8(&param_payload_bytes)
+                    .map_err(|e| {
+                        AtpError::new(
+                            crate::utils::errors::AtpErrorCode::BytecodeParamParsingError(
+                                "Failed Parsing Bytes to UTF8 String".into()
+                            ),
+                            "AtpParamTypes.from_bytecode()",
+                            e.to_string()
+                        )
+                    })?;
                 Ok(AtpParamTypes::String(text.to_string()))
             }
             0x02 => {
-                let b: [u8; 8] =
-                    param_payload_bytes
-                        .as_slice()
-                        .try_into()
-                        .map_err(|e: TryFromSliceError| {
-                            AtpError::new(
-                                crate::utils::errors::AtpErrorCode::BytecodeParamParsingError(
-                                    "Failed Parsing Bytes to Usize".into(),
-                                ),
-                                "AtpParamTypes.from_bytecode()",
-                                e.to_string(),
-                            )
-                        })?;
+                let b: [u8; 8] = param_payload_bytes
+                    .as_slice()
+                    .try_into()
+                    .map_err(|e: TryFromSliceError| {
+                        AtpError::new(
+                            crate::utils::errors::AtpErrorCode::BytecodeParamParsingError(
+                                "Failed Parsing Bytes to Usize".into()
+                            ),
+                            "AtpParamTypes.from_bytecode()",
+                            e.to_string()
+                        )
+                    })?;
 
                 let n = usize::from_be_bytes(b);
                 Ok(AtpParamTypes::Usize(n))
@@ -230,7 +246,7 @@ impl AtpParamTypes {
                         AtpError::new(
                             AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                             "read_bytecode_from_file",
-                            e.to_string(),
+                            e.to_string()
                         )
                     })?;
 
@@ -238,13 +254,15 @@ impl AtpParamTypes {
 
                 let mut param_count_bytes = [0u8; 1];
 
-                reader.read_exact(&mut param_count_bytes).map_err(|e| {
-                    AtpError::new(
-                        AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                        "read_bytecode_from_file",
-                        e.to_string(),
-                    )
-                })?;
+                reader
+                    .read_exact(&mut param_count_bytes)
+                    .map_err(|e| {
+                        AtpError::new(
+                            AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                            "read_bytecode_from_file",
+                            e.to_string()
+                        )
+                    })?;
 
                 let param_count = u8::from_be_bytes(param_count_bytes) as usize;
 
@@ -253,33 +271,43 @@ impl AtpParamTypes {
                 for _ in 0..param_count {
                     let mut param_length_bytes = [0u8; 8];
 
-                    reader.read_exact(&mut param_length_bytes).map_err(|e| {
-                        AtpError::new(
-                            AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                            "read_bytecode_from_file",
-                            e.to_string(),
-                        )
-                    })?;
+                    reader
+                        .read_exact(&mut param_length_bytes)
+                        .map_err(|e| {
+                            AtpError::new(
+                                AtpErrorCode::BytecodeParsingError(
+                                    "Failed Reading Bytecode".into()
+                                ),
+                                "read_bytecode_from_file",
+                                e.to_string()
+                            )
+                        })?;
 
                     let param_length = usize::from_be_bytes(param_length_bytes);
 
                     let mut v = vec![0u8; param_length];
 
-                    reader.read_exact(&mut v).map_err(|e| {
-                        AtpError::new(
-                            AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                            "read_bytecode_from_file",
-                            e.to_string(),
-                        )
-                    })?;
+                    reader
+                        .read_exact(&mut v)
+                        .map_err(|e| {
+                            AtpError::new(
+                                AtpErrorCode::BytecodeParsingError(
+                                    "Failed Reading Bytecode".into()
+                                ),
+                                "read_bytecode_from_file",
+                                e.to_string()
+                            )
+                        })?;
 
                     let parsed_param = AtpParamTypes::from_bytecode(v)?;
 
                     params.push(parsed_param);
                 }
 
-                let query_result = TOKEN_TABLE
-                    .find((QuerySource::Bytecode(instruction_type), QueryTarget::Token))?;
+                let query_result = TOKEN_TABLE.find((
+                    QuerySource::Bytecode(instruction_type),
+                    QueryTarget::Token,
+                ))?;
 
                 match query_result {
                     TargetValue::Token(token_ref) => {
@@ -292,13 +320,16 @@ impl AtpParamTypes {
                     _ => unreachable!("Invalid Query Result!"),
                 }
             }
-            _ => Err(AtpError::new(
-                crate::utils::errors::AtpErrorCode::BytecodeParamNotRecognized(
-                    "Param Bytecode Not Recognized".into(),
+            _ =>
+                Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::BytecodeParamNotRecognized(
+                            "Param Bytecode Not Recognized".into()
+                        ),
+                        "",
+                        ""
+                    )
                 ),
-                "",
-                "",
-            )),
         }
     }
 }
@@ -311,7 +342,7 @@ impl AtpParamTypes {
             AtpParamTypes::Token(_) => 0x03,
         }
     }
-
+    #[cfg(feature = "bytecode")]
     pub fn write_as_instruction_param(&self, out: &mut Vec<u8>) {
         let param_type = self.get_param_type_code();
 
@@ -331,7 +362,7 @@ impl AtpParamTypes {
         out.extend_from_slice(&payload_size_u32.to_be_bytes());
         out.extend_from_slice(&payload);
     }
-
+    #[cfg(feature = "bytecode")]
     pub fn param_to_bytecode(&self) -> (u64, Vec<u8>) {
         let mut result: Vec<u8> = Vec::new();
 

@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::dlf::Dlf;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_dlf() {
@@ -78,11 +77,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

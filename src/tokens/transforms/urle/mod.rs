@@ -5,13 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// URLE - URL Encode
@@ -51,11 +47,13 @@ impl TokenMethods for Urle {
         if params.len() == 0 {
             return Ok(());
         } else {
-            Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ))
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            )
         }
     }
     #[cfg(feature = "bytecode")]

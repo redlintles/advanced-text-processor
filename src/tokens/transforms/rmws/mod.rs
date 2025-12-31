@@ -3,12 +3,8 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::errors::{AtpError, AtpErrorCode},
-};
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// RMWS - Remove Whitespace
@@ -46,11 +42,13 @@ impl TokenMethods for Rmws {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
     }
     #[cfg(feature = "bytecode")]

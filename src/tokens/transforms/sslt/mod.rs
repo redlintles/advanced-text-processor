@@ -5,12 +5,10 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::utils::validations::check_vec_len;
-use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
+use crate::{ tokens::TokenMethods };
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// SSLT - Split Select
 ///
@@ -36,11 +34,7 @@ pub struct Sslt {
 impl Sslt {
     pub fn params(pattern: &str, index: usize) -> Result<Self, AtpError> {
         let pattern = Regex::new(&pattern).map_err(|e| {
-            AtpError::new(
-                AtpErrorCode::BytecodeParsingError(e.to_string().into()),
-                "",
-                "",
-            )
+            AtpError::new(AtpErrorCode::BytecodeParsingError(e.to_string().into()), "", "")
         })?;
         Ok(Sslt { pattern, index })
     }
@@ -60,13 +54,18 @@ impl TokenMethods for Sslt {
         "sslt"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        let item = self.pattern.split(input).nth(self.index).ok_or_else(|| {
-            AtpError::new(
-                AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
-                self.to_atp_line(),
-                input.to_string(),
-            )
-        })?;
+        let item = self.pattern
+            .split(input)
+            .nth(self.index)
+            .ok_or_else(|| {
+                AtpError::new(
+                    AtpErrorCode::IndexOutOfRange(
+                        "Index does not exist in the splitted vec".into()
+                    ),
+                    self.to_atp_line(),
+                    input.to_string()
+                )
+            })?;
 
         Ok(item.to_string())
     }
@@ -82,23 +81,29 @@ impl TokenMethods for Sslt {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of type Usize");
 
-        let pattern_payload =
-            parse_args!(instruction, 1, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(
+            instruction,
+            1,
+            String,
+            "Pattern should be of string type"
+        );
 
         self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
                 AtpErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",
-                pattern_payload.clone(),
+                pattern_payload.clone()
             )
         })?;
 
@@ -107,13 +112,10 @@ impl TokenMethods for Sslt {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::Usize(self.index),
-                AtpParamTypes::String(self.pattern.to_string()),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.index),
+            AtpParamTypes::String(self.pattern.to_string()),
+        ]);
         result
     }
 }

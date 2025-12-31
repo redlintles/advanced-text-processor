@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::urle::Urle;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_urle() {
@@ -21,10 +20,7 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Urle::default();
-        assert_eq!(
-            t.transform("banana laranja"),
-            Ok("banana%20laranja".to_string())
-        );
+        assert_eq!(t.transform("banana laranja"), Ok("banana%20laranja".to_string()));
     }
 
     #[test]
@@ -97,11 +93,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

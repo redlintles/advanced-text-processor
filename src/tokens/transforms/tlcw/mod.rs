@@ -3,15 +3,10 @@ pub mod test;
 
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-        validations::{check_index_against_input, check_index_against_words, check_vec_len},
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::{ check_index_against_words } },
 };
 
 /// TLCW - To Lowercase Word
@@ -49,19 +44,17 @@ impl TokenMethods for Tlcw {
 
     fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
         check_index_against_words(self.index, input)?;
-        Ok(input
-            .split_whitespace()
-            .enumerate()
-            .map(|(i, w)| {
-                if i == self.index {
-                    w.to_lowercase()
-                } else {
-                    w.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(" ")
-            .to_string())
+        Ok(
+            input
+                .split_whitespace()
+                .enumerate()
+                .map(|(i, w)| {
+                    if i == self.index { w.to_lowercase() } else { w.to_string() }
+                })
+                .collect::<Vec<_>>()
+                .join(" ")
+                .to_string()
+        )
     }
 
     #[cfg(feature = "bytecode")]
@@ -72,11 +65,13 @@ impl TokenMethods for Tlcw {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

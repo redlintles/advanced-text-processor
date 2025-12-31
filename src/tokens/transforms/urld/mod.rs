@@ -5,13 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 /// URLD - URL Decode
 ///
@@ -40,15 +36,18 @@ impl TokenMethods for Urld {
         "urld;\n".into()
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        Ok(urlencoding::decode(input)
-            .map_err(|_| {
-                AtpError::new(
-                    AtpErrorCode::TextParsingError("Failed parsing URL string".into()),
-                    "urld",
-                    input.to_string(),
-                )
-            })?
-            .to_string())
+        Ok(
+            urlencoding
+                ::decode(input)
+                .map_err(|_| {
+                    AtpError::new(
+                        AtpErrorCode::TextParsingError("Failed parsing URL string".into()),
+                        "urld",
+                        input.to_string()
+                    )
+                })?
+                .to_string()
+        )
     }
 
     #[cfg(feature = "bytecode")]
@@ -60,11 +59,13 @@ impl TokenMethods for Urld {
         if params.len() == 0 {
             return Ok(());
         } else {
-            Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ))
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            )
         }
     }
     #[cfg(feature = "bytecode")]

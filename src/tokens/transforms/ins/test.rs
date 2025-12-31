@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::ins::Ins;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn params_sets_fields_and_to_atp_line_formats() {
@@ -87,11 +86,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }
@@ -101,7 +102,7 @@ mod tests {
             let mut t = Ins::default();
             let params = vec![
                 AtpParamTypes::Usize(3),
-                AtpParamTypes::String("laranja".to_string()),
+                AtpParamTypes::String("laranja".to_string())
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));
@@ -111,19 +112,18 @@ mod tests {
         #[test]
         fn from_params_rejects_wrong_param_types() {
             let mut t = Ins::default();
-            let params = vec![
-                AtpParamTypes::String("x".to_string()),
-                AtpParamTypes::Usize(3),
-            ];
+            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(3)];
 
             let got = t.from_params(&params);
 
             // primeiro parse_args! falha com "Index should be of usize type"
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

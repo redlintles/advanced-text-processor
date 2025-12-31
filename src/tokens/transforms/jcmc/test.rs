@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::jcmc::Jcmc;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jcmc() {
@@ -54,10 +53,7 @@ mod tests {
         let t = Jcmc::default();
         // depende do capitalize() do seu projeto, mas normalmente:
         // "maçã" -> "Maçã"
-        assert_eq!(
-            t.transform("maçã com canela"),
-            Ok("maçãComCanela".to_string())
-        );
+        assert_eq!(t.transform("maçã com canela"), Ok("maçãComCanela".to_string()));
     }
 
     // ============================
@@ -90,11 +86,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }

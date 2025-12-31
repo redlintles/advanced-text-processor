@@ -3,15 +3,8 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-    },
-};
+use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// RPT - Repeat
@@ -59,11 +52,13 @@ impl TokenMethods for Rpt {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");

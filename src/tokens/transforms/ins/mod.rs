@@ -3,16 +3,9 @@ pub mod test;
 
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-    },
-};
+use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
 /// Ins - Insert
 ///
 /// Inserts `text` after `index` position in `input`
@@ -86,11 +79,13 @@ impl TokenMethods for Ins {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
@@ -106,13 +101,10 @@ impl TokenMethods for Ins {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::Usize(self.index),
-                AtpParamTypes::String(self.text_to_insert.clone()),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.index),
+            AtpParamTypes::String(self.text_to_insert.clone()),
+        ]);
         result
     }
 }

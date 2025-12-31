@@ -3,12 +3,11 @@ pub mod test;
 
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_index_against_input;
-use crate::{tokens::TokenMethods, utils::transforms::string_to_usize};
+use crate::{ tokens::TokenMethods };
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// Dla - Delete After
 /// Delete all characters after `index` in the specified `input`
@@ -45,15 +44,24 @@ impl TokenMethods for Dla {
         check_index_against_input(self.index, input)?;
 
         let mut s = String::from(input);
-        if let Some(byte_index) = s.char_indices().nth(self.index + 1).map(|(i, _)| i) {
+        if
+            let Some(byte_index) = s
+                .char_indices()
+                .nth(self.index + 1)
+                .map(|(i, _)| i)
+        {
             s.drain(byte_index..);
             return Ok(s);
         }
-        Err(AtpError::new(
-            AtpErrorCode::IndexOutOfRange("Index is out of range for the desired string".into()),
-            self.to_atp_line(),
-            input.to_string(),
-        ))
+        Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange(
+                    "Index is out of range for the desired string".into()
+                ),
+                self.to_atp_line(),
+                input.to_string()
+            )
+        )
     }
 
     fn get_string_repr(&self) -> &'static str {
@@ -67,11 +75,13 @@ impl TokenMethods for Dla {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::utils::errors::AtpError;
-#[cfg(feature = "bytecode")]
+
 use crate::utils::params::AtpParamTypes;
 
 pub mod instructions;
@@ -39,10 +39,7 @@ pub trait TokenMethodsClone {
     fn clone_box(&self) -> Box<dyn TokenMethods>;
 }
 
-impl<T> TokenMethodsClone for T
-where
-    T: 'static + TokenMethods + Clone,
-{
+impl<T> TokenMethodsClone for T where T: 'static + TokenMethods + Clone {
     fn clone_box(&self) -> Box<dyn TokenMethods> {
         Box::new(self.clone())
     }

@@ -5,8 +5,8 @@ use std::borrow::Cow;
 
 use crate::tokens::TokenMethods;
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
-#[cfg(feature = "bytecode")]
+use crate::utils::errors::{ AtpError, AtpErrorCode };
+
 use crate::utils::params::AtpParamTypes;
 
 /// TLS - Trim left sides
@@ -46,11 +46,13 @@ impl TokenMethods for Tls {
         if instruction.len() == 0 {
             return Ok(());
         } else {
-            Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ))
+            Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            )
         }
     }
     #[cfg(feature = "bytecode")]

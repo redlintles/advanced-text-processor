@@ -1,6 +1,8 @@
 #[macro_export]
 macro_rules! parse_args {
-    ($params:expr, $idx:expr, String, $msg:expr) => {{
+    ($params:expr, $idx:expr, String, $msg:expr) => {
+        {
+        use crate::utils::params::AtpParamTypes;
         match &$params[$idx] {
             AtpParamTypes::String(payload) => payload.clone(),
             _ => {
@@ -11,8 +13,11 @@ macro_rules! parse_args {
                 ));
             }
         }
-    }};
-    ($params:expr, $idx:expr, Usize, $msg:expr) => {{
+        }
+    };
+    ($params:expr, $idx:expr, Usize, $msg:expr) => {
+        {
+        use crate::utils::params::AtpParamTypes;
         match &$params[$idx] {
             AtpParamTypes::Usize(payload) => payload.clone(),
             _ => {
@@ -23,8 +28,11 @@ macro_rules! parse_args {
                 ));
             }
         }
-    }};
-    ($params:expr, $idx:expr, Token, $msg:expr) => {{
+        }
+    };
+    ($params:expr, $idx:expr, Token, $msg:expr) => {
+        {
+        use crate::utils::params::AtpParamTypes;
         match &$params[$idx] {
             AtpParamTypes::Token(payload) => payload.clone(),
             _ => {
@@ -35,5 +43,6 @@ macro_rules! parse_args {
                 ));
             }
         }
-    }};
+        }
+    };
 }

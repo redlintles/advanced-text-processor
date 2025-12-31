@@ -5,14 +5,9 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{AtpError, AtpErrorCode},
-        transforms::string_to_usize,
-        validations::{check_index_against_input, check_vec_len},
-    },
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::{ check_index_against_input } },
 };
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
 
 /// TLCS - To Lowercase Single
@@ -56,11 +51,7 @@ impl TokenMethods for Tlcs {
             .chars()
             .enumerate()
             .map(|(i, c)| {
-                if i == self.index {
-                    c.to_lowercase().to_string()
-                } else {
-                    c.to_string()
-                }
+                if i == self.index { c.to_lowercase().to_string() } else { c.to_string() }
             })
             .collect();
 
@@ -75,11 +66,13 @@ impl TokenMethods for Tlcs {
         use crate::parse_args;
 
         if instruction.len() != 1 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");

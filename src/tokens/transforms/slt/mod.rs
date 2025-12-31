@@ -3,14 +3,10 @@ pub mod test;
 
 use std::borrow::Cow;
 
-#[cfg(feature = "bytecode")]
 use crate::utils::params::AtpParamTypes;
-use crate::{
-    tokens::TokenMethods, utils::transforms::string_to_usize,
-    utils::validations::check_chunk_bound_indexes,
-};
+use crate::{ tokens::TokenMethods, utils::validations::check_chunk_bound_indexes };
 
-use crate::utils::errors::{AtpError, AtpErrorCode};
+use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 /// Slt - Select
 ///
@@ -78,11 +74,13 @@ impl TokenMethods for Slt {
         use crate::parse_args;
 
         if instruction.len() != 2 {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
         }
 
         self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
@@ -93,13 +91,10 @@ impl TokenMethods for Slt {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
-        let result: Vec<u8> = to_bytecode!(
-            self.get_opcode(),
-            [
-                AtpParamTypes::Usize(self.start_index),
-                AtpParamTypes::Usize(self.end_index),
-            ]
-        );
+        let result: Vec<u8> = to_bytecode!(self.get_opcode(), [
+            AtpParamTypes::Usize(self.start_index),
+            AtpParamTypes::Usize(self.end_index),
+        ]);
         result
     }
 }

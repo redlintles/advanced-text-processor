@@ -4,7 +4,6 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::jkbc::Jkbc;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]
     fn get_string_repr_is_jkbc() {
@@ -52,10 +51,7 @@ mod tests {
     fn transform_unicode_lowercase_behavior() {
         let t = Jkbc::default();
         // unicode + lowercasing (Rust faz lowercase unicode-aware)
-        assert_eq!(
-            t.transform("MAÇÃ COM CANELA"),
-            Ok("maçã-com-canela".to_string())
-        );
+        assert_eq!(t.transform("MAÇÃ COM CANELA"), Ok("maçã-com-canela".to_string()));
     }
 
     // ============================
@@ -88,11 +84,13 @@ mod tests {
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }
