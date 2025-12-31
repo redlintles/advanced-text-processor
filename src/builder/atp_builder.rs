@@ -1,4 +1,8 @@
-use crate::{ builder::AtpBuilderMethods, tokens::TokenMethods };
+use crate::{
+    builder::{ AtpBuilderMethods, AtpConditionalMethods },
+    tokens::TokenMethods,
+    utils::errors::AtpError,
+};
 
 use super::atp_processor::{ AtpProcessor, AtpProcessorMethods };
 
@@ -21,7 +25,10 @@ impl AtpBuilder {
 }
 
 impl AtpBuilderMethods for AtpBuilder {
-    fn push_token(&mut self, t: Box<dyn TokenMethods>) {
+    fn push_token(&mut self, t: Box<dyn TokenMethods>) -> Result<(), AtpError> {
         self.tokens.push(t);
+        Ok(())
     }
 }
+
+impl AtpConditionalMethods for AtpBuilder {}
