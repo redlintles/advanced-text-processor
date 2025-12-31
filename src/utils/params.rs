@@ -14,6 +14,7 @@ use crate::{
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
+#[derive(Clone)]
 pub enum AtpParamTypes {
     String(String),
     Usize(usize),
@@ -147,7 +148,7 @@ impl AtpParamTypes {
                     };
 
                     let mut nested_token = nested_token_ref.into_box();
-                    nested_token.from_params(&nested_params);
+                    nested_token.from_params(&nested_params)?;
 
                     out.push(AtpParamTypes::Token(nested_token));
                 }

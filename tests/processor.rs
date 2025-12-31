@@ -17,8 +17,11 @@ pub mod processor {
     fn test_process_all() {
         let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
+            .unwrap()
             .add_to_end("Laranja")
+            .unwrap()
             .repeat(3 as usize)
+            .unwrap()
             .build();
         let input = "Carimbo verde de deus";
 
@@ -33,8 +36,11 @@ pub mod processor {
     fn test_process_all_with_debug() {
         let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
+            .unwrap()
             .add_to_end("Laranja")
+            .unwrap()
             .repeat(3 as usize)
+            .unwrap()
             .build();
         let input = "Carimbo verde de deus";
 
@@ -97,8 +103,11 @@ pub mod processor {
 
         let (mut processor, identifier) = AtpBuilder::new()
             .add_to_beginning("Banana")
+            .unwrap()
             .add_to_end("Laranja")
+            .unwrap()
             .repeat(3 as usize)
+            .unwrap()
             .build();
 
         let _ = processor.write_to_text_file(&identifier, path);

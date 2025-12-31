@@ -109,8 +109,8 @@ mod cli_tests {
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
             let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")
-                .add_to_end("l")
+                .add_to_beginning("b")?
+                .add_to_end("l")?
                 .build();
 
             let input = "coxinha";
@@ -133,8 +133,8 @@ mod cli_tests {
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
             let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")
-                .add_to_end("l")
+                .add_to_beginning("b")?
+                .add_to_end("l")?
                 .build();
 
             let input = "coxinha\nlaranja";
@@ -157,8 +157,8 @@ mod cli_tests {
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
             let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")
-                .add_to_end("l")
+                .add_to_beginning("b")?
+                .add_to_end("l")?
                 .build();
 
             let input = "coxinha";
