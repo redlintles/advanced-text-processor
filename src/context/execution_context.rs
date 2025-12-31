@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{ tokens::TokenMethods, utils::errors::AtpError };
+use crate::{tokens::TokenMethods, utils::errors::AtpError};
 
 pub enum VarValues {
     String(String),
@@ -44,7 +44,7 @@ pub trait GlobalContextMethods {
     fn add_to_block(
         &mut self,
         block_id: &str,
-        token: Box<dyn TokenMethods>
+        token: Box<dyn TokenMethods>,
     ) -> Result<(), AtpError>;
     fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn TokenMethods>>, AtpError>;
 
