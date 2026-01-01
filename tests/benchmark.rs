@@ -3,8 +3,8 @@
 pub mod benchmark {
     use atp::builder::{
         AtpBuilderMethods,
-        atp_builder::{ AtpBuilder },
-        atp_processor::AtpProcessorMethods,
+        atp_builder::AtpBuilder,
+        atp_processor::{ AtpProcessor, AtpProcessorMethods },
     };
     use std::time::Instant;
 
@@ -16,7 +16,10 @@ pub mod benchmark {
 
         let mut total = 0.0;
 
-        let (mut processor, identifier) = AtpBuilder::new()
+        let mut processor = AtpProcessor::new();
+
+        let identifier = processor
+            .create_pipeline()
             .add_to_beginning("Banana")?
             .add_to_end("pizza")?
             .repeat(3)?
@@ -97,7 +100,10 @@ pub mod benchmark {
 
         let mut total = 0.0;
 
-        let (mut processor, identifier) = AtpBuilder::new()
+        let mut processor = AtpProcessor::new();
+
+        let identifier = processor
+            .create_pipeline()
             .add_to_beginning("Banana")?
             .add_to_end("pizza")?
             .repeat(3)?

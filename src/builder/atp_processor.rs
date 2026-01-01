@@ -5,16 +5,17 @@ use uuid::Uuid;
 
 use colored::*;
 
+use crate::builder::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{reader::read_bytecode_from_file, writer::write_bytecode_to_file};
+use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 use crate::tokens::TokenMethods;
 
 use crate::text::parser::parse_token;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
 
-use crate::utils::errors::{AtpError, ErrorManager, token_array_not_found};
-#[derive(Default)]
+use crate::utils::errors::{ AtpError, ErrorManager, token_array_not_found };
+
 pub struct AtpProcessor {
     transforms: HashMap<String, Vec<Box<dyn TokenMethods>>>,
     errors: ErrorManager,
@@ -28,13 +29,13 @@ pub trait AtpProcessorMethods {
     fn process_single(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError>;
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError>;
     fn process_single_with_debug(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError>;
     fn remove_transform(&mut self, id: &str) -> Result<(), AtpError>;
     fn show_transforms(&self) -> () {}
@@ -50,13 +51,13 @@ pub trait AtpProcessorMethods {
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError>;
     #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError>;
 }
 
@@ -67,15 +68,14 @@ impl AtpProcessor {
             errors: ErrorManager::default(),
         }
     }
+    pub fn create_pipeline(&mut self) -> AtpBuilder<'_> {
+        AtpBuilder::new(self)
+    }
 }
 
 impl AtpProcessorMethods for AtpProcessor {
     fn write_to_text_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
-        let tokens = match self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))
-        {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -105,10 +105,7 @@ impl AtpProcessorMethods for AtpProcessor {
     fn process_all(&mut self, id: &str, input: &str) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
-        let tokens = self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id));
+        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id));
 
         match tokens {
             Ok(tks) => {
@@ -132,15 +129,19 @@ impl AtpProcessorMethods for AtpProcessor {
     }
 
     fn remove_transform(&mut self, id: &str) -> Result<(), AtpError> {
-        match self.transforms.remove(id).ok_or_else(|| {
-            AtpError::new(
-                crate::utils::errors::AtpErrorCode::TokenNotFound(
-                    "Transformation not found".into(),
-                ),
-                "remove_transform",
-                id.to_string(),
-            )
-        }) {
+        match
+            self.transforms
+                .remove(id)
+                .ok_or_else(|| {
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenNotFound(
+                            "Transformation not found".into()
+                        ),
+                        "remove_transform",
+                        id.to_string()
+                    )
+                })
+        {
             Ok(_) => {
                 return Ok(());
             }
@@ -161,43 +162,45 @@ impl AtpProcessorMethods for AtpProcessor {
     }
 
     fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
-        Ok(self
-            .transforms
-            .get(id)
-            .ok_or_else(|| {
-                AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
-                        "Transform not found".into(),
-                    ),
-                    "get_transform_vec".to_string(),
-                    id.to_string(),
-                )
-            })?
-            .clone())
+        Ok(
+            self.transforms
+                .get(id)
+                .ok_or_else(|| {
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
+                            "Transform not found".into()
+                        ),
+                        "get_transform_vec".to_string(),
+                        id.to_string()
+                    )
+                })?
+                .clone()
+        )
     }
     fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, AtpError> {
-        Ok(self
-            .transforms
-            .get(id)
-            .ok_or_else(|| {
-                AtpError::new(
-                    crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
-                        "Transform not found".into(),
-                    ),
-                    "get_transform_vec",
-                    id.to_string(),
-                )
-            })?
-            .clone()
-            .iter()
-            .map(|t| t.to_atp_line().to_string())
-            .collect::<Vec<String>>())
+        Ok(
+            self.transforms
+                .get(id)
+                .ok_or_else(|| {
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::TokenArrayNotFound(
+                            "Transform not found".into()
+                        ),
+                        "get_transform_vec",
+                        id.to_string()
+                    )
+                })?
+                .clone()
+                .iter()
+                .map(|t| t.to_atp_line().to_string())
+                .collect::<Vec<String>>()
+        )
     }
 
     fn process_single(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError> {
         match token.transform(input) {
             Ok(x) => Ok(x),
@@ -212,11 +215,7 @@ impl AtpProcessorMethods for AtpProcessor {
 
         let dashes = 10;
 
-        let tokens = match self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))
-        {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -251,7 +250,7 @@ impl AtpProcessorMethods for AtpProcessor {
     fn process_single_with_debug(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError> {
         let output = match token.transform(input) {
             Ok(x) => x,
@@ -273,11 +272,7 @@ impl AtpProcessorMethods for AtpProcessor {
     }
     #[cfg(feature = "bytecode")]
     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), AtpError> {
-        let tokens = match self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))
-        {
+        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -305,16 +300,13 @@ impl AtpProcessorMethods for AtpProcessor {
     fn process_all_bytecode_with_debug(
         &mut self,
         id: &str,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError> {
         let mut result = String::from(input);
 
         let dashes = 10;
 
-        let tokens = self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))?;
+        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
 
         println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
 
@@ -342,7 +334,7 @@ impl AtpProcessorMethods for AtpProcessor {
     fn process_single_bytecode_with_debug(
         &mut self,
         token: Box<dyn TokenMethods>,
-        input: &str,
+        input: &str
     ) -> Result<String, AtpError> {
         let output = match token.transform(input) {
             Ok(x) => x,

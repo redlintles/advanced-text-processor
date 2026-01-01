@@ -102,16 +102,15 @@ pub fn process_input_by_chunks(
 mod cli_tests {
     mod process_input_by_chunks_tests {
         use crate::{
-            builder::{ atp_builder::{ AtpBuilder }, AtpBuilderMethods },
+            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_by_chunks, errors::AtpError },
         };
 
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
-            let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")?
-                .add_to_end("l")?
-                .build();
+            let mut processor = AtpProcessor::new();
+
+            let id = processor.create_pipeline().add_to_beginning("b")?.add_to_end("l")?.build();
 
             let input = "coxinha";
             let expected_output = "bcolbxilbnhlbal".to_string();
@@ -126,16 +125,15 @@ mod cli_tests {
 
     mod process_input_line_by_line_tests {
         use crate::{
-            builder::{ atp_builder::{ AtpBuilder }, AtpBuilderMethods },
+            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_line_by_line, errors::AtpError },
         };
 
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
-            let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")?
-                .add_to_end("l")?
-                .build();
+            let mut processor = AtpProcessor::new();
+
+            let id = processor.create_pipeline().add_to_beginning("b")?.add_to_end("l")?.build();
 
             let input = "coxinha\nlaranja";
             let expected_output = "bcoxinhal\nblaranjal".to_string();
@@ -150,16 +148,15 @@ mod cli_tests {
 
     mod process_input_single_chunk_tests {
         use crate::{
-            builder::{ atp_builder::{ AtpBuilder }, AtpBuilderMethods },
+            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_single_chunk, errors::AtpError },
         };
 
         #[test]
         fn it_works_correctly() -> Result<(), AtpError> {
-            let (mut processor, id) = AtpBuilder::new()
-                .add_to_beginning("b")?
-                .add_to_end("l")?
-                .build();
+            let mut processor = AtpProcessor::new();
+
+            let id = processor.create_pipeline().add_to_beginning("b")?.add_to_end("l")?.build();
 
             let input = "coxinha";
             let expected_output = "bcoxinhal".to_string();

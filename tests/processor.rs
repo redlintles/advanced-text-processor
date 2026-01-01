@@ -15,7 +15,9 @@ pub mod processor {
 
     #[test]
     fn test_process_all() {
-        let (mut processor, identifier) = AtpBuilder::new()
+        let mut processor = AtpProcessor::new();
+        let identifier = processor
+            .create_pipeline()
             .add_to_beginning("Banana")
             .unwrap()
             .add_to_end("Laranja")
@@ -34,7 +36,9 @@ pub mod processor {
     }
     #[test]
     fn test_process_all_with_debug() {
-        let (mut processor, identifier) = AtpBuilder::new()
+        let mut processor = AtpProcessor::new();
+        let identifier = processor
+            .create_pipeline()
             .add_to_beginning("Banana")
             .unwrap()
             .add_to_end("Laranja")
@@ -101,7 +105,9 @@ pub mod processor {
 
         let path = file.path();
 
-        let (mut processor, identifier) = AtpBuilder::new()
+        let mut processor = AtpProcessor::new();
+        let identifier = processor
+            .create_pipeline()
             .add_to_beginning("Banana")
             .unwrap()
             .add_to_end("Laranja")
