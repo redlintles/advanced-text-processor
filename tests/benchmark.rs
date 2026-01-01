@@ -1,11 +1,7 @@
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod benchmark {
-    use atp::builder::{
-        AtpBuilderMethods,
-        atp_builder::AtpBuilder,
-        atp_processor::{ AtpProcessor, AtpProcessorMethods },
-    };
+    use atp::builder::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } };
     use std::time::Instant;
 
     use atp::utils::errors::AtpError;
