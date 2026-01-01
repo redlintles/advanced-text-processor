@@ -6,29 +6,28 @@ use crate::{
 
 use super::atp_processor::{ AtpProcessor, AtpProcessorMethods };
 
-#[derive(Default, Clone)]
-pub struct AtpBuilder {
+pub struct AtpBuilder<'ap> {
     tokens: Vec<Box<dyn TokenMethods>>,
+    processor: &'ap mut AtpProcessor,
 }
 
-impl AtpBuilder {
-    pub fn new() -> AtpBuilder {
-        AtpBuilder { tokens: Vec::new() }
+impl<'ap> AtpBuilder<'ap> {
+    pub fn new(processor: &'ap mut AtpProcessor) -> AtpBuilder<'ap> {
+        AtpBuilder { tokens: Vec::new(), processor }
     }
 
-    pub fn build(&self) -> (AtpProcessor, String) {
-        let mut p = AtpProcessor::new();
-        let id = p.add_transform(self.tokens.clone());
+    pub fn build(&mut self) -> String {
+        let id = self.processor.add_transform(self.tokens.clone());
 
-        (p, id)
+        id
     }
 }
 
-impl AtpBuilderMethods for AtpBuilder {
+impl<'ap> AtpBuilderMethods for AtpBuilder<'ap> {
     fn push_token(&mut self, t: Box<dyn TokenMethods>) -> Result<(), AtpError> {
         self.tokens.push(t);
         Ok(())
     }
 }
 
-impl AtpConditionalMethods for AtpBuilder {}
+impl<'ap> AtpConditionalMethods for AtpBuilder<'ap> {}
