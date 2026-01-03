@@ -8,6 +8,7 @@ use regex::Regex;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
+use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods };
 
 /// RCW - Replace Count With
@@ -71,29 +72,12 @@ impl TokenMethods for Rcw {
     fn get_string_repr(&self) -> &'static str {
         "rcw"
     }
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x10
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
-        if instruction.len() != 3 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 3, "rcw", "")?;
 
-        let pattern_payload = parse_args!(
-            instruction,
-            0,
-            String,
-            "Pattern should be of string type"
-        );
+        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
         self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
@@ -104,15 +88,19 @@ impl TokenMethods for Rcw {
         })?;
 
         self.text_to_replace = parse_args!(
-            instruction,
+            params,
             1,
             String,
             "Text_to_replace should be of type String"
         );
 
-        self.count = parse_args!(instruction, 2, Usize, "Index should be of type Usize");
+        self.count = parse_args!(params, 2, Usize, "Index should be of type Usize");
 
         return Ok(());
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x10
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

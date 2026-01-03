@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod common {
-    use crate::tokens::{TokenMethods, transforms::atb::Atb};
+    use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
 
     #[test]
     fn params_sets_text() {
@@ -42,60 +42,6 @@ mod common {
         let t = Atb::default();
         assert_eq!(t.get_string_repr(), "atb");
     }
-}
-
-#[cfg(all(test, feature = "bytecode"))]
-mod bytecode {
-    use crate::{
-        tokens::{TokenMethods, transforms::atb::Atb},
-        utils::params::AtpParamTypes,
-    };
-
-    // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
-    // [type: u32][payload_size: u32][payload: bytes]
-    fn encode_param_for_decoder(param_type: u32, payload: &[u8]) -> Vec<u8> {
-        let mut v = Vec::with_capacity(4 + 4 + payload.len());
-        v.extend_from_slice(&param_type.to_be_bytes());
-        v.extend_from_slice(&(payload.len() as u32).to_be_bytes());
-        v.extend_from_slice(payload);
-        v
-    }
-
-    #[test]
-    fn opcode_is_expected() {
-        let t = Atb::default();
-        assert_eq!(t.get_opcode(), 0x01);
-    }
-
-    #[test]
-    fn atpparam_from_bytecode_string_roundtrip_decoder_format() {
-        let raw = encode_param_for_decoder(0x01, b"abc");
-        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
-
-        match parsed {
-            AtpParamTypes::String(s) => assert_eq!(s, "abc"),
-            other => panic!(
-                "Expected String, got type code {}",
-                other.get_param_type_code()
-            ),
-        }
-    }
-
-    #[test]
-    fn atpparam_from_bytecode_usize_decoder_format() {
-        let n: usize = 123;
-        let raw = encode_param_for_decoder(0x02, &n.to_be_bytes());
-        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
-
-        match parsed {
-            AtpParamTypes::Usize(x) => assert_eq!(x, 123),
-            other => panic!(
-                "Expected Usize, got type code {}",
-                other.get_param_type_code()
-            ),
-        }
-    }
-
     #[test]
     fn atb_from_params_accepts_single_string_param() {
         let mut t = Atb::default();
@@ -111,7 +57,7 @@ mod bytecode {
         let mut t = Atb::default();
         let params = vec![
             AtpParamTypes::String("a".to_string()),
-            AtpParamTypes::String("b".to_string()),
+            AtpParamTypes::String("b".to_string())
         ];
 
         let err = t.from_params(&params).unwrap_err();
@@ -162,6 +108,50 @@ mod bytecode {
 
         assert_eq!(rebuilt.text, "hello");
         assert_eq!(rebuilt.transform(" world").unwrap(), "hello world");
+    }
+}
+
+#[cfg(all(test, feature = "bytecode"))]
+mod bytecode {
+    use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+
+    // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
+    // [type: u32][payload_size: u32][payload: bytes]
+    fn encode_param_for_decoder(param_type: u32, payload: &[u8]) -> Vec<u8> {
+        let mut v = Vec::with_capacity(4 + 4 + payload.len());
+        v.extend_from_slice(&param_type.to_be_bytes());
+        v.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+        v.extend_from_slice(payload);
+        v
+    }
+
+    #[test]
+    fn opcode_is_expected() {
+        let t = Atb::default();
+        assert_eq!(t.get_opcode(), 0x01);
+    }
+
+    #[test]
+    fn atpparam_from_bytecode_string_roundtrip_decoder_format() {
+        let raw = encode_param_for_decoder(0x01, b"abc");
+        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
+
+        match parsed {
+            AtpParamTypes::String(s) => assert_eq!(s, "abc"),
+            other => panic!("Expected String, got type code {}", other.get_param_type_code()),
+        }
+    }
+
+    #[test]
+    fn atpparam_from_bytecode_usize_decoder_format() {
+        let n: usize = 123;
+        let raw = encode_param_for_decoder(0x02, &n.to_be_bytes());
+        let parsed = AtpParamTypes::from_bytecode(raw).unwrap();
+
+        match parsed {
+            AtpParamTypes::Usize(x) => assert_eq!(x, 123),
+            other => panic!("Expected Usize, got type code {}", other.get_param_type_code()),
+        }
     }
 
     #[test]

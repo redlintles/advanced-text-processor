@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 /// DLF - Delete First
@@ -48,22 +48,13 @@ impl TokenMethods for Dlf {
     fn get_string_repr(&self) -> &'static str {
         "dlf"
     }
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        check_vec_len(&params, 0, "dlf", "")?;
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x03
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        if instruction.len() == 0 {
-            return Ok(());
-        } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

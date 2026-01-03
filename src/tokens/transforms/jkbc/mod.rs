@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -43,22 +43,13 @@ impl TokenMethods for Jkbc {
         Ok(input.split_whitespace().collect::<Vec<_>>().join("-").to_lowercase())
     }
 
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        check_vec_len(&params, 0, "jkbc", "")?;
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2b
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        if instruction.len() == 0 {
-            return Ok(());
-        } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

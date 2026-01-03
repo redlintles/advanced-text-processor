@@ -11,7 +11,7 @@ use crate::{
     utils::validations::check_chunk_bound_indexes,
 };
 
-use crate::utils::{ errors::AtpErrorCode, params::AtpParamTypes };
+use crate::utils::{ params::AtpParamTypes };
 /// Token `Ctc` — Capitalize Chunk
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
@@ -96,30 +96,20 @@ impl TokenMethods for Ctc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ctc {} {};\n", self.start_index, self.end_index).into()
     }
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x1b
-    }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""))?;
-
-        if params.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 2, "ctc", params.join(""))?;
 
         self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
         self.end_index = parse_args!(params, 1, Usize, "Index should be of usize type");
 
         return Ok(());
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x1b
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

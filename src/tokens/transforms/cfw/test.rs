@@ -4,7 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::cfw::Cfw;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_cfw() {
@@ -44,42 +45,43 @@ mod tests {
         assert_eq!(t.transform("foo bar baz"), Ok("Foo bar baz".to_string()));
     }
 
+    #[test]
+    fn from_params_accepts_empty_param_list() {
+        let mut t = Cfw::default();
+        let params: Vec<AtpParamTypes> = vec![];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+    }
+
+    #[test]
+    fn from_params_rejects_any_params() {
+        let mut t = Cfw::default();
+        let params = vec![AtpParamTypes::String("x".to_string())];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_18() {
             let t = Cfw::default();
             assert_eq!(t.get_opcode(), 0x18);
-        }
-
-        #[test]
-        fn from_params_accepts_empty_param_list() {
-            let mut t = Cfw::default();
-            let params: Vec<AtpParamTypes> = vec![];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-        }
-
-        #[test]
-        fn from_params_rejects_any_params() {
-            let mut t = Cfw::default();
-            let params = vec![AtpParamTypes::String("x".to_string())];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

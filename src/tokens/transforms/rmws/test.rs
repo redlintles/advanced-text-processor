@@ -2,7 +2,7 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::rmws::Rmws};
+    use crate::{ tokens::{ TokenMethods, transforms::rmws::Rmws }, utils::params::AtpParamTypes };
 
     #[test]
     fn rmws_get_string_repr_ok() {
@@ -53,29 +53,27 @@ mod tests {
         assert_eq!(t.transform(&input).unwrap(), "abc");
     }
 
+    #[test]
+    fn rmws_from_params_ok_empty() {
+        let mut t = Rmws::default();
+        let v: Vec<AtpParamTypes> = vec![];
+        assert!(t.from_params(&v).is_ok());
+    }
+
+    #[test]
+    fn rmws_from_params_err_when_not_empty() {
+        let mut t = Rmws::default();
+        let v: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(0)];
+        assert!(t.from_params(&v).is_err());
+    }
     #[cfg(feature = "bytecode")]
     mod bytecode {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn rmws_opcode_ok() {
             let t = Rmws::default();
             assert_eq!(t.get_opcode(), 0x31);
-        }
-
-        #[test]
-        fn rmws_from_params_ok_empty() {
-            let mut t = Rmws::default();
-            let v: Vec<AtpParamTypes> = vec![];
-            assert!(t.from_params(&v).is_ok());
-        }
-
-        #[test]
-        fn rmws_from_params_err_when_not_empty() {
-            let mut t = Rmws::default();
-            let v: Vec<AtpParamTypes> = vec![AtpParamTypes::Usize(0)];
-            assert!(t.from_params(&v).is_err());
         }
 
         #[test]

@@ -4,7 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::ctc::Ctc;
-    use crate::utils::errors::AtpError;
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn params_accepts_valid_range() {
@@ -29,10 +30,7 @@ mod tests {
     fn transform_capitalizes_chunk_simple_letters() {
         // exemplo do doc: 1..5 em "bananabananosa" => "bAnanabananosa"
         let t = Ctc::params(1, 5).unwrap();
-        assert_eq!(
-            t.transform("bananabananosa"),
-            Ok("bAnanabananosa".to_string())
-        );
+        assert_eq!(t.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
     }
 
     #[test]
@@ -73,64 +71,64 @@ mod tests {
         assert!(got.is_err());
     }
 
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Ctc::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_accepts_two_usize_params() {
+        let mut t = Ctc::default();
+        let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(5)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.start_index, 1);
+        assert_eq!(t.end_index, 5);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_type() {
+        let mut t = Ctc::default();
+        let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(5)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::AtpErrorCode;
         use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_1b() {
             let t = Ctc::default();
             assert_eq!(t.get_opcode(), 0x1b);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Ctc::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_accepts_two_usize_params() {
-            let mut t = Ctc::default();
-            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(5)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.start_index, 1);
-            assert_eq!(t.end_index, 5);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_type() {
-            let mut t = Ctc::default();
-            let params = vec![
-                AtpParamTypes::String("x".to_string()),
-                AtpParamTypes::Usize(5),
-            ];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

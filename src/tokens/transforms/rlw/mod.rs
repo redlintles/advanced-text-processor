@@ -5,7 +5,10 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    tokens::TokenMethods,
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 /// RLW - Replace Last With
@@ -79,29 +82,12 @@ impl TokenMethods for Rlw {
     fn get_string_repr(&self) -> &'static str {
         "rlw"
     }
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x1e
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
-        if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 2, "rlw", "")?;
 
-        let pattern_payload = parse_args!(
-            instruction,
-            0,
-            String,
-            "Pattern should be of string type"
-        );
+        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
         self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
@@ -112,13 +98,17 @@ impl TokenMethods for Rlw {
         })?;
 
         self.text_to_replace = parse_args!(
-            instruction,
+            params,
             1,
             String,
             "Text_to_replace should be of type String"
         );
 
         return Ok(());
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x1e
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

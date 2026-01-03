@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::extend_string },
+    utils::{ errors::{ AtpError }, transforms::extend_string, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -59,27 +59,19 @@ impl TokenMethods for Padr {
 
         Ok(format!("{}{}", input, s))
     }
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
+        check_vec_len(&params, 2, "padr", "")?;
+
+        self.text = parse_args!(params, 0, String, "Text_to_insert should be of String type");
+        self.max_len = parse_args!(params, 1, Usize, "Index should be of usize type");
+
+        return Ok(());
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x30
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
-
-        if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
-        self.text = parse_args!(instruction, 0, String, "Text_to_insert should be of String type");
-        self.max_len = parse_args!(instruction, 1, Usize, "Index should be of usize type");
-
-        return Ok(());
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

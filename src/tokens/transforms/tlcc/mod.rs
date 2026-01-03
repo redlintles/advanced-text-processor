@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_chunk_bound_indexes },
+    utils::{ errors::{ AtpError }, validations::{ check_chunk_bound_indexes, check_vec_len } },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -71,27 +71,19 @@ impl TokenMethods for Tlcc {
         Ok(result)
     }
 
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
+        check_vec_len(&params, 2, "tlcc", "")?;
+
+        self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.end_index = parse_args!(params, 1, Usize, "Index should be of usize type");
+
+        return Ok(());
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x17
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
-
-        if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
-        self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
-        self.end_index = parse_args!(instruction, 1, Usize, "Index should be of usize type");
-
-        return Ok(());
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

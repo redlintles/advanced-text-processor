@@ -4,6 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::htmlu::Htmlu;
+    use crate::utils::errors::AtpErrorCode;
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_htmlu() {
@@ -54,45 +56,43 @@ mod tests {
         assert_eq!(t.transform("a&lt;b&amp;c&gt;d"), Ok("a<b&c>d".to_string()));
     }
 
+    #[test]
+    fn from_params_accepts_empty_param_list() {
+        let mut t = Htmlu::default();
+        let params: Vec<AtpParamTypes> = vec![];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+    }
+
+    #[test]
+    fn from_params_rejects_any_params() {
+        let mut t = Htmlu::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::AtpErrorCode;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_25() {
             let t = Htmlu::default();
             assert_eq!(t.get_opcode(), 0x25);
-        }
-
-        #[test]
-        fn from_params_accepts_empty_param_list() {
-            let mut t = Htmlu::default();
-            let params: Vec<AtpParamTypes> = vec![];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-        }
-
-        #[test]
-        fn from_params_rejects_any_params() {
-            let mut t = Htmlu::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-
-            assert_eq!(got, expected);
         }
 
         #[test]

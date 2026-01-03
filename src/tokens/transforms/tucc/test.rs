@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::tucc::Tucc};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ TokenMethods, transforms::tucc::Tucc };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_tucc() {
@@ -24,45 +25,45 @@ mod tests {
         assert_eq!(t.transform("banana"), Ok("bANANa".to_string()));
     }
 
+    #[test]
+    fn from_params_accepts_two_usize() {
+        let mut t = Tucc::default();
+        let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(4)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.to_atp_line().as_ref(), "tucc 1 4;\n");
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_len() {
+        let mut t = Tucc::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0x16() {
             let t = Tucc::default();
             assert_eq!(t.get_opcode(), 0x16);
         }
-
-        #[test]
-        fn from_params_accepts_two_usize() {
-            let mut t = Tucc::default();
-            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(4)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.to_atp_line().as_ref(), "tucc 1 4;\n");
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_len() {
-            let mut t = Tucc::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
         #[test]
         fn to_bytecode_has_opcode_and_two_params() {
             let t = Tucc::params(2, 5).unwrap();

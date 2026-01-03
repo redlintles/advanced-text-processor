@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::tlcw::Tlcw};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ TokenMethods, transforms::tlcw::Tlcw };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_tlcw() {
@@ -29,10 +30,34 @@ mod tests {
     #[test]
     fn transform_index_zero_lowercases_first_word() {
         let t = Tlcw::params(0);
-        assert_eq!(
-            t.transform("BANANA LARANJA"),
-            Ok("banana LARANJA".to_string())
+        assert_eq!(t.transform("BANANA LARANJA"), Ok("banana LARANJA".to_string()));
+    }
+
+    #[test]
+    fn from_params_accepts_one_usize() {
+        let mut t = Tlcw::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.to_atp_line().as_ref(), "tlcw 1;\n");
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_len() {
+        let mut t = Tlcw::default();
+        let params: Vec<AtpParamTypes> = vec![];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
         );
+
+        assert_eq!(got, expected);
     }
 
     // ============================
@@ -41,39 +66,12 @@ mod tests {
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0x29() {
             let t = Tlcw::default();
             assert_eq!(t.get_opcode(), 0x29);
         }
-
-        #[test]
-        fn from_params_accepts_one_usize() {
-            let mut t = Tlcw::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.to_atp_line().as_ref(), "tlcw 1;\n");
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_len() {
-            let mut t = Tlcw::default();
-            let params: Vec<AtpParamTypes> = vec![];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
         #[test]
         fn to_bytecode_has_opcode_and_one_param() {
             let t = Tlcw::params(7);

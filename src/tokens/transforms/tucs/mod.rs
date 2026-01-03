@@ -5,10 +5,7 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{ AtpError, AtpErrorCode },
-        validations::{ check_index_against_input, check_vec_len },
-    },
+    utils::{ errors::{ AtpError }, validations::{ check_index_against_input, check_vec_len } },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -58,26 +55,17 @@ impl TokenMethods for Tucs {
         Ok(result)
     }
 
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x14
-    }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
         check_vec_len(&params, 1, "tucs", "")?;
-        if params.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
 
         self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
         Ok(())
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x14
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

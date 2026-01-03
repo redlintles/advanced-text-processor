@@ -4,7 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::raw::Raw;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_raw() {
@@ -50,91 +51,93 @@ mod tests {
         assert_eq!(t.transform("banana"), Ok("banana".to_string()));
     }
 
+    #[test]
+    fn from_params_parses_two_strings_and_builds_regex() {
+        let mut t = Raw::default();
+
+        let params = vec![
+            AtpParamTypes::String("a+".to_string()),
+            AtpParamTypes::String("b".to_string())
+        ];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.pattern.as_str(), "a+");
+        assert_eq!(t.text_to_replace, "b".to_string());
+        assert_eq!(t.transform("aaaa"), Ok("b".to_string()));
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Raw::default();
+
+        let params = vec![AtpParamTypes::String("a+".to_string())];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_types() {
+        let mut t = Raw::default();
+
+        // primeiro deveria ser String(pattern)
+        let params = vec![AtpParamTypes::Usize(7), AtpParamTypes::String("b".to_string())];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_rejects_invalid_regex_payload() {
+        let mut t = Raw::default();
+
+        let params = vec![
+            AtpParamTypes::String("(".to_string()),
+            AtpParamTypes::String("b".to_string())
+        ];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                "sslt",
+                "(".to_string()
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0b() {
             let t = Raw::default();
             assert_eq!(t.get_opcode(), 0x0b);
-        }
-
-        #[test]
-        fn from_params_parses_two_strings_and_builds_regex() {
-            let mut t = Raw::default();
-
-            let params = vec![
-                AtpParamTypes::String("a+".to_string()),
-                AtpParamTypes::String("b".to_string()),
-            ];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.pattern.as_str(), "a+");
-            assert_eq!(t.text_to_replace, "b".to_string());
-            assert_eq!(t.transform("aaaa"), Ok("b".to_string()));
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Raw::default();
-
-            let params = vec![AtpParamTypes::String("a+".to_string())];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_types() {
-            let mut t = Raw::default();
-
-            // primeiro deveria ser String(pattern)
-            let params = vec![
-                AtpParamTypes::Usize(7),
-                AtpParamTypes::String("b".to_string()),
-            ];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_rejects_invalid_regex_payload() {
-            let mut t = Raw::default();
-
-            let params = vec![
-                AtpParamTypes::String("(".to_string()),
-                AtpParamTypes::String("b".to_string()),
-            ];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                "(".to_string(),
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

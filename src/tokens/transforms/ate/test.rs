@@ -4,7 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::ate::Ate;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn params_sets_text() {
@@ -42,6 +43,54 @@ mod tests {
         assert_eq!(t.transform(""), Ok("bar".to_string()));
     }
 
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Ate::default();
+        let params = vec![
+            AtpParamTypes::String("a".to_string()),
+            AtpParamTypes::String("b".to_string())
+        ];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_accepts_single_string_param() {
+        let mut t = Ate::default();
+        let params = vec![AtpParamTypes::String(" bar".to_string())];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.text, " bar".to_string());
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_type() {
+        let mut t = Ate::default();
+        let params = vec![AtpParamTypes::Usize(123)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::InvalidParameters("Text should be of string type".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
@@ -54,50 +103,6 @@ mod tests {
         fn get_opcode_is_02() {
             let t = Ate::default();
             assert_eq!(t.get_opcode(), 0x02);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Ate::default();
-            let params = vec![
-                AtpParamTypes::String("a".to_string()),
-                AtpParamTypes::String("b".to_string()),
-            ];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_accepts_single_string_param() {
-            let mut t = Ate::default();
-            let params = vec![AtpParamTypes::String(" bar".to_string())];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.text, " bar".to_string());
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_type() {
-            let mut t = Ate::default();
-            let params = vec![AtpParamTypes::Usize(123)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::InvalidParameters("Text should be of string type".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

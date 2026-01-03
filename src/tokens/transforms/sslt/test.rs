@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::sslt::Sslt};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ TokenMethods, transforms::sslt::Sslt };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_sslt() {
@@ -21,10 +22,7 @@ mod tests {
     #[test]
     fn transform_selects_expected_piece() {
         let t = Sslt::params("_", 1).unwrap();
-        assert_eq!(
-            t.transform("foobar_foo_bar_bar_foo_barfoo"),
-            Ok("foo".to_string())
-        );
+        assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
     }
 
     #[test]
@@ -40,11 +38,40 @@ mod tests {
 
         let got = t.transform("a_b");
 
-        let expected = Err(AtpError::new(
-            AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
-            t.to_atp_line(),
-            "a_b".to_string(),
-        ));
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
+                t.to_atp_line(),
+                "a_b".to_string()
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+    #[test]
+    fn from_params_accepts_two_params() {
+        let mut t = Sslt::default();
+        let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::String("_".to_string())];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.index, 1);
+        assert_eq!(t.pattern.to_string(), "_".to_string());
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_len() {
+        let mut t = Sslt::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
 
         assert_eq!(got, expected);
     }
@@ -55,41 +82,11 @@ mod tests {
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0x1a() {
             let t = Sslt::default();
             assert_eq!(t.get_opcode(), 0x1a);
-        }
-
-        #[test]
-        fn from_params_accepts_two_params() {
-            let mut t = Sslt::default();
-            let params = vec![
-                AtpParamTypes::Usize(1),
-                AtpParamTypes::String("_".to_string()),
-            ];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.index, 1);
-            assert_eq!(t.pattern.to_string(), "_".to_string());
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_len() {
-            let mut t = Sslt::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

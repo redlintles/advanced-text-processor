@@ -56,17 +56,7 @@ impl TokenMethods for Urld {
     }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         check_vec_len(&params, 0, "urld", "")?;
-        if params.len() == 0 {
-            return Ok(());
-        } else {
-            Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            )
-        }
+        Ok(())
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

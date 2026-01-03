@@ -5,10 +5,10 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ transforms::capitalize, validations::check_index_against_input },
+    utils::{ transforms::capitalize, validations::{ check_index_against_input, check_vec_len } },
 };
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::{ AtpError };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -63,26 +63,18 @@ impl TokenMethods for Cts {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("cts {};\n", self.index).into()
     }
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
+        check_vec_len(&params, 1, "cts", "")?;
+
+        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+
+        return Ok(());
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x1d
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
-
-        if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
-        self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
-
-        return Ok(());
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::tls::Tls};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ TokenMethods, transforms::tls::Tls };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_tls() {
@@ -47,41 +48,42 @@ mod tests {
         assert_eq!(t.transform("").unwrap(), "");
     }
 
+    #[test]
+    fn from_params_accepts_empty() {
+        let mut t = Tls::default();
+        let params: Vec<AtpParamTypes> = vec![];
+        assert_eq!(t.from_params(&params), Ok(()));
+    }
+
+    #[test]
+    fn from_params_rejects_any_params() {
+        let mut t = Tls::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0x06() {
             let t = Tls::default();
             assert_eq!(t.get_opcode(), 0x06);
-        }
-
-        #[test]
-        fn from_params_accepts_empty() {
-            let mut t = Tls::default();
-            let params: Vec<AtpParamTypes> = vec![];
-            assert_eq!(t.from_params(&params), Ok(()));
-        }
-
-        #[test]
-        fn from_params_rejects_any_params() {
-            let mut t = Tls::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
         }
 
         #[test]

@@ -4,7 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::dla::Dla;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn params_sets_index() {
@@ -28,10 +29,7 @@ mod tests {
     fn transform_deletes_after_index_example_like_doc() {
         // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
         let t = Dla::params(3);
-        assert_eq!(
-            t.transform("banana laranja vermelha azul"),
-            Ok("bana".to_string())
-        );
+        assert_eq!(t.transform("banana laranja vermelha azul"), Ok("bana".to_string()));
     }
 
     #[test]
@@ -65,11 +63,60 @@ mod tests {
 
         let got = t.transform(input);
 
-        let expected = Err(AtpError::new(
-            AtpErrorCode::IndexOutOfRange("Index is out of range for the desired string".into()),
-            t.to_atp_line(),
-            input.to_string(),
-        ));
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::IndexOutOfRange(
+                    "Index is out of range for the desired string".into()
+                ),
+                t.to_atp_line(),
+                input.to_string()
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Dla::default();
+        let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(2)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_accepts_single_usize_param() {
+        let mut t = Dla::default();
+        let params = vec![AtpParamTypes::Usize(7)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.index, 7);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_type() {
+        let mut t = Dla::default();
+        let params = vec![AtpParamTypes::String("x".to_string())];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                ""
+            )
+        );
 
         assert_eq!(got, expected);
     }
@@ -80,7 +127,6 @@ mod tests {
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::AtpErrorCode;
         use crate::utils::params::AtpParamTypes;
 
         #[test]
@@ -88,48 +134,6 @@ mod tests {
             let t = Dla::default();
             assert_eq!(t.get_opcode(), 0x09);
         }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Dla::default();
-            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(2)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_accepts_single_usize_param() {
-            let mut t = Dla::default();
-            let params = vec![AtpParamTypes::Usize(7)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.index, 7);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_type() {
-            let mut t = Dla::default();
-            let params = vec![AtpParamTypes::String("x".to_string())];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
             let t = Dla::params(7);

@@ -3,10 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{
-    tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
-};
+use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 /// Token `Ate` — Add to End
@@ -49,30 +46,20 @@ impl TokenMethods for Ate {
     fn get_string_repr(&self) -> &'static str {
         "ate"
     }
-
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x02
-    }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
         use crate::utils::params::AtpParamTypesJoin;
 
         check_vec_len(&params, 1, "ate", params.join(""))?;
 
-        if params.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
         self.text = parse_args!(params, 0, String, "Text should be of string type");
 
         Ok(())
+    }
+
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x02
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

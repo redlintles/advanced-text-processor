@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{TokenMethods, transforms::rtr::Rtr};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ TokenMethods, transforms::rtr::Rtr };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn get_string_repr_is_rtr() {
@@ -60,62 +61,66 @@ mod tests {
 
         let got = t.transform("");
 
-        let expected = Err(AtpError::new(
-            AtpErrorCode::InvalidParameters("Input is empty".into()),
-            t.to_atp_line(),
-            "\" \"",
-        ));
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::InvalidParameters("Input is empty".into()),
+                t.to_atp_line(),
+                "\" \""
+            )
+        );
 
         assert_eq!(got, expected);
     }
+
+    #[test]
+    fn from_params_parses_single_usize() {
+        let mut t = Rtr::default();
+
+        let params = vec![AtpParamTypes::Usize(5)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.times, 5);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Rtr::default();
+
+        let params = vec![];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_type() {
+        let mut t = Rtr::default();
+
+        let params = vec![AtpParamTypes::String("x".to_string())];
+
+        assert!(t.from_params(&params).is_err());
+    }
+
     // ============================
     // Bytecode tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_0x0f() {
             let t = Rtr::default();
             assert_eq!(t.get_opcode(), 0x0f);
-        }
-
-        #[test]
-        fn from_params_parses_single_usize() {
-            let mut t = Rtr::default();
-
-            let params = vec![AtpParamTypes::Usize(5)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.times, 5);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Rtr::default();
-
-            let params = vec![];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_type() {
-            let mut t = Rtr::default();
-
-            let params = vec![AtpParamTypes::String("x".to_string())];
-
-            assert!(t.from_params(&params).is_err());
         }
 
         #[test]

@@ -6,6 +6,7 @@ use std::borrow::Cow;
 use regex::Regex;
 
 use crate::utils::params::AtpParamTypes;
+use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -73,31 +74,14 @@ impl TokenMethods for Sslt {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("sslt {} {};\n", self.pattern, self.index).into()
     }
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x1a
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
-        if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 2, "sslt", "")?;
 
-        self.index = parse_args!(instruction, 0, Usize, "Index should be of type Usize");
+        self.index = parse_args!(params, 0, Usize, "Index should be of type Usize");
 
-        let pattern_payload = parse_args!(
-            instruction,
-            1,
-            String,
-            "Pattern should be of string type"
-        );
+        let pattern_payload = parse_args!(params, 1, String, "Pattern should be of string type");
 
         self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
             AtpError::new(
@@ -108,6 +92,10 @@ impl TokenMethods for Sslt {
         })?;
 
         return Ok(());
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x1a
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

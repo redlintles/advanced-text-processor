@@ -4,6 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::dlb::Dlb;
+    use crate::utils::errors::AtpErrorCode;
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn params_sets_index() {
@@ -56,13 +58,57 @@ mod tests {
         assert!(got.is_err());
     }
 
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Dlb::default();
+        let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(2)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_accepts_single_usize_param() {
+        let mut t = Dlb::default();
+        let params = vec![AtpParamTypes::Usize(7)];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.index, 7);
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_type() {
+        let mut t = Dlb::default();
+        let params = vec![AtpParamTypes::String("x".to_string())];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::AtpErrorCode;
         use crate::utils::params::AtpParamTypes;
 
         #[test]
@@ -70,52 +116,6 @@ mod tests {
             let t = Dlb::default();
             assert_eq!(t.get_opcode(), 0x0a);
         }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Dlb::default();
-            let params = vec![AtpParamTypes::Usize(1), AtpParamTypes::Usize(2)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_accepts_single_usize_param() {
-            let mut t = Dlb::default();
-            let params = vec![AtpParamTypes::Usize(7)];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.index, 7);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_type() {
-            let mut t = Dlb::default();
-            let params = vec![AtpParamTypes::String("x".to_string())];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
-
-            assert_eq!(got, expected);
-        }
-
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
             let t = Dlb::params(7);

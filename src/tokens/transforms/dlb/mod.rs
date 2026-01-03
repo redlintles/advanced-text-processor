@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
-use crate::utils::validations::{ check_index_against_input };
+use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ tokens::TokenMethods };
 
 /// Dlb - Delete Before
@@ -72,25 +72,17 @@ impl TokenMethods for Dlb {
     fn get_string_repr(&self) -> &'static str {
         "dlb"
     }
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
+        check_vec_len(&params, 1, "dlb", "")?;
+
+        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0a
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
-
-        if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
-        self.index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
-        Ok(())
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

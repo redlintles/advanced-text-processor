@@ -4,6 +4,8 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::ins::Ins;
+    use crate::utils::errors::AtpErrorCode;
+    use crate::utils::params::AtpParamTypes;
 
     #[test]
     fn params_sets_fields_and_to_atp_line_formats() {
@@ -64,68 +66,64 @@ mod tests {
         }
     }
 
+    #[test]
+    fn from_params_rejects_wrong_param_count() {
+        let mut t = Ins::default();
+        let params = vec![AtpParamTypes::Usize(1)];
+
+        let got = t.from_params(&params);
+
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn from_params_accepts_usize_and_string() {
+        let mut t = Ins::default();
+        let params = vec![AtpParamTypes::Usize(3), AtpParamTypes::String("laranja".to_string())];
+
+        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.to_atp_line().as_ref(), "ins 3 laranja;\n");
+    }
+
+    #[test]
+    fn from_params_rejects_wrong_param_types() {
+        let mut t = Ins::default();
+        let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(3)];
+
+        let got = t.from_params(&params);
+
+        // primeiro parse_args! falha com "Index should be of usize type"
+        let expected = Err(
+            crate::utils::errors::AtpError::new(
+                AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
+                "",
+                ""
+            )
+        );
+
+        assert_eq!(got, expected);
+    }
+
     // ============================
     // Bytecode-only tests (separados)
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
         use super::*;
-        use crate::utils::errors::AtpErrorCode;
         use crate::utils::params::AtpParamTypes;
 
         #[test]
         fn get_opcode_is_28() {
             let t = Ins::default();
             assert_eq!(t.get_opcode(), 0x28);
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_count() {
-            let mut t = Ins::default();
-            let params = vec![AtpParamTypes::Usize(1)];
-
-            let got = t.from_params(&params);
-
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-
-            assert_eq!(got, expected);
-        }
-
-        #[test]
-        fn from_params_accepts_usize_and_string() {
-            let mut t = Ins::default();
-            let params = vec![
-                AtpParamTypes::Usize(3),
-                AtpParamTypes::String("laranja".to_string())
-            ];
-
-            assert_eq!(t.from_params(&params), Ok(()));
-            assert_eq!(t.to_atp_line().as_ref(), "ins 3 laranja;\n");
-        }
-
-        #[test]
-        fn from_params_rejects_wrong_param_types() {
-            let mut t = Ins::default();
-            let params = vec![AtpParamTypes::String("x".to_string()), AtpParamTypes::Usize(3)];
-
-            let got = t.from_params(&params);
-
-            // primeiro parse_args! falha com "Index should be of usize type"
-            let expected = Err(
-                crate::utils::errors::AtpError::new(
-                    AtpErrorCode::InvalidParameters("Index should be of usize type".into()),
-                    "",
-                    ""
-                )
-            );
-
-            assert_eq!(got, expected);
         }
 
         #[test]

@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{ errors::{ AtpError, AtpErrorCode }, transforms::capitalize },
+    utils::{ errors::{ AtpError }, transforms::capitalize, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -48,22 +48,13 @@ impl TokenMethods for Jpsc {
         Ok(processed)
     }
 
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        check_vec_len(&params, 0, "jpsc", "")?;
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x2e
-    }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        if instruction.len() == 0 {
-            return Ok(());
-        } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

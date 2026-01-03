@@ -5,11 +5,7 @@ use std::borrow::Cow;
 
 use crate::{
     tokens::TokenMethods,
-    utils::{
-        errors::{ AtpError, AtpErrorCode },
-        transforms::capitalize,
-        validations::check_vec_len,
-    },
+    utils::{ errors::{ AtpError }, transforms::capitalize, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -40,25 +36,15 @@ impl TokenMethods for Cfw {
         "cfw;\n".into()
     }
 
-    #[cfg(feature = "bytecode")]
-    fn get_opcode(&self) -> u32 {
-        0x18
-    }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::utils::params::AtpParamTypesJoin;
 
         check_vec_len(&params, 0, "cfw", params.join(""))?;
-        if params.len() == 0 {
-            return Ok(());
-        } else {
-            Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            )
-        }
+        Ok(())
+    }
+    #[cfg(feature = "bytecode")]
+    fn get_opcode(&self) -> u32 {
+        0x18
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {

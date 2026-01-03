@@ -4,7 +4,7 @@
 mod tests {
     use crate::tokens::TokenMethods;
     use crate::tokens::transforms::rcw::Rcw;
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::utils::errors::{ AtpErrorCode };
 
     #[test]
     fn get_string_repr_is_rcw() {
@@ -54,10 +54,7 @@ mod tests {
     #[test]
     fn transform_with_regex_pattern_replaces_n_times() {
         let t = Rcw::params(r"\d+", "X", 2).unwrap();
-        assert_eq!(
-            t.transform("a1 b22 c333 d4444"),
-            Ok("aX bX c333 d4444".to_string())
-        );
+        assert_eq!(t.transform("a1 b22 c333 d4444"), Ok("aX bX c333 d4444".to_string()));
     }
 
     // ============================
@@ -81,7 +78,7 @@ mod tests {
             let params = vec![
                 AtpParamTypes::String("a+".to_string()),
                 AtpParamTypes::String("b".to_string()),
-                AtpParamTypes::Usize(3),
+                AtpParamTypes::Usize(3)
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));
@@ -96,16 +93,18 @@ mod tests {
 
             let params = vec![
                 AtpParamTypes::String("a+".to_string()),
-                AtpParamTypes::String("b".to_string()),
+                AtpParamTypes::String("b".to_string())
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }
@@ -117,16 +116,18 @@ mod tests {
             let params = vec![
                 AtpParamTypes::Usize(7), // deveria ser String (pattern)
                 AtpParamTypes::String("b".to_string()),
-                AtpParamTypes::Usize(3),
+                AtpParamTypes::Usize(3)
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
-                "",
-                "",
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::InvalidParameters("Pattern should be of string type".into()),
+                    "",
+                    ""
+                )
+            );
 
             assert_eq!(got, expected);
         }
@@ -138,16 +139,18 @@ mod tests {
             let params = vec![
                 AtpParamTypes::String("(".to_string()),
                 AtpParamTypes::String("b".to_string()),
-                AtpParamTypes::Usize(3),
+                AtpParamTypes::Usize(3)
             ];
 
             let got = t.from_params(&params);
 
-            let expected = Err(crate::utils::errors::AtpError::new(
-                AtpErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                "(".to_string(),
-            ));
+            let expected = Err(
+                crate::utils::errors::AtpError::new(
+                    AtpErrorCode::TextParsingError("Failed to create regex".into()),
+                    "sslt",
+                    "(".to_string()
+                )
+            );
 
             assert_eq!(got, expected);
         }

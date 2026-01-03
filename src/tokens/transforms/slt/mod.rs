@@ -4,9 +4,10 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::utils::params::AtpParamTypes;
+use crate::utils::validations::check_vec_len;
 use crate::{ tokens::TokenMethods, utils::validations::check_chunk_bound_indexes };
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::{ AtpError };
 
 /// Slt - Select
 ///
@@ -70,21 +71,13 @@ impl TokenMethods for Slt {
     fn get_opcode(&self) -> u32 {
         0x11
     }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
         use crate::parse_args;
 
-        if instruction.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 2, "slt", "")?;
 
-        self.start_index = parse_args!(instruction, 0, Usize, "Index should be of usize type");
-        self.end_index = parse_args!(instruction, 1, Usize, "Index should be of usize type");
+        self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.end_index = parse_args!(params, 1, Usize, "Index should be of usize type");
 
         return Ok(());
     }

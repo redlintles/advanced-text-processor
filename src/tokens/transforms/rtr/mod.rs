@@ -3,7 +3,10 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
+use crate::{
+    tokens::TokenMethods,
+    utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 /// RTR - Rotate Right
@@ -62,28 +65,20 @@ impl TokenMethods for Rtr {
         "rtr"
     }
 
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        use crate::parse_args;
+
+        check_vec_len(&params, 1, "rtr", "")?;
+
+        self.times = parse_args!(params, 0, Usize, "Index should be of usize type");
+
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x0f
     }
 
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        use crate::parse_args;
-
-        if instruction.len() != 1 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-
-        self.times = parse_args!(instruction, 0, Usize, "Index should be of usize type");
-
-        Ok(())
-    }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;

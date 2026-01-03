@@ -8,6 +8,7 @@ use crate::tokens::TokenMethods;
 use crate::utils::params::AtpParamTypes;
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::validations::check_vec_len;
 
 /// Jsonu - Json Unescape
 ///
@@ -50,23 +51,15 @@ impl TokenMethods for Jsonu {
                 })?
         )
     }
+    fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
+        check_vec_len(&params, 0, "jcmc", "")?;
+        Ok(())
+    }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x27
     }
-    fn from_params(&mut self, instruction: &Vec<AtpParamTypes>) -> Result<(), AtpError> {
-        if instruction.len() == 0 {
-            return Ok(());
-        } else {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
-    }
+
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8> {
         use crate::to_bytecode;
