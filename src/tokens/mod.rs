@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use crate::context::execution_context::{ GlobalExecutionContext };
 use crate::utils::errors::AtpError;
 
 use crate::utils::params::AtpParamTypes;
@@ -12,6 +13,17 @@ pub mod transforms;
 /// Basic Contract which every token should implement
 
 pub trait TokenMethods: TokenMethodsClone + Send + Sync {
+    fn needs_context(&self) -> bool {
+        false
+    }
+    fn transform_with_context(
+        &self,
+        input: &str,
+        _context: &mut GlobalExecutionContext
+    ) -> Result<String, AtpError> {
+        Ok(input.to_string())
+    }
+
     /// to_atp_line
     ///
     /// Converts the token to an ATP line to be written in an .atp file
