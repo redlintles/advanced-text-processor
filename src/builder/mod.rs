@@ -1432,13 +1432,13 @@ pub trait AtpBuilderMethods: Sized {
 
 pub trait AtpConditionalMethods: AtpBuilderMethods {
     fn if_do_contains_each<F>(&mut self, value: &str, f: F) -> Result<&mut Self, AtpError>
-        where F: FnOnce(&mut ConditionalBuilderEach)
+        where F: FnOnce(&mut ConditionalBuilderEach) -> Result<(), AtpError>
     {
         let params = vec![AtpParamTypes::String(value.to_string())];
         let token: Box<dyn TokenMethods> = Box::new(ifdc::Ifdc::default());
         let mut conditional_builder = ConditionalBuilderEach::new(token, params);
 
-        f(&mut conditional_builder);
+        f(&mut conditional_builder)?;
 
         let result = conditional_builder.build();
 
