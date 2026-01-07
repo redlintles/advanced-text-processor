@@ -3,6 +3,7 @@ macro_rules! parse_args {
     ($params:expr, $idx:expr, String, $msg:expr) => {
         {
         use crate::utils::params::AtpParamTypes;
+        use crate::utils::errors::{AtpError, AtpErrorCode};
         match &$params[$idx] {
             AtpParamTypes::String(payload) => payload.clone(),
             _ => {
@@ -18,6 +19,7 @@ macro_rules! parse_args {
     ($params:expr, $idx:expr, Usize, $msg:expr) => {
         {
         use crate::utils::params::AtpParamTypes;
+        use crate::utils::errors::{AtpError, AtpErrorCode};
         match &$params[$idx] {
             AtpParamTypes::Usize(payload) => payload.clone(),
             _ => {
@@ -33,6 +35,7 @@ macro_rules! parse_args {
     ($params:expr, $idx:expr, Token, $msg:expr) => {
         {
         use crate::utils::params::AtpParamTypes;
+        use crate::utils::errors::{AtpError, AtpErrorCode};
         match &$params[$idx] {
             AtpParamTypes::Token(payload) => payload.clone(),
             _ => {
