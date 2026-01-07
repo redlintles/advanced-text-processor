@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tokens::instructions::ifdc::Ifdc;
-    use crate::tokens::{TokenMethods, transforms::dlf::Dlf};
+    use crate::tokens::{InstructionMethods, transforms::dlf::Dlf};
     use crate::utils::errors::{AtpError, AtpErrorCode};
 
     #[test]

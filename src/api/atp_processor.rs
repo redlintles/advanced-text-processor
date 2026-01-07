@@ -9,7 +9,7 @@ use crate::api::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 use crate::context::execution_context::GlobalExecutionContext;
-use crate::tokens::TokenMethods;
+use crate::tokens::InstructionMethods;
 
 use crate::utils::apply::apply_transform;
 use crate::text::reader::read_from_file;
@@ -22,7 +22,7 @@ use crate::utils::errors::{ AtpError, ErrorManager, token_array_not_found };
 /// `AtpProcessor` is the main **execution engine** of ATP (Advanced Text Processor).
 ///
 /// It stores multiple linear transformation pipelines (called **transforms**) identified
-/// by a `String` ID (generated with UUID). Each transform is a `Vec<Box<dyn TokenMethods>>`,
+/// by a `String` ID (generated with UUID). Each transform is a `Vec<Box<dyn InstructionMethods>>`,
 /// i.e. a sequence of tokens executed from left to right.
 ///
 /// # Core concepts
@@ -190,7 +190,7 @@ use crate::utils::errors::{ AtpError, ErrorManager, token_array_not_found };
 /// - The pipeline is **one giant vector** of tokens; execution is deterministic and ordered.
 /// - Debug methods (`*_with_debug`) only add printing; they do not change execution.
 pub struct AtpProcessor {
-    transforms: HashMap<String, Vec<Box<dyn TokenMethods>>>,
+    transforms: HashMap<String, Vec<Box<dyn InstructionMethods>>>,
     errors: ErrorManager,
 }
 
@@ -200,7 +200,7 @@ pub struct AtpProcessor {
 /// executed, persisted, inspected, and removed.
 ///
 /// A **transform** is stored internally as:
-/// `HashMap<String, Vec<Box<dyn TokenMethods>>>`
+/// `HashMap<String, Vec<Box<dyn InstructionMethods>>>`
 ///
 /// Where the key is a UUID string and the value is a linear sequence of tokens.
 ///
@@ -253,7 +253,7 @@ pub trait AtpProcessorMethods {
     ///
     /// # Returns
     /// The UUID string identifying the newly registered transform.
-    fn add_transform(&mut self, tokens: Vec<Box<dyn TokenMethods>>) -> String;
+    fn add_transform(&mut self, tokens: Vec<Box<dyn InstructionMethods>>) -> String;
 
     /// Executes all tokens of a registered transform from left to right.
     ///
@@ -291,7 +291,7 @@ pub trait AtpProcessorMethods {
     /// Returns `Err` if the token’s `transform` fails.
     fn process_single(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError>;
 
@@ -325,7 +325,7 @@ pub trait AtpProcessorMethods {
     /// Returns `Err` if the token’s `transform` fails.
     fn process_single_with_debug(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError>;
 
@@ -365,11 +365,11 @@ pub trait AtpProcessorMethods {
     /// - composing transforms (if you later support merging)
     ///
     /// # Returns
-    /// A cloned `Vec<Box<dyn TokenMethods>>`.
+    /// A cloned `Vec<Box<dyn InstructionMethods>>`.
     ///
     /// # Errors
     /// Returns `Err(TokenArrayNotFound)` if the transform does not exist.
-    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError>;
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError>;
 
     /// Returns the textual `.atp` lines for a given transform `id`.
     ///
@@ -443,7 +443,7 @@ pub trait AtpProcessorMethods {
     #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError>;
 }
@@ -542,7 +542,7 @@ impl AtpProcessorMethods for AtpProcessor {
         }
     }
 
-    fn add_transform(&mut self, tokens: Vec<Box<dyn TokenMethods>>) -> String {
+    fn add_transform(&mut self, tokens: Vec<Box<dyn InstructionMethods>>) -> String {
         let identifier = Uuid::new_v4();
         self.transforms.insert(identifier.to_string(), tokens);
 
@@ -582,7 +582,7 @@ impl AtpProcessorMethods for AtpProcessor {
         self.transforms.contains_key(id)
     }
 
-    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
         Ok(
             self.transforms
                 .get(id)
@@ -620,7 +620,7 @@ impl AtpProcessorMethods for AtpProcessor {
 
     fn process_single(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
         match token.transform(input) {
@@ -684,7 +684,7 @@ impl AtpProcessorMethods for AtpProcessor {
 
     fn process_single_with_debug(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
         let output = match token.transform(input) {
@@ -775,7 +775,7 @@ impl AtpProcessorMethods for AtpProcessor {
     #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn TokenMethods>,
+        token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
         let output = match token.transform(input) {

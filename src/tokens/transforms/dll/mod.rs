@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -14,7 +14,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::dll::Dll};
+/// use atp::tokens::{InstructionMethods, transforms::dll::Dll};
 ///
 /// let token = Dll::default();
 ///
@@ -24,7 +24,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Copy, Default)]
 pub struct Dll {}
 
-impl TokenMethods for Dll {
+impl InstructionMethods for Dll {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "dll;\n".into()
     }

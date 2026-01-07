@@ -1,11 +1,11 @@
 use crate::{
     context::execution_context::GlobalExecutionContext,
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::errors::{ AtpError, ErrorManager },
 };
 
 pub fn apply_transform(
-    token: &dyn TokenMethods,
+    token: &dyn InstructionMethods,
     input: &str,
     error_manager: &mut ErrorManager,
     context: &mut GlobalExecutionContext

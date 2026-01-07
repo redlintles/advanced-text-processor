@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::tokens::TokenMethods;
+use crate::tokens::InstructionMethods;
 
 use crate::utils::errors::{ AtpError };
 
@@ -17,7 +17,7 @@ use crate::utils::validations::check_vec_len;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tls::Tls};
+/// use atp::tokens::{InstructionMethods, transforms::tls::Tls};
 ///
 /// let token = Tls::default();
 ///
@@ -27,7 +27,7 @@ use crate::utils::validations::check_vec_len;
 #[derive(Clone, Copy, Default)]
 pub struct Tls {}
 
-impl TokenMethods for Tls {
+impl InstructionMethods for Tls {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tls;\n".into()
     }

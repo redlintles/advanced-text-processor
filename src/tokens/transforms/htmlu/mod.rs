@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use html_escape::decode_html_entities;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -17,7 +17,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::htmlu::Htmlu};
+/// use atp::tokens::{InstructionMethods, transforms::htmlu::Htmlu};
 ///
 /// let token = Htmlu::default();
 ///
@@ -26,7 +26,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Copy, Clone, Default)]
 pub struct Htmlu {}
 
-impl TokenMethods for Htmlu {
+impl InstructionMethods for Htmlu {
     fn get_string_repr(&self) -> &'static str {
         "htmlu"
     }

@@ -7,7 +7,7 @@ use crate::{ parse_args, utils::validations::check_vec_len };
 
 use regex::Regex;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
 
 use crate::utils::params::AtpParamTypes;
 /// RLW - Replace Last With
@@ -24,7 +24,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rnw::Rnw};
+/// use atp::tokens::{InstructionMethods, transforms::rnw::Rnw};
 ///
 /// let token = Rnw::params(&"a", "b", 2).unwrap();
 ///
@@ -59,7 +59,7 @@ impl Default for Rnw {
     }
 }
 
-impl TokenMethods for Rnw {
+impl InstructionMethods for Rnw {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rnw {} {} {};\n", self.pattern, self.text_to_replace, self.index).into()
     }

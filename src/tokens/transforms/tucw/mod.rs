@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::utils::params::AtpParamTypes;
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, validations::{ check_index_against_words, check_vec_len } },
 };
 /// TUCW - To Uppercase Word
@@ -15,7 +15,7 @@ use crate::{
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tucw::Tucw};
+/// use atp::tokens::{InstructionMethods, transforms::tucw::Tucw};
 ///
 /// let token = Tucw::params(1);
 ///
@@ -32,7 +32,7 @@ impl Tucw {
         Tucw { index }
     }
 }
-impl TokenMethods for Tucw {
+impl InstructionMethods for Tucw {
     fn get_string_repr(&self) -> &'static str {
         "tucw"
     }

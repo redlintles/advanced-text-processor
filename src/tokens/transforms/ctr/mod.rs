@@ -8,7 +8,7 @@ use crate::utils::errors::{ AtpError };
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::transforms::capitalize,
     utils::validations::check_chunk_bound_indexes,
 };
@@ -26,7 +26,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods,transforms::ctr::Ctr};
+/// use atp::tokens::{InstructionMethods,transforms::ctr::Ctr};
 /// let token = Ctr::params(1,5).unwrap();
 /// assert_eq!(token.transform("foo bar mar"), Ok("foo Bar Mar".to_string()));
 /// ```
@@ -47,7 +47,7 @@ impl Ctr {
     }
 }
 
-impl TokenMethods for Ctr {
+impl InstructionMethods for Ctr {
     fn get_string_repr(&self) -> &'static str {
         "ctr"
     }

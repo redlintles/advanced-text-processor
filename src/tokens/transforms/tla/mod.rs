@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 /// TLA - To Lowercase All
@@ -13,7 +13,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tla::Tla};
+/// use atp::tokens::{InstructionMethods, transforms::tla::Tla};
 ///
 /// let token = Tla::default();
 ///
@@ -23,7 +23,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Copy, Default)]
 pub struct Tla {}
 
-impl TokenMethods for Tla {
+impl InstructionMethods for Tla {
     fn get_string_repr(&self) -> &'static str {
         "tla"
     }

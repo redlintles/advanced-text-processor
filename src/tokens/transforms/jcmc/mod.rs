@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, transforms::capitalize, validations::check_vec_len },
 };
 
@@ -17,7 +17,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::jcmc::Jcmc};
+/// use atp::tokens::{InstructionMethods, transforms::jcmc::Jcmc};
 ///
 /// let token = Jcmc::default();
 ///
@@ -27,7 +27,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Copy, Default)]
 pub struct Jcmc {}
 
-impl TokenMethods for Jcmc {
+impl InstructionMethods for Jcmc {
     fn get_string_repr(&self) -> &'static str {
         "jcmc"
     }

@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -20,7 +20,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::jkbc::Jkbc};
+/// use atp::tokens::{InstructionMethods, transforms::jkbc::Jkbc};
 ///
 /// let token = Jkbc::default();
 ///
@@ -30,7 +30,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Copy, Default)]
 pub struct Jkbc {}
 
-impl TokenMethods for Jkbc {
+impl InstructionMethods for Jkbc {
     fn get_string_repr(&self) -> &'static str {
         "jkbc"
     }

@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -20,7 +20,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::jsnc::Jsnc};
+/// use atp::tokens::{InstructionMethods, transforms::jsnc::Jsnc};
 ///
 /// let token = Jsnc::default();
 ///
@@ -30,7 +30,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Copy, Default)]
 pub struct Jsnc {}
 
-impl TokenMethods for Jsnc {
+impl InstructionMethods for Jsnc {
     fn get_string_repr(&self) -> &'static str {
         "jsnc"
     }

@@ -2,7 +2,7 @@ use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
     globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
         params::AtpParamTypes,
@@ -10,7 +10,7 @@ use crate::{
     },
 };
 
-pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpError> {
+pub fn read_from_text(token_string: &str) -> Result<Box<dyn InstructionMethods>, AtpError> {
     let chunks = match
         shell_words::split(
             &token_string
@@ -66,9 +66,9 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn TokenMethods>, AtpEr
     }
 }
 
-pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
+pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
     check_file_path(path, Some("atp"))?;
-    let mut result: Vec<Box<dyn TokenMethods>> = Vec::new();
+    let mut result: Vec<Box<dyn InstructionMethods>> = Vec::new();
 
     let file = match OpenOptions::new().read(true).open(path) {
         Ok(x) => x,

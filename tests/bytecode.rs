@@ -3,7 +3,7 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp::{ api::atp_processor::AtpProcessorMethods, tokens::TokenMethods };
+    use atp::{ api::atp_processor::AtpProcessorMethods, tokens::InstructionMethods };
 
     #[cfg(test)]
     mod write_bytecode_to_file_tests {
@@ -12,7 +12,7 @@ pub mod bytecode {
         use std::path::PathBuf;
 
         use atp::bytecode::writer::write_bytecode_to_file;
-        use atp::tokens::TokenMethods;
+        use atp::tokens::InstructionMethods;
 
         use tempfile::tempdir;
 
@@ -32,7 +32,7 @@ pub mod bytecode {
             }
         }
 
-        impl atp::tokens::TokenMethods for DummyToken {
+        impl atp::tokens::InstructionMethods for DummyToken {
             fn to_bytecode(&self) -> Vec<u8> {
                 self.bc.clone()
             }
@@ -84,7 +84,7 @@ pub mod bytecode {
             // IMPORTANT: your check_file_path canonicalizes, so the file must exist already
             touch(&path);
 
-            let tokens: Vec<Box<dyn TokenMethods>> = vec![
+            let tokens: Vec<Box<dyn InstructionMethods>> = vec![
                 Box::new(DummyToken::new("tok1", &[0xaa, 0xbb])),
                 Box::new(DummyToken::new("tok2", &[0x10])),
                 Box::new(DummyToken::new("tok3", &[])),
@@ -121,7 +121,7 @@ pub mod bytecode {
             // same reason: canonicalize requires existence
             touch(&path);
 
-            let tokens: Vec<Box<dyn TokenMethods>> = vec![];
+            let tokens: Vec<Box<dyn InstructionMethods>> = vec![];
             write_bytecode_to_file(&path, tokens).unwrap();
 
             let bytes = fs::read(&path).unwrap();
@@ -140,7 +140,7 @@ pub mod bytecode {
             // This ensures the error is about extension, not about "no such file".
             touch(&path);
 
-            let tokens: Vec<Box<dyn TokenMethods>> = vec![
+            let tokens: Vec<Box<dyn InstructionMethods>> = vec![
                 Box::new(DummyToken::new("tok", &[1, 2, 3]))
             ];
 
@@ -162,7 +162,9 @@ pub mod bytecode {
 
             fs::create_dir_all(&path_is_dir).unwrap();
 
-            let tokens: Vec<Box<dyn TokenMethods>> = vec![Box::new(DummyToken::new("tok", &[1]))];
+            let tokens: Vec<Box<dyn InstructionMethods>> = vec![
+                Box::new(DummyToken::new("tok", &[1]))
+            ];
 
             let err = write_bytecode_to_file(&path_is_dir, tokens).unwrap_err();
 
@@ -183,7 +185,7 @@ pub mod bytecode {
 
         let path = file.path();
 
-        let tokens: Vec<Box<dyn TokenMethods>> = vec![
+        let tokens: Vec<Box<dyn InstructionMethods>> = vec![
             Box::new(Atb {
                 text: "Banana".to_string(),
             }),

@@ -1,7 +1,7 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::tokens::{ TokenMethods, transforms::rpt::Rpt };
+    use crate::tokens::{ InstructionMethods, transforms::rpt::Rpt };
     use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
 

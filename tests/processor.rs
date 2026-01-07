@@ -5,7 +5,7 @@ pub mod processor {
 
     use atp::{
         api::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
-        tokens::{ TokenMethods, transforms::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt } },
+        tokens::{ InstructionMethods, transforms::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt } },
         utils::errors::AtpError,
     };
     use uuid::Uuid;
@@ -54,7 +54,7 @@ pub mod processor {
     #[test]
     fn test_process_single() -> Result<(), AtpError> {
         let mut processor = AtpProcessor::new();
-        let token: Box<dyn TokenMethods> = Box::new(
+        let token: Box<dyn InstructionMethods> = Box::new(
             Raw::params("a", "b").map_err(|e|
                 AtpError::new(
                     atp::utils::errors::AtpErrorCode::TextParsingError("".into()),
@@ -77,7 +77,7 @@ pub mod processor {
     #[test]
     fn test_process_single_with_debug() -> Result<(), AtpError> {
         let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
-        let token: Box<dyn TokenMethods> = Box::new(
+        let token: Box<dyn InstructionMethods> = Box::new(
             Raw::params("a", "b").map_err(|e|
                 AtpError::new(
                     atp::utils::errors::AtpErrorCode::TextParsingError("".into()),
@@ -152,7 +152,7 @@ pub mod processor {
     #[test]
     fn test_add_transform() {
         use uuid::Variant;
-        let mut tokens: Vec<Box<dyn TokenMethods>> = Vec::new();
+        let mut tokens: Vec<Box<dyn InstructionMethods>> = Vec::new();
 
         tokens.push(Box::new(Atb::params("Banana")));
         tokens.push(Box::new(Ate::params("Laranja")));

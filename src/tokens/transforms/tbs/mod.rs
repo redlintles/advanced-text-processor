@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 /// TBS - Trim both sides
@@ -13,7 +13,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tbs::Tbs};
+/// use atp::tokens::{InstructionMethods, transforms::tbs::Tbs};
 ///
 /// let token = Tbs::default();
 ///
@@ -23,7 +23,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone, Default)]
 pub struct Tbs {}
 
-impl TokenMethods for Tbs {
+impl InstructionMethods for Tbs {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tbs;\n".into()
     }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 pub enum VarValues {
     String(String),
@@ -20,7 +20,7 @@ pub struct VarEntry {
 // Some tokens could access this object for additional data
 pub struct GlobalExecutionContext {
     variables: HashMap<String, VarEntry>,
-    blocks: HashMap<String, Vec<Box<dyn TokenMethods>>>,
+    blocks: HashMap<String, Vec<Box<dyn InstructionMethods>>>,
 }
 
 // Variable Concept
@@ -34,7 +34,7 @@ pub struct GlobalExecutionContext {
 
 // blk {name} assoc {instruction};
 // if {name} block doesn't exist yet, it's created
-// The instruction will be parsed to a Box<dyn TokenMethods> and then,
+// The instruction will be parsed to a Box<dyn InstructionMethods> and then,
 // added to the {name} block in the Context's blocks hashmap.
 // If the user wish to add multiple instructions to a single block, it should do one per `blk assoc` line.
 // Once the user is done with composing a block
@@ -44,9 +44,9 @@ pub trait GlobalContextMethods {
     fn add_to_block(
         &mut self,
         block_id: &str,
-        token: Box<dyn TokenMethods>
+        token: Box<dyn InstructionMethods>
     ) -> Result<(), AtpError>;
-    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn TokenMethods>>, AtpError>;
+    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn InstructionMethods>>, AtpError>;
 
     fn add_var(&mut self, id: &str, var_entry: VarEntry) -> Result<(), AtpError>;
     fn get_var(&self, var_id: &str) -> Result<&VarEntry, AtpError>;
@@ -66,7 +66,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn add_to_block(
         &mut self,
         block_id: &str,
-        token: Box<dyn TokenMethods>
+        token: Box<dyn InstructionMethods>
     ) -> Result<(), AtpError> {
         match self.blocks.get_mut(block_id) {
             Some(tokens) => {
@@ -83,7 +83,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         Ok(())
     }
 
-    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn TokenMethods>>, AtpError> {
+    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn InstructionMethods>>, AtpError> {
         match self.blocks.get(block_id) {
             Some(tokens) => { Ok(tokens) }
             None => {

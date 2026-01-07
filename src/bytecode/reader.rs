@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     globals::table::{ParamType, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue},
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{
         errors::{AtpError, AtpErrorCode},
         params::AtpParamTypes,
@@ -23,7 +23,7 @@ fn param_type_from_code(code: u32) -> Option<ParamType> {
     }
 }
 
-pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>, AtpError> {
+pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
     check_file_path(path, Some("atpbc"))?;
 
     let file = OpenOptions::new().read(true).open(path).map_err(|_| {
@@ -87,7 +87,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn TokenMethods>>
         ));
     }
 
-    let mut result: Vec<Box<dyn TokenMethods>> = Vec::with_capacity(instruction_count as usize);
+    let mut result: Vec<Box<dyn InstructionMethods>> = Vec::with_capacity(instruction_count as usize);
 
     // --- body ---
     for _ in 0..instruction_count {

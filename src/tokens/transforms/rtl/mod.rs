@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods };
+use crate::{ tokens::InstructionMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -16,7 +16,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rtl::Rtl};
+/// use atp::tokens::{InstructionMethods, transforms::rtl::Rtl};
 ///
 /// let token = Rtl::params(3);
 ///
@@ -34,7 +34,7 @@ impl Rtl {
     }
 }
 
-impl TokenMethods for Rtl {
+impl InstructionMethods for Rtl {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(

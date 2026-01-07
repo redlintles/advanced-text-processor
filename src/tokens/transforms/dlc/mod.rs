@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods, utils::validations::check_chunk_bound_indexes };
+use crate::{ tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -16,7 +16,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::dlc::Dlc};
+/// use atp::tokens::{InstructionMethods, transforms::dlc::Dlc};
 ///
 /// let token = Dlc::params(1,5).unwrap();
 ///
@@ -39,7 +39,7 @@ impl Dlc {
     }
 }
 
-impl TokenMethods for Dlc {
+impl InstructionMethods for Dlc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dlc {} {};\n", self.start_index, self.end_index).into()
     }

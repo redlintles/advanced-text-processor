@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::utils::params::AtpParamTypes;
 
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError } };
+use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError } };
 
 /// Rev - Reverse
 ///
@@ -15,7 +15,7 @@ use crate::{ tokens::TokenMethods, utils::errors::{ AtpError } };
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rev::Rev};
+/// use atp::tokens::{InstructionMethods, transforms::rev::Rev};
 ///
 /// let token = Rev::default();
 /// assert_eq!(token.transform("foobar"), Ok("raboof".to_string()));
@@ -23,7 +23,7 @@ use crate::{ tokens::TokenMethods, utils::errors::{ AtpError } };
 #[derive(Clone, Default, Copy)]
 pub struct Rev {}
 
-impl TokenMethods for Rev {
+impl InstructionMethods for Rev {
     fn get_string_repr(&self) -> &'static str {
         "rev"
     }

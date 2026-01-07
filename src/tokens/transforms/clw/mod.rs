@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, transforms::capitalize, validations::check_vec_len },
 };
 
@@ -19,7 +19,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::clw::Clw};
+/// use atp::tokens::{InstructionMethods, transforms::clw::Clw};
 ///
 /// let token = Clw::default();
 /// assert_eq!(token.transform("foo bar"), Ok("foo Bar".to_string()));
@@ -27,7 +27,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Copy, Clone, Default)]
 pub struct Clw {}
 
-impl TokenMethods for Clw {
+impl InstructionMethods for Clw {
     fn get_string_repr(&self) -> &'static str {
         "clw"
     }

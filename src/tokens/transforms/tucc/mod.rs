@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, validations::{ check_chunk_bound_indexes, check_vec_len } },
 };
 
@@ -16,7 +16,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tucc::Tucc};
+/// use atp::tokens::{InstructionMethods, transforms::tucc::Tucc};
 ///
 /// let token = Tucc::params(1,4).unwrap();
 ///
@@ -39,7 +39,7 @@ impl Tucc {
     }
 }
 
-impl TokenMethods for Tucc {
+impl InstructionMethods for Tucc {
     fn get_string_repr(&self) -> &'static str {
         "tucc"
     }

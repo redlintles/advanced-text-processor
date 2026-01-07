@@ -6,7 +6,7 @@ use std::borrow::Cow;
 #[cfg(feature = "bytecode")]
 use crate::to_bytecode;
 
-use crate::{ tokens::{ TokenMethods, transforms::dlf::Dlf } };
+use crate::{ tokens::{ InstructionMethods, transforms::dlf::Dlf } };
 
 use crate::utils::errors::{ AtpError };
 
@@ -19,7 +19,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, instructions::ifdc::Ifdc};
+/// use atp::tokens::{InstructionMethods, instructions::ifdc::Ifdc};
 ///
 /// let token = Ifdc::params("xy", "atb laranja;");
 ///
@@ -30,7 +30,7 @@ use crate::utils::params::AtpParamTypes;
 #[derive(Clone)]
 pub struct Ifdc {
     text: String,
-    inner: Box<dyn TokenMethods>,
+    inner: Box<dyn InstructionMethods>,
 }
 
 impl Default for Ifdc {
@@ -43,7 +43,7 @@ impl Default for Ifdc {
 }
 
 impl Ifdc {
-    pub fn params(text: &str, inner: Box<dyn TokenMethods>) -> Self {
+    pub fn params(text: &str, inner: Box<dyn InstructionMethods>) -> Self {
         Ifdc {
             text: text.to_string(),
             inner,
@@ -51,7 +51,7 @@ impl Ifdc {
     }
 }
 
-impl TokenMethods for Ifdc {
+impl InstructionMethods for Ifdc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ifdc {} do {}", self.text, self.inner.to_atp_line()).into()
     }

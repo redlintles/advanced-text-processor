@@ -7,7 +7,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
-use crate::{ tokens::TokenMethods };
+use crate::{ tokens::InstructionMethods };
 
 /// Dlb - Delete Before
 /// Delete all characters before `index` in the specified `input`
@@ -17,7 +17,7 @@ use crate::{ tokens::TokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::dlb::Dlb};
+/// use atp::tokens::{InstructionMethods, transforms::dlb::Dlb};
 ///
 /// let token = Dlb::params(3);
 ///
@@ -35,7 +35,7 @@ impl Dlb {
     }
 }
 
-impl TokenMethods for Dlb {
+impl InstructionMethods for Dlb {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dlb {};\n", self.index).into()
     }

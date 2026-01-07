@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, transforms::extend_string, validations::check_vec_len },
 };
 
@@ -23,7 +23,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::padl::Padl};
+/// use atp::tokens::{InstructionMethods, transforms::padl::Padl};
 ///
 /// let token = Padl::params("xy", 7);
 ///
@@ -44,7 +44,7 @@ impl Padl {
     }
 }
 
-impl TokenMethods for Padl {
+impl InstructionMethods for Padl {
     fn get_string_repr(&self) -> &'static str {
         "padl"
     }

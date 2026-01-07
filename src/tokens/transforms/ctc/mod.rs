@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::utils::errors::AtpError;
 use crate::utils::validations::check_vec_len;
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::transforms::{ capitalize },
     utils::validations::check_chunk_bound_indexes,
 };
@@ -25,7 +25,7 @@ use crate::utils::{ params::AtpParamTypes };
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::ctc::Ctc};
+/// use atp::tokens::{InstructionMethods, transforms::ctc::Ctc};
 ///
 /// let token = Ctc::params(1, 5).unwrap();
 /// assert_eq!(token.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
@@ -46,7 +46,7 @@ impl Ctc {
     }
 }
 
-impl TokenMethods for Ctc {
+impl InstructionMethods for Ctc {
     fn get_string_repr(&self) -> &'static str {
         "ctc"
     }

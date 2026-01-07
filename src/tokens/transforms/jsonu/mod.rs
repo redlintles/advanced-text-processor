@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::tokens::TokenMethods;
+use crate::tokens::InstructionMethods;
 
 use crate::utils::params::AtpParamTypes;
 
@@ -17,7 +17,7 @@ use crate::utils::validations::check_vec_len;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::jsonu::Jsonu};
+/// use atp::tokens::{InstructionMethods, transforms::jsonu::Jsonu};
 ///
 ///
 /// let token = Jsonu::default();
@@ -30,7 +30,7 @@ use crate::utils::validations::check_vec_len;
 #[derive(Clone, Copy, Default)]
 pub struct Jsonu {}
 
-impl TokenMethods for Jsonu {
+impl InstructionMethods for Jsonu {
     fn get_string_repr(&self) -> &'static str {
         "jsonu"
     }

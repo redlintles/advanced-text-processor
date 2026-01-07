@@ -1,17 +1,17 @@
 use crate::{
     api::AtpBuilderMethods,
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::AtpError, params::AtpParamTypes },
 };
 
 pub struct ConditionalBuilderEach {
-    token: Box<dyn TokenMethods>,
+    token: Box<dyn InstructionMethods>,
     params: Vec<AtpParamTypes>,
-    conditional_tokens: Vec<Box<dyn TokenMethods>>,
+    conditional_tokens: Vec<Box<dyn InstructionMethods>>,
 }
 
 impl ConditionalBuilderEach {
-    pub fn new(token: Box<dyn TokenMethods>, params: Vec<AtpParamTypes>) -> Self {
+    pub fn new(token: Box<dyn InstructionMethods>, params: Vec<AtpParamTypes>) -> Self {
         ConditionalBuilderEach {
             token,
             params,
@@ -19,14 +19,14 @@ impl ConditionalBuilderEach {
         }
     }
 
-    pub fn build(self) -> Vec<Box<dyn TokenMethods>> {
+    pub fn build(self) -> Vec<Box<dyn InstructionMethods>> {
         self.conditional_tokens
     }
 }
 
 // push_token funciona normalmente para incrementar conditional_tokens
 impl AtpBuilderMethods for ConditionalBuilderEach {
-    fn push_token(&mut self, t: Box<dyn crate::tokens::TokenMethods>) -> Result<(), AtpError> {
+    fn push_token(&mut self, t: Box<dyn crate::tokens::InstructionMethods>) -> Result<(), AtpError> {
         let mut new_token = self.token.clone();
         let token_param = AtpParamTypes::Token(t);
 

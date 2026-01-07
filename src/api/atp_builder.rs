@@ -1,13 +1,13 @@
 use crate::{
     api::{ AtpBuilderMethods, AtpConditionalMethods },
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::errors::AtpError,
 };
 
 use super::atp_processor::{ AtpProcessor, AtpProcessorMethods };
 
 pub struct AtpBuilder<'ap> {
-    tokens: Vec<Box<dyn TokenMethods>>,
+    tokens: Vec<Box<dyn InstructionMethods>>,
     processor: &'ap mut AtpProcessor,
 }
 
@@ -24,7 +24,7 @@ impl<'ap> AtpBuilder<'ap> {
 }
 
 impl<'ap> AtpBuilderMethods for AtpBuilder<'ap> {
-    fn push_token(&mut self, t: Box<dyn TokenMethods>) -> Result<(), AtpError> {
+    fn push_token(&mut self, t: Box<dyn InstructionMethods>) -> Result<(), AtpError> {
         self.tokens.push(t);
         Ok(())
     }

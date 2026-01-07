@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -14,7 +14,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rpt::Rpt};
+/// use atp::tokens::{InstructionMethods, transforms::rpt::Rpt};
 ///
 /// let token = Rpt::params(3);
 ///
@@ -32,7 +32,7 @@ impl Rpt {
     }
 }
 
-impl TokenMethods for Rpt {
+impl InstructionMethods for Rpt {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rpt {};\n", self.times).into()
     }

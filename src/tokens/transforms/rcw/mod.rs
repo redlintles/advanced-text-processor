@@ -9,7 +9,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods };
+use crate::{ tokens::InstructionMethods };
 
 /// RCW - Replace Count With
 ///
@@ -25,7 +25,7 @@ use crate::{ tokens::TokenMethods };
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rcw::Rcw};
+/// use atp::tokens::{InstructionMethods, transforms::rcw::Rcw};
 ///
 /// let token = Rcw::params(&"a", "b", 3).unwrap();
 ///
@@ -60,7 +60,7 @@ impl Default for Rcw {
     }
 }
 
-impl TokenMethods for Rcw {
+impl InstructionMethods for Rcw {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count).into()
     }

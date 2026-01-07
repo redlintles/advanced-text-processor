@@ -2,7 +2,7 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::{ tokens::{ TokenMethods, transforms::rmws::Rmws }, utils::params::AtpParamTypes };
+    use crate::{ tokens::{ InstructionMethods, transforms::rmws::Rmws }, utils::params::AtpParamTypes };
 
     #[test]
     fn rmws_get_string_repr_ok() {

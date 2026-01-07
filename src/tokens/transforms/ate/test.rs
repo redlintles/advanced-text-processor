@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::tokens::TokenMethods;
+    use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::ate::Ate;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::utils::params::AtpParamTypes;

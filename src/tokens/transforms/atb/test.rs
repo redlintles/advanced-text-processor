@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 mod common {
-    use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+    use crate::{ tokens::{ InstructionMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
 
     #[test]
     fn params_sets_text() {
@@ -113,7 +113,7 @@ mod common {
 
 #[cfg(all(test, feature = "bytecode"))]
 mod bytecode {
-    use crate::{ tokens::{ TokenMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+    use crate::{ tokens::{ InstructionMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
 
     // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
     // [type: u32][payload_size: u32][payload: bytes]

@@ -8,11 +8,11 @@ use crate::utils::params::AtpParamTypes;
 pub mod instructions;
 pub mod transforms;
 
-/// TokenMethods
+/// InstructionMethods
 ///
 /// Basic Contract which every token should implement
 
-pub trait TokenMethods: TokenMethodsClone + Send + Sync {
+pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     fn needs_context(&self) -> bool {
         false
     }
@@ -47,18 +47,18 @@ pub trait TokenMethods: TokenMethodsClone + Send + Sync {
     fn get_opcode(&self) -> u32;
 }
 
-pub trait TokenMethodsClone {
-    fn clone_box(&self) -> Box<dyn TokenMethods>;
+pub trait InstructionMethodsClone {
+    fn clone_box(&self) -> Box<dyn InstructionMethods>;
 }
 
-impl<T> TokenMethodsClone for T where T: 'static + TokenMethods + Clone {
-    fn clone_box(&self) -> Box<dyn TokenMethods> {
+impl<T> InstructionMethodsClone for T where T: 'static + InstructionMethods + Clone {
+    fn clone_box(&self) -> Box<dyn InstructionMethods> {
         Box::new(self.clone())
     }
 }
 
-impl Clone for Box<dyn TokenMethods> {
-    fn clone(&self) -> Box<dyn TokenMethods> {
+impl Clone for Box<dyn InstructionMethods> {
+    fn clone(&self) -> Box<dyn InstructionMethods> {
         self.clone_box()
     }
 }

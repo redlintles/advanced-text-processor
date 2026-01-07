@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods, utils::validations::check_chunk_bound_indexes };
+use crate::{ tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes };
 
 use crate::utils::errors::{ AtpError };
 
@@ -17,7 +17,7 @@ use crate::utils::errors::{ AtpError };
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods,transforms::slt::Slt};
+/// use atp::tokens::{InstructionMethods,transforms::slt::Slt};
 ///
 /// let token = Slt::params(1,9999).unwrap();
 ///
@@ -41,7 +41,7 @@ impl Slt {
     }
 }
 
-impl TokenMethods for Slt {
+impl InstructionMethods for Slt {
     fn get_string_repr(&self) -> &'static str {
         "slt"
     }

@@ -7,7 +7,7 @@ use regex::Regex;
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods };
+use crate::{ tokens::InstructionMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -19,7 +19,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::sslt::Sslt};
+/// use atp::tokens::{InstructionMethods, transforms::sslt::Sslt};
 ///
 /// let token = Sslt::params("_", 1).unwrap();
 ///
@@ -50,7 +50,7 @@ impl Default for Sslt {
     }
 }
 
-impl TokenMethods for Sslt {
+impl InstructionMethods for Sslt {
     fn get_string_repr(&self) -> &'static str {
         "sslt"
     }

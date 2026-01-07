@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
 
@@ -16,7 +16,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rtr::Rtr};
+/// use atp::tokens::{InstructionMethods, transforms::rtr::Rtr};
 ///
 /// let token = Rtr::params(2);
 ///
@@ -34,7 +34,7 @@ impl Rtr {
     }
 }
 
-impl TokenMethods for Rtr {
+impl InstructionMethods for Rtr {
     fn transform(&self, input: &str) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(

@@ -4,12 +4,12 @@ pub mod conditional_builder;
 
 use crate::api::conditional_builder::ConditionalBuilderEach;
 use crate::tokens::instructions::ifdc;
-use crate::tokens::{ transforms::*, TokenMethods };
+use crate::tokens::{ transforms::*, InstructionMethods };
 use crate::utils::errors::{ AtpError };
 use crate::utils::params::AtpParamTypes;
 
 pub trait AtpBuilderMethods: Sized {
-    fn push_token(&mut self, t: Box<dyn TokenMethods>) -> Result<(), AtpError>;
+    fn push_token(&mut self, t: Box<dyn InstructionMethods>) -> Result<(), AtpError>;
 
     /// TBS - Trim Both Sides
     ///
@@ -1435,7 +1435,7 @@ pub trait AtpConditionalMethods: AtpBuilderMethods {
         where F: FnOnce(&mut ConditionalBuilderEach) -> Result<(), AtpError>
     {
         let params = vec![AtpParamTypes::String(value.to_string())];
-        let token: Box<dyn TokenMethods> = Box::new(ifdc::Ifdc::default());
+        let token: Box<dyn InstructionMethods> = Box::new(ifdc::Ifdc::default());
         let mut conditional_builder = ConditionalBuilderEach::new(token, params);
 
         f(&mut conditional_builder)?;

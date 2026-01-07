@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::tokens::TokenMethods;
+use crate::tokens::InstructionMethods;
 
 use crate::utils::errors::{ AtpError };
 use crate::utils::params::AtpParamTypes;
@@ -16,7 +16,7 @@ use crate::utils::validations::check_vec_len;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::splc::Splc};
+/// use atp::tokens::{InstructionMethods, transforms::splc::Splc};
 ///
 /// let token = Splc::default();
 ///
@@ -26,7 +26,7 @@ use crate::utils::validations::check_vec_len;
 #[derive(Clone, Copy, Default)]
 pub struct Splc {}
 
-impl TokenMethods for Splc {
+impl InstructionMethods for Splc {
     fn get_string_repr(&self) -> &'static str {
         "splc"
     }

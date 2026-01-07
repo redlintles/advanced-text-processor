@@ -1,13 +1,13 @@
 use std::{fs::OpenOptions, io::Write, path::Path};
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{errors::AtpError, validations::check_file_path},
 };
 
 pub fn write_bytecode_to_file(
     path: &Path,
-    tokens: Vec<Box<dyn TokenMethods>>,
+    tokens: Vec<Box<dyn InstructionMethods>>,
 ) -> Result<(), AtpError> {
     check_file_path(path, Some("atpbc"))?;
 

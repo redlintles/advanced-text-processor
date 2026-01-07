@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, validations::{ check_index_against_words } },
 };
 
@@ -17,7 +17,7 @@ use crate::{
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tlcw::Tlcw};
+/// use atp::tokens::{InstructionMethods, transforms::tlcw::Tlcw};
 ///
 /// let token = Tlcw::params(1);
 ///
@@ -34,7 +34,7 @@ impl Tlcw {
         Tlcw { index }
     }
 }
-impl TokenMethods for Tlcw {
+impl InstructionMethods for Tlcw {
     fn get_string_repr(&self) -> &'static str {
         "tlcw"
     }

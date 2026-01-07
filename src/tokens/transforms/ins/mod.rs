@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::utils::params::{ AtpParamTypes };
 
 use crate::utils::validations::check_vec_len;
-use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
+use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError, AtpErrorCode } } };
 /// Ins - Insert
 ///
 /// Inserts `text` after `index` position in `input`
@@ -16,7 +16,7 @@ use crate::{ tokens::TokenMethods, utils::{ errors::{ AtpError, AtpErrorCode } }
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::ins::Ins};
+/// use atp::tokens::{InstructionMethods, transforms::ins::Ins};
 ///
 /// let token = Ins::params(2,"laranja");
 ///
@@ -36,7 +36,7 @@ impl Ins {
         }
     }
 }
-impl TokenMethods for Ins {
+impl InstructionMethods for Ins {
     fn get_string_repr(&self) -> &'static str {
         "ins"
     }

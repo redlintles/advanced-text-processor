@@ -3,7 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::tokens::TokenMethods;
+use crate::tokens::InstructionMethods;
 
 use crate::utils::params::AtpParamTypes;
 
@@ -17,7 +17,7 @@ use crate::utils::validations::check_vec_len;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::jsone::Jsone};
+/// use atp::tokens::{InstructionMethods, transforms::jsone::Jsone};
 ///
 ///
 /// let token = Jsone::default();
@@ -29,7 +29,7 @@ use crate::utils::validations::check_vec_len;
 #[derive(Clone, Copy, Default)]
 pub struct Jsone {}
 
-impl TokenMethods for Jsone {
+impl InstructionMethods for Jsone {
     fn get_string_repr(&self) -> &'static str {
         "jsone"
     }

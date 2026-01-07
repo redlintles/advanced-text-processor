@@ -2,7 +2,7 @@ use crate::{
     context::execution_context::{ GlobalContextMethods, GlobalExecutionContext },
     parse_args,
     to_bytecode,
-    tokens::{ TokenMethods, transforms::dlf::Dlf },
+    tokens::{ InstructionMethods, transforms::dlf::Dlf },
     utils::{ params::AtpParamTypes, validations::check_vec_len },
 };
 
@@ -11,7 +11,7 @@ pub mod test;
 #[derive(Clone)]
 pub struct Blk {
     block_name: String,
-    inner: Box<dyn TokenMethods>,
+    inner: Box<dyn InstructionMethods>,
 }
 
 impl Default for Blk {
@@ -23,7 +23,7 @@ impl Default for Blk {
     }
 }
 
-impl TokenMethods for Blk {
+impl InstructionMethods for Blk {
     fn get_opcode(&self) -> u32 {
         0x34
     }

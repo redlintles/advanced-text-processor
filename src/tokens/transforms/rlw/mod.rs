@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use regex::Regex;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
 
@@ -25,7 +25,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::rlw::Rlw};
+/// use atp::tokens::{InstructionMethods, transforms::rlw::Rlw};
 ///
 /// let token = Rlw::params(&"a", "b").unwrap();
 ///
@@ -57,7 +57,7 @@ impl Default for Rlw {
     }
 }
 
-impl TokenMethods for Rlw {
+impl InstructionMethods for Rlw {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rlw {} {};\n", self.pattern, self.text_to_replace).into()
     }

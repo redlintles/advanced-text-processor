@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
-use crate::{ tokens::TokenMethods };
+use crate::{ tokens::InstructionMethods };
 
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
@@ -17,7 +17,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// # Example:
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::dla::Dla};
+/// use atp::tokens::{InstructionMethods, transforms::dla::Dla};
 ///
 /// let token = Dla::params(3);
 ///
@@ -35,7 +35,7 @@ impl Dla {
     }
 }
 
-impl TokenMethods for Dla {
+impl InstructionMethods for Dla {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dla {};\n", self.index).into()
     }

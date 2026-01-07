@@ -10,7 +10,7 @@ use crate::{
         TOKEN_TABLE,
         TargetValue,
     },
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
@@ -18,7 +18,7 @@ use crate::{
 pub enum AtpParamTypes {
     String(String),
     Usize(usize),
-    Token(Box<dyn TokenMethods>),
+    Token(Box<dyn InstructionMethods>),
 }
 
 pub trait AtpParamTypesJoin {

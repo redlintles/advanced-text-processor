@@ -2,7 +2,7 @@ use crate::{
     context::execution_context::{ GlobalContextMethods, GlobalExecutionContext },
     parse_args,
     to_bytecode,
-    tokens::{ TokenMethods },
+    tokens::{ InstructionMethods },
     utils::{ params::AtpParamTypes, validations::check_vec_len },
 };
 
@@ -21,7 +21,7 @@ impl Default for Cblk {
     }
 }
 
-impl TokenMethods for Cblk {
+impl InstructionMethods for Cblk {
     fn get_opcode(&self) -> u32 {
         0x35
     }

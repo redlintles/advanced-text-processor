@@ -4,7 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{ errors::{ AtpError }, validations::{ check_index_against_input, check_vec_len } },
 };
 
@@ -17,7 +17,7 @@ use crate::utils::params::AtpParamTypes;
 /// # Example
 ///
 /// ```rust
-/// use atp::tokens::{TokenMethods, transforms::tlcs::Tlcs};
+/// use atp::tokens::{InstructionMethods, transforms::tlcs::Tlcs};
 ///
 /// let token = Tlcs::params(1);
 ///
@@ -36,7 +36,7 @@ impl Tlcs {
     }
 }
 
-impl TokenMethods for Tlcs {
+impl InstructionMethods for Tlcs {
     fn get_string_repr(&self) -> &'static str {
         "tlcs"
     }

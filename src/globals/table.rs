@@ -1,13 +1,13 @@
 use std::{ borrow::Cow, collections::HashMap, sync::{ Arc, LazyLock } };
 
-use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 use crate::tokens::{ instructions::*, transforms::* };
 
 #[derive(Clone)]
 pub enum TokenRef {
-    Boxed(Box<dyn TokenMethods>),
-    Shared(Arc<dyn TokenMethods>),
+    Boxed(Box<dyn InstructionMethods>),
+    Shared(Arc<dyn InstructionMethods>),
 }
 
 impl TokenRef {
@@ -18,7 +18,7 @@ impl TokenRef {
         }
     }
 
-    pub fn into_box(self) -> Box<dyn TokenMethods> {
+    pub fn into_box(self) -> Box<dyn InstructionMethods> {
         match self {
             TokenRef::Boxed(b) => b,
             TokenRef::Shared(a) => a.clone_box(),

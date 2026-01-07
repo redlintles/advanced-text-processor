@@ -1,11 +1,11 @@
 use std::{fs::OpenOptions, io::Write, path::Path};
 
 use crate::{
-    tokens::TokenMethods,
+    tokens::InstructionMethods,
     utils::{errors::AtpError, validations::check_file_path},
 };
 
-pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn TokenMethods>>) -> Result<(), AtpError> {
+pub fn write_to_file(path: &Path, tokens: &Vec<Box<dyn InstructionMethods>>) -> Result<(), AtpError> {
     check_file_path(path, Some("atp"))?;
     let mut file = OpenOptions::new()
         .create(true)
