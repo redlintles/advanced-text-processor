@@ -4,7 +4,7 @@ pub mod processor {
     use std::{ fs::File, io::Read, path::Path };
 
     use atp::{
-        builder::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
+        api::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
         tokens::{ TokenMethods, transforms::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt } },
         utils::errors::AtpError,
     };

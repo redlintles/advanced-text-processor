@@ -3,7 +3,7 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp::{ builder::atp_processor::AtpProcessorMethods, tokens::TokenMethods };
+    use atp::{ api::atp_processor::AtpProcessorMethods, tokens::TokenMethods };
 
     #[cfg(test)]
     mod write_bytecode_to_file_tests {
@@ -211,10 +211,7 @@ pub mod bytecode {
 
     #[test]
     fn test_read_bytecode_from_file() {
-        use atp::{
-            builder::atp_processor::AtpProcessor,
-            bytecode::reader::read_bytecode_from_file,
-        };
+        use atp::{ api::atp_processor::AtpProcessor, bytecode::reader::read_bytecode_from_file };
         let tokens = match read_bytecode_from_file(Path::new("./banana.atpbc")) {
             Ok(x) => x,
             Err(e) => panic!("{}", format!("{}", e)),

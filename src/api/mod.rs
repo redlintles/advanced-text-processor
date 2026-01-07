@@ -2,7 +2,7 @@ pub mod atp_builder;
 pub mod atp_processor;
 pub mod conditional_builder;
 
-use crate::builder::conditional_builder::ConditionalBuilderEach;
+use crate::api::conditional_builder::ConditionalBuilderEach;
 use crate::tokens::instructions::ifdc;
 use crate::tokens::{ transforms::*, TokenMethods };
 use crate::utils::errors::{ AtpError };

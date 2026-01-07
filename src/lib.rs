@@ -26,7 +26,7 @@ pub mod utils;
 pub mod text;
 // Public
 
-pub mod builder;
+pub mod api;
 
 // Bytecode
 #[cfg(feature = "bytecode")]

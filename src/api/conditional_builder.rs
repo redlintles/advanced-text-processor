@@ -1,5 +1,5 @@
 use crate::{
-    builder::AtpBuilderMethods,
+    api::AtpBuilderMethods,
     tokens::TokenMethods,
     utils::{ errors::AtpError, params::AtpParamTypes },
 };

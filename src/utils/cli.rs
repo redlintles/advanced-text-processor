@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    builder::atp_processor::{ AtpProcessor, AtpProcessorMethods },
+    api::atp_processor::{ AtpProcessor, AtpProcessorMethods },
     utils::{ errors::AtpError, transforms::get_safe_utf8_char_index },
 };
 
@@ -102,7 +102,7 @@ pub fn process_input_by_chunks(
 mod cli_tests {
     mod process_input_by_chunks_tests {
         use crate::{
-            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
+            api::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_by_chunks, errors::AtpError },
         };
 
@@ -125,7 +125,7 @@ mod cli_tests {
 
     mod process_input_line_by_line_tests {
         use crate::{
-            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
+            api::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_line_by_line, errors::AtpError },
         };
 
@@ -148,7 +148,7 @@ mod cli_tests {
 
     mod process_input_single_chunk_tests {
         use crate::{
-            builder::{ AtpBuilderMethods, atp_processor::AtpProcessor },
+            api::{ AtpBuilderMethods, atp_processor::AtpProcessor },
             utils::{ cli::process_input_single_chunk, errors::AtpError },
         };
 

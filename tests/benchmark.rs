@@ -2,7 +2,7 @@
 #[cfg(test)]
 pub mod benchmark {
     use atp::{
-        builder::{ atp_processor::{ AtpProcessor, AtpProcessorMethods } },
+        api::{ atp_processor::{ AtpProcessor, AtpProcessorMethods } },
         utils::test_helpers::build_all_tokens_pipeline_safe,
     };
     use std::time::Instant;

@@ -5,13 +5,13 @@ use uuid::Uuid;
 
 use colored::*;
 
-use crate::builder::atp_builder::AtpBuilder;
+use crate::api::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 use crate::context::execution_context::GlobalExecutionContext;
 use crate::tokens::TokenMethods;
 
-use crate::text::parser::parse_token;
+use crate::utils::apply::apply_transform;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
 
@@ -526,7 +526,7 @@ impl AtpProcessorMethods for AtpProcessor {
             Ok(tks) => {
                 let mut context = GlobalExecutionContext::new();
                 for token in tks.iter() {
-                    result = parse_token(
+                    result = apply_transform(
                         token.as_ref(),
                         result.as_str(),
                         &mut self.errors,
@@ -651,7 +651,7 @@ impl AtpProcessorMethods for AtpProcessor {
         let mut context = GlobalExecutionContext::new();
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(
+            let temp = apply_transform(
                 token.as_ref(),
                 result.as_str(),
                 &mut self.errors,
@@ -748,7 +748,7 @@ impl AtpProcessorMethods for AtpProcessor {
         let mut context = GlobalExecutionContext::new();
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(
+            let temp = apply_transform(
                 token.as_ref(),
                 result.as_str(),
                 &mut self.errors,

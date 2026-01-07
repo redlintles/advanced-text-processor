@@ -1,6 +1,6 @@
-use crate::builder::AtpConditionalMethods;
+use crate::api::AtpConditionalMethods;
 use crate::utils::errors::AtpError;
-use crate::builder::{ AtpBuilderMethods, atp_processor::AtpProcessor };
+use crate::api::{ AtpBuilderMethods, atp_processor::AtpProcessor };
 
 pub fn build_all_tokens_pipeline_safe(processor: &mut AtpProcessor) -> Result<String, AtpError> {
     let id = processor
