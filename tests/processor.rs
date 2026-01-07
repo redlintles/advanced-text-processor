@@ -6,97 +6,118 @@ pub mod processor {
     use atp::{
         builder::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
         tokens::{ TokenMethods, transforms::{ atb::Atb, ate::Ate, raw::Raw, rpt::Rpt } },
+        utils::errors::AtpError,
     };
     use uuid::Uuid;
 
     #[test]
-    fn test_process_all() {
+    fn test_process_all() -> Result<(), AtpError> {
         let mut processor = AtpProcessor::new();
         let identifier = processor
             .create_pipeline()
-            .add_to_beginning("Banana")
-            .unwrap()
-            .add_to_end("Laranja")
-            .unwrap()
-            .repeat(3 as usize)
-            .unwrap()
+            .add_to_beginning("Banana")?
+            .add_to_end("Laranja")?
+            .repeat(3 as usize)?
             .build();
         let input = "Carimbo verde de deus";
 
-        let output = processor.process_all(&identifier, input).unwrap();
+        let output = processor.process_all(&identifier, input)?;
 
         let expected_output =
             "BananaCarimbo verde de deusLaranjaBananaCarimbo verde de deusLaranjaBananaCarimbo verde de deusLaranja";
 
         assert_eq!(output, expected_output, "Unexpected output in process_all");
+
+        Ok(())
     }
     #[test]
-    fn test_process_all_with_debug() {
+    fn test_process_all_with_debug() -> Result<(), AtpError> {
         let mut processor = AtpProcessor::new();
         let identifier = processor
             .create_pipeline()
-            .add_to_beginning("Banana")
-            .unwrap()
-            .add_to_end("Laranja")
-            .unwrap()
-            .repeat(3 as usize)
-            .unwrap()
+            .add_to_beginning("Banana")?
+            .add_to_end("Laranja")?
+            .repeat(3 as usize)?
             .build();
         let input = "Carimbo verde de deus";
 
-        let output = processor.process_all_with_debug(&identifier, input).unwrap();
+        let output = processor.process_all_with_debug(&identifier, input)?;
 
         let expected_output =
             "BananaCarimbo verde de deusLaranjaBananaCarimbo verde de deusLaranjaBananaCarimbo verde de deusLaranja";
 
         assert_eq!(output, expected_output, "Unexpected output in process_all");
+
+        Ok(())
     }
 
     #[test]
-    fn test_process_single() {
+    fn test_process_single() -> Result<(), AtpError> {
         let mut processor = AtpProcessor::new();
-        let token: Box<dyn TokenMethods> = Box::new(Raw::params("a", "b").unwrap());
+        let token: Box<dyn TokenMethods> = Box::new(
+            Raw::params("a", "b").map_err(|e|
+                AtpError::new(
+                    atp::utils::errors::AtpErrorCode::TextParsingError("".into()),
+                    "",
+                    e.to_string()
+                )
+            )?
+        );
 
         let input = "a".repeat(100);
 
-        let output = processor.process_single(token, &input).unwrap();
+        let output = processor.process_single(token, &input)?;
 
         let expected_output = "b".repeat(100);
 
         assert_eq!(output, expected_output);
+
+        Ok(())
     }
     #[test]
-    fn test_process_single_with_debug() {
+    fn test_process_single_with_debug() -> Result<(), AtpError> {
         let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
-        let token: Box<dyn TokenMethods> = Box::new(Raw::params("a", "b").unwrap());
+        let token: Box<dyn TokenMethods> = Box::new(
+            Raw::params("a", "b").map_err(|e|
+                AtpError::new(
+                    atp::utils::errors::AtpErrorCode::TextParsingError("".into()),
+                    "",
+                    e.to_string()
+                )
+            )?
+        );
 
         let input = "a".repeat(100);
 
-        let output = processor.process_single_with_debug(token, &input).unwrap();
+        let output = processor.process_single_with_debug(token, &input)?;
 
         let expected_output = "b".repeat(100);
 
         assert_eq!(output, expected_output);
+
+        Ok(())
     }
 
     #[test]
-    fn test_read_from_file() {
+    fn test_read_from_file() -> Result<(), AtpError> {
         let mut processor = AtpProcessor::new();
 
-        let identifier = processor.read_from_text_file(Path::new("instructions.atp")).unwrap();
+        let identifier = processor.read_from_text_file(Path::new("instructions.atp"))?;
 
         let input_string = "Banana";
         let expected_output = "Bznzn";
 
-        let output = processor.process_all(&identifier, input_string).unwrap();
+        let output = processor.process_all(&identifier, input_string)?;
 
         println!("{} => {} == {}", input_string, output, expected_output);
 
         assert_eq!(output, expected_output, "Unexpected Output in read_from_file");
+
+        Ok(())
     }
 
     #[test]
-    fn test_write_to_file() {
+    fn test_write_to_file() -> Result<(), AtpError> {
         let file = tempfile::NamedTempFile::new().expect("Error opening archive");
 
         let path = file.path();
@@ -104,12 +125,9 @@ pub mod processor {
         let mut processor = AtpProcessor::new();
         let identifier = processor
             .create_pipeline()
-            .add_to_beginning("Banana")
-            .unwrap()
-            .add_to_end("Laranja")
-            .unwrap()
-            .repeat(3 as usize)
-            .unwrap()
+            .add_to_beginning("Banana")?
+            .add_to_end("Laranja")?
+            .repeat(3 as usize)?
             .build();
 
         let _ = processor.write_to_text_file(&identifier, path);
@@ -117,6 +135,7 @@ pub mod processor {
         let mut opened_file = File::open(path).unwrap();
 
         let mut content = String::new();
+
         opened_file.read_to_string(&mut content).unwrap();
 
         let expected_content = "atb Banana;\nate Laranja;\nrpt 3;\n";
@@ -126,6 +145,8 @@ pub mod processor {
             expected_content,
             "Unexpected Output in test_write_to_file: content differs"
         );
+
+        Ok(())
     }
 
     #[test]
