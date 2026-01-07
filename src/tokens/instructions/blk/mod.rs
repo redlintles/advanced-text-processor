@@ -43,7 +43,7 @@ impl TokenMethods for Blk {
         &mut self,
         params: &Vec<crate::utils::params::AtpParamTypes>
     ) -> Result<(), crate::utils::errors::AtpError> {
-        check_vec_len(&params, 2, "block assoc", "param parsing error, invalid vec len");
+        check_vec_len(&params, 2, "block assoc", "param parsing error, invalid vec len")?;
 
         self.block_name = parse_args!(params, 0, String, "Block name should be of string type");
 
@@ -69,7 +69,7 @@ impl TokenMethods for Blk {
         input: &str,
         context: &mut GlobalExecutionContext
     ) -> Result<String, crate::utils::errors::AtpError> {
-        context.add_to_block(&self.block_name, self.inner.clone());
+        context.add_to_block(&self.block_name, self.inner.clone())?;
         Ok(input.to_string())
     }
 }

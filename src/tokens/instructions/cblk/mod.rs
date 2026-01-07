@@ -41,7 +41,7 @@ impl TokenMethods for Cblk {
         &mut self,
         params: &Vec<crate::utils::params::AtpParamTypes>
     ) -> Result<(), crate::utils::errors::AtpError> {
-        check_vec_len(&params, 2, "call block", "param parsing error, invalid vec len");
+        check_vec_len(&params, 2, "call block", "param parsing error, invalid vec len")?;
 
         self.block_name = parse_args!(params, 0, String, "Block name should be of string type");
 
