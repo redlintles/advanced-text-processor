@@ -1,15 +1,8 @@
-use std::{
-    borrow::Cow,
-    collections::HashMap,
-    sync::{Arc, LazyLock},
-};
+use std::{ borrow::Cow, collections::HashMap, sync::{ Arc, LazyLock } };
 
-use crate::{
-    tokens::TokenMethods,
-    utils::errors::{AtpError, AtpErrorCode},
-};
+use crate::{ tokens::TokenMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
-use crate::tokens::{instructions::*, transforms::*};
+use crate::tokens::{ instructions::*, transforms::* };
 
 #[derive(Clone)]
 pub enum TokenRef {
@@ -67,13 +60,13 @@ pub struct TokenTable {
 impl TokenTable {
     pub fn find(
         &self,
-        (query_source, query_target): (QuerySource, QueryTarget),
+        (query_source, query_target): (QuerySource, QueryTarget)
     ) -> Result<TargetValue, AtpError> {
         let err = || {
             AtpError::new(
                 AtpErrorCode::TokenNotFound("Token Not Found in mapping".into()),
                 "TOKEN_TABLE.find()",
-                "query",
+                "query"
             )
         };
 
@@ -420,6 +413,18 @@ define_token_table! {
             0x33,
             || TokenRef::Shared(Arc::new(ifdc::Ifdc::default())),
             [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Token)],
+        ),
+        (
+            "blk",
+            0x34,
+            || TokenRef::Shared(Arc::new(blk::Blk::default())),
+            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Token)],
+        ),
+        (
+            "cblk",
+            0x35,
+            || TokenRef::Shared(Arc::new(blk::Blk::default())),
+            [InstructionParam::req(ParamType::String)],
         ),
     ];
 }
