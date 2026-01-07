@@ -8,7 +8,7 @@ use crate::to_bytecode;
 
 use crate::{ tokens::{ TokenMethods, transforms::dlf::Dlf } };
 
-use crate::utils::errors::{ AtpError, AtpErrorCode };
+use crate::utils::errors::{ AtpError };
 
 use crate::utils::params::AtpParamTypes;
 
@@ -77,17 +77,7 @@ impl TokenMethods for Ifdc {
 
         use crate::utils::params::AtpParamTypesJoin;
 
-        check_vec_len(&params, 1, "atb", params.join(""))?;
-
-        if params.len() != 2 {
-            return Err(
-                AtpError::new(
-                    AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                    "",
-                    ""
-                )
-            );
-        }
+        check_vec_len(&params, 2, "ifdc", params.join(""))?;
 
         self.text = parse_args!(params, 0, String, "");
 
