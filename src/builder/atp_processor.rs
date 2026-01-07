@@ -8,6 +8,7 @@ use colored::*;
 use crate::builder::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::tokens::TokenMethods;
 
 use crate::text::parser::parse_token;
@@ -523,8 +524,14 @@ impl AtpProcessorMethods for AtpProcessor {
 
         match tokens {
             Ok(tks) => {
+                let mut context = GlobalExecutionContext::new();
                 for token in tks.iter() {
-                    result = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
+                    result = parse_token(
+                        token.as_ref(),
+                        result.as_str(),
+                        &mut self.errors,
+                        &mut context
+                    )?;
                 }
                 Ok(result.to_string())
             }
@@ -625,8 +632,7 @@ impl AtpProcessorMethods for AtpProcessor {
         }
     }
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, AtpError> {
-        let mut result = String::from(input);
-
+        let mut result = input.to_string();
         let dashes = 10;
 
         let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
@@ -637,28 +643,43 @@ impl AtpProcessorMethods for AtpProcessor {
             }
         };
 
-        println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
+        let mut log = String::new();
+        log.push_str("PROCESSING STEP BY STEP:\n");
+        log.push_str(&"-".repeat(dashes));
+        log.push_str("\n\n");
+
+        let mut context = GlobalExecutionContext::new();
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
+            let temp = parse_token(
+                token.as_ref(),
+                result.as_str(),
+                &mut self.errors,
+                &mut context
+            )?;
 
-            println!(
-                "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
-                counter.to_string().blue(),
-                (counter + 1).to_string().blue(),
-                token.to_atp_line().yellow(),
-                result.red(),
-                temp.green()
+            // Note: format! aloca, mas agora você faz 1 print no final.
+            log.push_str(
+                &format!(
+                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
+                    counter.to_string().blue(),
+                    (counter + 1).to_string().blue(),
+                    token.to_atp_line().yellow(),
+                    result.red(),
+                    temp.green()
+                )
             );
 
-            if (counter as usize) < tokens.len() {
-                println!("{}\n", "-".repeat(dashes));
+            if (counter as usize) + 1 < tokens.len() {
+                log.push_str(&"-".repeat(dashes));
+                log.push_str("\n\n");
             }
 
             result = temp;
         }
 
-        Ok(result.to_string())
+        print!("{log}"); // 1 única saída
+        Ok(result)
     }
 
     fn process_single_with_debug(
@@ -724,8 +745,15 @@ impl AtpProcessorMethods for AtpProcessor {
 
         println!("PROCESSING STEP BY STEP:\n{}\n", "-".repeat(dashes));
 
+        let mut context = GlobalExecutionContext::new();
+
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = parse_token(token.as_ref(), result.as_str(), &mut self.errors)?;
+            let temp = parse_token(
+                token.as_ref(),
+                result.as_str(),
+                &mut self.errors,
+                &mut context
+            )?;
             println!(
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
                 counter.to_string().blue(),
