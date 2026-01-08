@@ -14,6 +14,7 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn InstructionMethods>,
     let chunks = match
         shell_words::split(
             &token_string
+                .trim_end()
                 .strip_suffix(";")
                 .ok_or_else(|| {
                     AtpError::new(
@@ -88,7 +89,7 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, A
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
-        let mut line_text = match line {
+        let line_text = match line {
             Ok(x) => x,
             Err(_) => {
                 return Err(
@@ -102,8 +103,6 @@ pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, A
                 );
             }
         };
-
-        line_text.pop();
 
         result.push(read_from_text(&line_text)?);
     }
