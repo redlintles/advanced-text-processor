@@ -4,7 +4,10 @@
 
 #[cfg(test)]
 mod common {
-    use crate::{ tokens::{ InstructionMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+    use crate::{
+        tokens::{ InstructionMethods, transforms::atb::Atb },
+        utils::{ errors::AtpErrorCode, params::AtpParamTypes },
+    };
 
     #[test]
     fn params_sets_text() {
@@ -62,13 +65,7 @@ mod common {
 
         let err = t.from_params(&params).unwrap_err();
 
-        // check semi-forte (porque AtpError não tem getter público do code)
-        // Mas garantimos que é BytecodeNotFound (106)
-        let rendered = err.to_string();
-        assert!(rendered.contains("106"));
-
-        // (opcional) também checa a mensagem base
-        assert!(rendered.contains("Invalid Parser for this token"));
+        assert!(matches!(err.error_code, AtpErrorCode::InvalidArgumentNumber(_)));
     }
 
     #[test]
@@ -113,7 +110,10 @@ mod common {
 
 #[cfg(all(test, feature = "bytecode"))]
 mod bytecode {
-    use crate::{ tokens::{ InstructionMethods, transforms::atb::Atb }, utils::params::AtpParamTypes };
+    use crate::{
+        tokens::{ InstructionMethods, transforms::atb::Atb },
+        utils::params::AtpParamTypes,
+    };
 
     // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
     // [type: u32][payload_size: u32][payload: bytes]

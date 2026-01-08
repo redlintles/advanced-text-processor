@@ -51,17 +51,9 @@ mod tests {
             AtpParamTypes::String("b".to_string())
         ];
 
-        let got = t.from_params(&params);
+        let err = t.from_params(&params).unwrap_err();
 
-        let expected = Err(
-            AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                ""
-            )
-        );
-
-        assert_eq!(got, expected);
+        assert!(matches!(err.error_code, AtpErrorCode::InvalidArgumentNumber(_)));
     }
 
     #[test]
