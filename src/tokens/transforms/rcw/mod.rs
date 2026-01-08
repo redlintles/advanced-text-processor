@@ -66,6 +66,9 @@ impl InstructionMethods for Rcw {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
+        if self.count == 0 {
+            return Ok(input.to_string());
+        }
         Ok(self.pattern.replacen(input, self.count, &self.text_to_replace).to_string())
     }
 
