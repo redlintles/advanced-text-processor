@@ -27,11 +27,14 @@ pub trait AtpParamTypesJoin {
 
 impl AtpParamTypesJoin for Vec<AtpParamTypes> {
     fn join(&self, sep: &str) -> String {
-        self.iter()
-            .map(|t| t.to_string() + sep)
-            .collect::<String>()
-            .trim_end()
-            .to_string()
+        let mut out = String::new();
+        for (idx, item) in self.iter().enumerate() {
+            if idx > 0 {
+                out.push_str(sep);
+            }
+            out.push_str(&item.to_string());
+        }
+        out
     }
 }
 
@@ -73,6 +76,34 @@ impl AtpParamTypes {
 
         for p in expected.iter() {
             match p.param_type {
+                ParamType::Literal(expected_literal) => {
+                    let literal = chunks
+                        .get(i)
+                        .ok_or_else(|| {
+                            AtpError::new(
+                                AtpErrorCode::TextParsingError(
+                                    "Missing Literal for instruction".into()
+                                ),
+                                "AtpParamTypes::parse_with_cursor",
+                                format!("index={}", i)
+                            )
+                        })?;
+
+                    if expected_literal != literal {
+                        return Err(
+                            AtpError::new(
+                                AtpErrorCode::InvalidParameters("Invalid literal for token".into()),
+                                format!(
+                                    "expected literal {} instead of {}",
+                                    expected_literal,
+                                    literal
+                                ),
+                                literal.to_string()
+                            )
+                        );
+                    }
+                    i += 1;
+                }
                 ParamType::String => {
                     let s = chunks
                         .get(i)

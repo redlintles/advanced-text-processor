@@ -128,6 +128,7 @@ pub enum ParamType {
     Token,
     VarRef,
     BlockRef,
+    Literal(&'static str),
 }
 
 pub struct InstructionParam {
@@ -412,13 +413,21 @@ define_token_table! {
             "ifdc",
             0x33,
             || TokenRef::Shared(Arc::new(ifdc::Ifdc::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Token)],
+            [
+                InstructionParam::req(ParamType::String),
+                InstructionParam::req(ParamType::Literal("do")),
+                InstructionParam::req(ParamType::Token),
+            ],
         ),
         (
             "blk",
             0x34,
             || TokenRef::Shared(Arc::new(blk::Blk::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Token)],
+            [
+                InstructionParam::req(ParamType::String),
+                InstructionParam::req(ParamType::Literal("assoc")),
+                InstructionParam::req(ParamType::Token),
+            ],
         ),
         (
             "cblk",

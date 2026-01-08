@@ -1,14 +1,10 @@
-use std::{
-    fs::OpenOptions,
-    io::{BufReader, Read},
-    path::Path,
-};
+use std::{ fs::OpenOptions, io::{ BufReader, Read }, path::Path };
 
 use crate::{
-    globals::table::{ParamType, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue},
+    globals::table::{ ParamType, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     tokens::InstructionMethods,
     utils::{
-        errors::{AtpError, AtpErrorCode},
+        errors::{ AtpError, AtpErrorCode },
         params::AtpParamTypes,
         validations::check_file_path,
     },
@@ -23,36 +19,52 @@ fn param_type_from_code(code: u32) -> Option<ParamType> {
     }
 }
 
+fn bytecode_compatible(expected: &ParamType, actual: &ParamType) -> bool {
+    match (expected, actual) {
+        (ParamType::String, ParamType::String) => true,
+        (ParamType::Usize, ParamType::Usize) => true,
+        (ParamType::Token, ParamType::Token) => true,
+        _ => false,
+    }
+}
+
 pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
     check_file_path(path, Some("atpbc"))?;
 
-    let file = OpenOptions::new().read(true).open(path).map_err(|_| {
-        AtpError::new(
-            AtpErrorCode::FileOpeningError("Failed opening File".into()),
-            "bytecode reader",
-            format!("{:?}", path),
-        )
-    })?;
+    let file = OpenOptions::new()
+        .read(true)
+        .open(path)
+        .map_err(|_| {
+            AtpError::new(
+                AtpErrorCode::FileOpeningError("Failed opening File".into()),
+                "bytecode reader",
+                format!("{:?}", path)
+            )
+        })?;
 
     let mut reader = BufReader::new(file);
 
     // --- header ---
     let mut magic_number = [0u8; 8];
     let expected_magic_number: [u8; 8] = [38, 235, 245, 8, 244, 137, 1, 179];
-    reader.read_exact(&mut magic_number).map_err(|e| {
-        AtpError::new(
-            AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-            "read_bytecode_from_file",
-            e.to_string(),
-        )
-    })?;
+    reader
+        .read_exact(&mut magic_number)
+        .map_err(|e| {
+            AtpError::new(
+                AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                "read_bytecode_from_file",
+                e.to_string()
+            )
+        })?;
 
     if magic_number != expected_magic_number {
-        return Err(AtpError::new(
-            AtpErrorCode::FileReadingError("Incompatible Magic Number with ATP".into()),
-            "bytecode reader",
-            "",
-        ));
+        return Err(
+            AtpError::new(
+                AtpErrorCode::FileReadingError("Incompatible Magic Number with ATP".into()),
+                "bytecode reader",
+                ""
+            )
+        );
     }
 
     let mut protocol_version_bytes = [0u8; 8];
@@ -62,7 +74,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
             AtpError::new(
                 AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                 "read_bytecode_from_file",
-                e.to_string(),
+                e.to_string()
             )
         })?;
     let protocol_version = u64::from_be_bytes(protocol_version_bytes);
@@ -74,20 +86,24 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
             AtpError::new(
                 AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                 "read_bytecode_from_file",
-                e.to_string(),
+                e.to_string()
             )
         })?;
     let instruction_count = u32::from_be_bytes(instruction_count_bytes);
 
     if protocol_version != 1 {
-        return Err(AtpError::new(
-            AtpErrorCode::BytecodeParsingError("Unsupported protocol version".into()),
-            "read_bytecode_from_file",
-            protocol_version.to_string(),
-        ));
+        return Err(
+            AtpError::new(
+                AtpErrorCode::BytecodeParsingError("Unsupported protocol version".into()),
+                "read_bytecode_from_file",
+                protocol_version.to_string()
+            )
+        );
     }
 
-    let mut result: Vec<Box<dyn InstructionMethods>> = Vec::with_capacity(instruction_count as usize);
+    let mut result: Vec<Box<dyn InstructionMethods>> = Vec::with_capacity(
+        instruction_count as usize
+    );
 
     // --- body ---
     for _ in 0..instruction_count {
@@ -99,7 +115,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 AtpError::new(
                     AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                     "read_bytecode_from_file",
-                    e.to_string(),
+                    e.to_string()
                 )
             })?;
         let instruction_type = u32::from_be_bytes(instruction_type_bytes);
@@ -112,32 +128,42 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 AtpError::new(
                     AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                     "read_bytecode_from_file",
-                    e.to_string(),
+                    e.to_string()
                 )
             })?;
         let instruction_param_count = u8::from_be_bytes(instruction_param_count_bytes) as usize;
 
         // expected params (schema)
-        let expected = match TOKEN_TABLE
-            .find((QuerySource::Bytecode(instruction_type), QueryTarget::Params))?
+        let expected = match
+            TOKEN_TABLE.find((QuerySource::Bytecode(instruction_type), QueryTarget::Params))?
         {
             TargetValue::Params(p) => p,
             _ => unreachable!("Invalid query result (Params)"),
         };
 
         // validação de contagem (com opcionais)
-        let min_required = expected.iter().filter(|p| !p.optional).count();
+        let min_required = expected
+            .iter()
+            .filter(|p| !p.optional)
+            .count();
         let max_allowed = expected.len();
 
         if instruction_param_count < min_required || instruction_param_count > max_allowed {
-            return Err(AtpError::new(
-                AtpErrorCode::BytecodeParsingError("Invalid param count for instruction".into()),
-                "read_bytecode_from_file",
-                format!(
-                    "instr=0x{:x} got={} expected=[min={}, max={}]",
-                    instruction_type, instruction_param_count, min_required, max_allowed
-                ),
-            ));
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError(
+                        "Invalid param count for instruction".into()
+                    ),
+                    "read_bytecode_from_file",
+                    format!(
+                        "instr=0x{:x} got={} expected=[min={}, max={}]",
+                        instruction_type,
+                        instruction_param_count,
+                        min_required,
+                        max_allowed
+                    )
+                )
+            );
         }
 
         // ler e validar params
@@ -156,37 +182,43 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                     AtpError::new(
                         AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
                         "read_bytecode_from_file",
-                        e.to_string(),
+                        e.to_string()
                     )
                 })?;
             let param_total_size = u64::from_be_bytes(param_total_size_bytes);
 
             if param_total_size < 8 {
-                return Err(AtpError::new(
-                    AtpErrorCode::BytecodeParsingError("Invalid param_total_size".into()),
-                    "read_bytecode_from_file",
-                    format!("param_total_size={}", param_total_size),
-                ));
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError("Invalid param_total_size".into()),
+                        "read_bytecode_from_file",
+                        format!("param_total_size={}", param_total_size)
+                    )
+                );
             }
 
             // ✅ CORREÇÃO: já consumimos 8 bytes do total_size, agora lemos o resto
             let remaining = (param_total_size - 8) as usize;
             let mut param_data_bytes: Vec<u8> = vec![0u8; remaining];
-            reader.read_exact(&mut param_data_bytes).map_err(|e| {
-                AtpError::new(
-                    AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
-                    "read_bytecode_from_file",
-                    e.to_string(),
-                )
-            })?;
+            reader
+                .read_exact(&mut param_data_bytes)
+                .map_err(|e| {
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                        "read_bytecode_from_file",
+                        e.to_string()
+                    )
+                })?;
 
             // valida tipo vs schema (olhando os 4 primeiros bytes: param_type)
             if param_data_bytes.len() < 4 {
-                return Err(AtpError::new(
-                    AtpErrorCode::BytecodeParsingError("Param too short".into()),
-                    "read_bytecode_from_file",
-                    format!("instr=0x{:x} param_index={}", instruction_type, param_i),
-                ));
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError("Param too short".into()),
+                        "read_bytecode_from_file",
+                        format!("instr=0x{:x} param_index={}", instruction_type, param_i)
+                    )
+                );
             }
 
             let type_code = u32::from_be_bytes([
@@ -198,17 +230,23 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
             let actual_pt = param_type_from_code(type_code).ok_or_else(|| {
                 AtpError::new(
                     AtpErrorCode::BytecodeParamNotRecognized(
-                        "Param Bytecode Not Recognized".into(),
+                        "Param Bytecode Not Recognized".into()
                     ),
                     "read_bytecode_from_file",
-                    format!("type_code=0x{:x}", type_code),
+                    format!("type_code=0x{:x}", type_code)
                 )
             })?;
 
             // avança expected_i até achar um tipo compatível (pulando opcionais)
             while expected_i < expected.len() {
-                let expected_pt = expected[expected_i].param_type;
-                if (expected_pt as u8) == (actual_pt as u8) {
+                let expected_pt = &expected[expected_i].param_type;
+
+                if matches!(expected_pt, ParamType::Literal(_)) {
+                    expected_i += 1;
+                    continue;
+                }
+
+                if bytecode_compatible(expected_pt, &actual_pt) {
                     break;
                 }
 
@@ -217,22 +255,31 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                     continue;
                 }
 
-                return Err(AtpError::new(
-                    AtpErrorCode::BytecodeParsingError("Param type mismatch".into()),
-                    "read_bytecode_from_file",
-                    format!(
-                        "instr=0x{:x} param={} got={:?} expected={:?}",
-                        instruction_type, param_i, actual_pt, expected_pt
-                    ),
-                ));
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError("Param type mismatch".into()),
+                        "read_bytecode_from_file",
+                        format!(
+                            "instr=0x{:x} param={} got={:?} expected={:?}",
+                            instruction_type,
+                            param_i,
+                            actual_pt,
+                            expected_pt
+                        )
+                    )
+                );
             }
 
             if expected_i >= expected.len() {
-                return Err(AtpError::new(
-                    AtpErrorCode::BytecodeParsingError("Too many params (schema overflow)".into()),
-                    "read_bytecode_from_file",
-                    format!("instr=0x{:x} param_index={}", instruction_type, param_i),
-                ));
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError(
+                            "Too many params (schema overflow)".into()
+                        ),
+                        "read_bytecode_from_file",
+                        format!("instr=0x{:x} param_index={}", instruction_type, param_i)
+                    )
+                );
             }
 
             // parse real (recursivo se for Token)
@@ -241,21 +288,23 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
         }
 
         // instancia token
-        let token_ref = match TOKEN_TABLE
-            .find((QuerySource::Bytecode(instruction_type), QueryTarget::Token))?
+        let token_ref = match
+            TOKEN_TABLE.find((QuerySource::Bytecode(instruction_type), QueryTarget::Token))?
         {
             TargetValue::Token(t) => t,
             _ => unreachable!("Invalid query result (Token)"),
         };
 
         let mut token = token_ref.into_box();
-        token.from_params(&params).map_err(|e| {
-            AtpError::new(
-                AtpErrorCode::BytecodeParsingError("Failed applying params".into()),
-                "read_bytecode_from_file",
-                e.to_string(),
-            )
-        })?;
+        token
+            .from_params(&params)
+            .map_err(|e| {
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Failed applying params".into()),
+                    "read_bytecode_from_file",
+                    e.to_string()
+                )
+            })?;
 
         result.push(token);
     }
