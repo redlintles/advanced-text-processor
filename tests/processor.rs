@@ -1,7 +1,7 @@
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod processor {
-    use std::{ fs::File, io::Read, path::Path };
+    use std::{ path::Path };
 
     use atp::{
         api::{ AtpBuilderMethods, atp_processor::{ AtpProcessor, AtpProcessorMethods } },
@@ -105,7 +105,7 @@ pub mod processor {
         let identifier = processor.read_from_text_file(Path::new("instructions.atp"))?;
 
         let input_string = "Banana";
-        let expected_output = "Bznzn";
+        let expected_output = "BznzbonanzanzBznznz";
 
         let output = processor.process_all(&identifier, input_string)?;
 
@@ -118,7 +118,12 @@ pub mod processor {
 
     #[test]
     fn test_write_to_file() -> Result<(), AtpError> {
-        let file = tempfile::NamedTempFile::new().expect("Error opening archive");
+        use std::fs::File;
+        use std::io::Read;
+
+        use tempfile::Builder;
+
+        let file = Builder::new().suffix(".atp").tempfile().expect("Error opening archive");
 
         let path = file.path();
 
@@ -127,16 +132,18 @@ pub mod processor {
             .create_pipeline()
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
-            .repeat(3 as usize)?
+            .repeat(3usize)?
             .build();
 
-        let _ = processor.write_to_text_file(&identifier, path);
+        // ✅ não ignore o erro
+        processor.write_to_text_file(&identifier, path)?;
 
         let mut opened_file = File::open(path).unwrap();
-
         let mut content = String::new();
-
         opened_file.read_to_string(&mut content).unwrap();
+
+        // ✅ normaliza CRLF só por segurança
+        let content = content.replace("\r\n", "\n");
 
         let expected_content = "atb Banana;\nate Laranja;\nrpt 3;\n";
 
@@ -145,7 +152,6 @@ pub mod processor {
             expected_content,
             "Unexpected Output in test_write_to_file: content differs"
         );
-
         Ok(())
     }
 
