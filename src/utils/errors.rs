@@ -11,9 +11,9 @@ pub struct ErrorManager {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AtpError {
-    error_code: AtpErrorCode,
-    instruction: Cow<'static, str>,
-    input: Cow<'static, str>,
+    pub error_code: AtpErrorCode,
+    pub instruction: Cow<'static, str>,
+    pub input: Cow<'static, str>,
 }
 
 impl Error for AtpError {}
