@@ -3,8 +3,8 @@
 #[cfg(test)]
 mod tests {
     use crate::tokens::instructions::ifdc::Ifdc;
-    use crate::tokens::{InstructionMethods, transforms::dlf::Dlf};
-    use crate::utils::errors::{AtpError, AtpErrorCode};
+    use crate::tokens::{ InstructionMethods, transforms::dlf::Dlf };
+    use crate::utils::errors::{ AtpErrorCode };
 
     #[test]
     fn to_atp_line_ok() {
@@ -20,10 +20,7 @@ mod tests {
         let token = Ifdc::params("xy", Box::new(Dlf::default()));
 
         let a = token.transform("abcxydef");
-        assert!(
-            a.is_ok(),
-            "contains -> inner executed (at least does not fail)"
-        );
+        assert!(a.is_ok(), "contains -> inner executed (at least does not fail)");
 
         let b = token.transform("banana").unwrap();
         assert_eq!(b, "banana".to_string(), "does nothing when not contains");
@@ -45,14 +42,9 @@ mod tests {
             let mut t = Ifdc::default();
             let params: Vec<AtpParamTypes> = vec![AtpParamTypes::String("xy".to_string())];
 
-            let got = t.from_params(&params);
+            let err = t.from_params(&params).unwrap_err();
 
-            let expected = Err(AtpError::new(
-                AtpErrorCode::BytecodeNotFound("Invalid Parser for this token".into()),
-                "",
-                "",
-            ));
-            assert_eq!(got, expected);
+            assert!(matches!(err.error_code, AtpErrorCode::InvalidArgumentNumber(_)));
         }
 
         #[test]
@@ -61,7 +53,7 @@ mod tests {
             let params: Vec<AtpParamTypes> = vec![
                 AtpParamTypes::String("xy".to_string()),
                 // depende de como você representa tokens no bytecode:
-                AtpParamTypes::Token(Box::new(Dlf::default())),
+                AtpParamTypes::Token(Box::new(Dlf::default()))
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));

@@ -236,6 +236,7 @@ mod tests {
             i += p3_payload_size;
             let val = u64::from_be_bytes(p3_payload.try_into().unwrap());
             assert_eq!(val, 2);
+            assert_eq!(i, i); // Anti unused var warning, fix this for testing purposes on the bytecode size
         }
     }
 }

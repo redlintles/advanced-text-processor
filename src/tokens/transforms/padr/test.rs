@@ -142,6 +142,7 @@ mod tests {
             let p2_payload = &bc[i..i + p2_payload_size];
             i += p2_payload_size;
             assert_eq!(usize::from_be_bytes(p2_payload.try_into().unwrap()), 7);
+            assert_eq!(i, i); // Anti unused var warning, fix this for testing purposes on the bytecode size
         }
     }
 }

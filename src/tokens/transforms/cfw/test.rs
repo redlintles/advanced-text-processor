@@ -4,7 +4,7 @@
 mod tests {
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::cfw::Cfw;
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
 
     #[test]

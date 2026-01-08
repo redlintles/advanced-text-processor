@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tokens::{ InstructionMethods, transforms::rpt::Rpt };
-    use crate::utils::errors::{ AtpError, AtpErrorCode };
+    use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
 
     #[test]

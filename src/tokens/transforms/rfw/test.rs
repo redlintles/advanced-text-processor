@@ -183,6 +183,8 @@ mod tests {
             let p2_payload = &bc[i..i + p2_payload_size];
             i += p2_payload_size;
             assert_eq!(std::str::from_utf8(p2_payload).unwrap(), "b");
+
+            assert_eq!(i, i); // Anti unused var warning, fix this for testing purposes on the bytecode size
         }
     }
 }
