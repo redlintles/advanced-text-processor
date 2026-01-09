@@ -3,7 +3,10 @@
 pub mod bytecode {
     use std::{ fs::File, io::Read, path::Path };
 
-    use atp::{ api::atp_processor::AtpProcessorMethods, tokens::InstructionMethods };
+    use atp::{
+        api::atp_processor::AtpProcessorMethods,
+        tokens::{ InstructionMethods, transforms::rpt },
+    };
 
     #[cfg(test)]
     mod write_bytecode_to_file_tests {
@@ -195,14 +198,31 @@ pub mod bytecode {
             Box::new(Rpt { times: 3 as usize })
         ];
 
+        let mut header: Vec<u8> = Vec::new();
+
+        let magic_number: Vec<u8> = vec![38, 235, 245, 8, 244, 137, 1, 179];
+
+        let protocol_version = (1 as u64).to_be_bytes();
+
+        let instruction_count = (tokens.len() as u32).to_be_bytes();
+
+        header.extend_from_slice(&magic_number);
+        header.extend_from_slice(&protocol_version);
+        header.extend_from_slice(&instruction_count);
+
+        let mut expected_content: Vec<u8> = vec![];
+
+        expected_content.extend_from_slice(&header);
+
+        for t in tokens.iter() {
+            expected_content.extend_from_slice(&t.to_bytecode());
+        }
         let _ = write_bytecode_to_file(path, tokens);
 
         let mut opened_file = File::open(path).unwrap();
 
-        let mut content = String::new();
-        opened_file.read_to_string(&mut content).unwrap();
-
-        let expected_content = "0x01 Banana\n0x02 Laranja\n0x0d 3\n";
+        let mut content: Vec<u8> = Vec::new();
+        opened_file.read_to_end(&mut content).unwrap();
 
         assert_eq!(
             content,
@@ -213,19 +233,47 @@ pub mod bytecode {
 
     #[test]
     fn test_read_bytecode_from_file() {
-        use atp::{ api::atp_processor::AtpProcessor, bytecode::reader::read_bytecode_from_file };
-        let tokens = match read_bytecode_from_file(Path::new("./banana.atpbc")) {
-            Ok(x) => x,
-            Err(e) => panic!("{}", format!("{}", e)),
+        use std::path::Path;
+        use tempfile::Builder;
+
+        use atp::{
+            api::atp_processor::{ AtpProcessor, AtpProcessorMethods },
+            bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file },
+            tokens::transforms::{ atb, ate }, // ajuste pros tokens reais que você quer
+            tokens::InstructionMethods,
         };
 
-        let input = "Coxinha";
+        // 1) cria tokens em memória (exemplo)
+        let tokens: Vec<Box<dyn InstructionMethods>> = vec![
+            Box::new(atb::Atb::params("Banana")),
+            Box::new(ate::Ate::params("Laranja")),
+            Box::new(rpt::Rpt::params(3))
+        ];
 
+        let tmp = Builder::new().prefix("banana_").suffix(".atpbc").tempfile().unwrap();
+
+        let file_path = tmp.path().to_path_buf();
+        write_bytecode_to_file(Path::new(&file_path), tokens).unwrap();
+
+        use std::fs;
+
+        let data = fs::read(&file_path).unwrap();
+        eprintln!("len = {}", data.len());
+        eprintln!("header bytes = {:02x?}", &data[..(20).min(data.len())]); // 8+8+4 = 20
+        eprintln!("first body bytes = {:02x?}", &data[20..(20 + 16).min(data.len())]);
+
+        assert!(file_path.exists(), "writer não criou o arquivo: {:?}", file_path);
+
+        // 3) lê de volta
+        let read_tokens = read_bytecode_from_file(Path::new(&file_path)).unwrap();
+
+        // 4) processa
+        let input = "Coxinha";
         let expected_output = "BananaCoxinhaLaranjaBananaCoxinhaLaranjaBananaCoxinhaLaranja";
 
         let mut processor: Box<dyn AtpProcessorMethods> = Box::new(AtpProcessor::new());
-
-        let identifier = processor.add_transform(tokens.to_vec());
+        println!("read_tokens len {}", read_tokens.len());
+        let identifier = processor.add_transform(read_tokens);
 
         let output = processor.process_all_bytecode_with_debug(&identifier, input).unwrap();
 

@@ -47,6 +47,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
     // --- header ---
     let mut magic_number = [0u8; 8];
     let expected_magic_number: [u8; 8] = [38, 235, 245, 8, 244, 137, 1, 179];
+
     reader
         .read_exact(&mut magic_number)
         .map_err(|e| {
@@ -107,7 +108,34 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
 
     // --- body ---
     for _ in 0..instruction_count {
-        // instruction type
+        // 1) instruction_total_size (u64)
+        let mut instruction_total_size_bytes = [0u8; 8];
+        reader
+            .read_exact(&mut instruction_total_size_bytes)
+            .map_err(|e| {
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+                    "read_bytecode_from_file",
+                    e.to_string()
+                )
+            })?;
+        let instruction_total_size = u64::from_be_bytes(instruction_total_size_bytes);
+
+        // mínimo = opcode(4) + param_count(1) = 5
+        if instruction_total_size < 5 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Invalid instruction_total_size".into()),
+                    "read_bytecode_from_file",
+                    format!("instruction_total_size={}", instruction_total_size)
+                )
+            );
+        }
+
+        // Vamos contar bytes consumidos "dentro" da instrução (sem contar os 8 do total_size).
+        let mut consumed_in_instruction: u64 = 0;
+
+        // 2) opcode (u32)
         let mut instruction_type_bytes = [0u8; 4];
         reader
             .read_exact(&mut instruction_type_bytes)
@@ -119,11 +147,22 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 )
             })?;
         let instruction_type = u32::from_be_bytes(instruction_type_bytes);
+        consumed_in_instruction += 4;
 
-        // param count
-        let mut instruction_param_count_bytes = [0u8; 1];
+        if instruction_type == 0 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Invalid instruction type (0)".into()),
+                    "read_bytecode_from_file",
+                    "instruction_type=0".to_string()
+                )
+            );
+        }
+
+        // 3) param_count (u8)
+        let mut instruction_param_count_byte = [0u8; 1];
         reader
-            .read_exact(&mut instruction_param_count_bytes)
+            .read_exact(&mut instruction_param_count_byte)
             .map_err(|e| {
                 AtpError::new(
                     AtpErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
@@ -131,7 +170,16 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                     e.to_string()
                 )
             })?;
-        let instruction_param_count = u8::from_be_bytes(instruction_param_count_bytes) as usize;
+        let instruction_param_count = instruction_param_count_byte[0] as usize;
+        consumed_in_instruction += 1;
+
+        // debug opcional
+        eprintln!(
+            "instr_total_size={} opcode=0x{:08x} param_count={}",
+            instruction_total_size,
+            instruction_type,
+            instruction_param_count
+        );
 
         // expected params (schema)
         let expected = match
@@ -141,7 +189,6 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
             _ => unreachable!("Invalid query result (Params)"),
         };
 
-        // validação de contagem (com opcionais)
         let min_required = expected
             .iter()
             .filter(|p| !p.optional)
@@ -168,13 +215,10 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
 
         // ler e validar params
         let mut params: Vec<AtpParamTypes> = Vec::with_capacity(instruction_param_count);
-
-        // vamos consumir exatamente instruction_param_count params do bytecode,
-        // e checar que eles batem com os tipos esperados, respeitando opcionais.
         let mut expected_i = 0usize;
 
         for param_i in 0..instruction_param_count {
-            // lê Param Total Size
+            // Param Total Size (u64)
             let mut param_total_size_bytes = [0u8; 8];
             reader
                 .read_exact(&mut param_total_size_bytes)
@@ -186,6 +230,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                     )
                 })?;
             let param_total_size = u64::from_be_bytes(param_total_size_bytes);
+            consumed_in_instruction += 8;
 
             if param_total_size < 8 {
                 return Err(
@@ -197,9 +242,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 );
             }
 
-            // ✅ CORREÇÃO: já consumimos 8 bytes do total_size, agora lemos o resto
+            // já consumimos 8 bytes do total_size, agora lemos o restante do param
             let remaining = (param_total_size - 8) as usize;
-            let mut param_data_bytes: Vec<u8> = vec![0u8; remaining];
+            let mut param_data_bytes = vec![0u8; remaining];
             reader
                 .read_exact(&mut param_data_bytes)
                 .map_err(|e| {
@@ -209,8 +254,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                         e.to_string()
                     )
                 })?;
+            consumed_in_instruction += remaining as u64;
 
-            // valida tipo vs schema (olhando os 4 primeiros bytes: param_type)
+            // valida tipo vs schema (primeiros 4 bytes do payload do param)
             if param_data_bytes.len() < 4 {
                 return Err(
                     AtpError::new(
@@ -237,7 +283,6 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 )
             })?;
 
-            // avança expected_i até achar um tipo compatível (pulando opcionais)
             while expected_i < expected.len() {
                 let expected_pt = &expected[expected_i].param_type;
 
@@ -282,9 +327,43 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
                 );
             }
 
-            // parse real (recursivo se for Token)
             params.push(AtpParamTypes::from_bytecode(param_data_bytes)?);
             expected_i += 1;
+        }
+
+        // ✅ guardrail: garante que consumimos exatamente instruction_total_size bytes (sem contar os 8 do total_size)
+        if consumed_in_instruction != instruction_total_size {
+            // se consumimos menos, podemos "pular" o resto; se consumimos mais, é erro fatal
+            if consumed_in_instruction < instruction_total_size {
+                let to_skip = (instruction_total_size - consumed_in_instruction) as usize;
+                let mut skip_buf = vec![0u8; to_skip];
+                reader
+                    .read_exact(&mut skip_buf)
+                    .map_err(|e| {
+                        AtpError::new(
+                            AtpErrorCode::BytecodeParsingError(
+                                "Failed skipping instruction padding".into()
+                            ),
+                            "read_bytecode_from_file",
+                            e.to_string()
+                        )
+                    })?;
+            } else {
+                return Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParsingError(
+                            "Instruction size mismatch (over-read)".into()
+                        ),
+                        "read_bytecode_from_file",
+                        format!(
+                            "opcode=0x{:x} consumed={} expected={}",
+                            instruction_type,
+                            consumed_in_instruction,
+                            instruction_total_size
+                        )
+                    )
+                );
+            }
         }
 
         // instancia token
