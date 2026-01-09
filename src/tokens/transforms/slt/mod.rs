@@ -46,7 +46,14 @@ impl InstructionMethods for Slt {
         "slt"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
+        let len = input.chars().count();
+        let mut end = self.end_index;
+
+        if end > len {
+            end = len - 1;
+        }
+
+        check_chunk_bound_indexes(self.start_index, end, Some(input))?;
 
         let start_byte = input
             .char_indices()
@@ -57,7 +64,7 @@ impl InstructionMethods for Slt {
         // Fim EXCLUSIVO: byte do (end_index + 1)º char, ou input.len() se passar do fim
         let end_byte_exclusive = input
             .char_indices()
-            .nth(self.end_index.saturating_add(1))
+            .nth(end.saturating_add(1))
             .map(|(i, _)| i)
             .unwrap_or(input.len());
 

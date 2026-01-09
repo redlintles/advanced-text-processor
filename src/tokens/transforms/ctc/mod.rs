@@ -51,11 +51,17 @@ impl InstructionMethods for Ctc {
         "ctc"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        let total_chars = input.chars().count();
+        let len = input.chars().count();
 
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
+        let mut end = self.end_index;
 
-        let end_index = self.end_index.min(total_chars); // clamp to avoid overflow
+        if end > len {
+            end = len - 1;
+        }
+
+        check_chunk_bound_indexes(self.start_index, end, Some(input))?;
+
+        // clamp to avoid overflow
 
         // Convert char indices to byte indices
         let start_byte = input
@@ -64,12 +70,12 @@ impl InstructionMethods for Ctc {
             .map(|(byte_idx, _)| byte_idx)
             .unwrap(); // safe: start_index < total_chars
 
-        let end_byte = if end_index == total_chars {
+        let end_byte = if end == len {
             input.len() // go to the end
         } else {
             input
                 .char_indices()
-                .nth(end_index)
+                .nth(end)
                 .map(|(byte_idx, _)| byte_idx)
                 .unwrap()
         };
