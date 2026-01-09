@@ -1,8 +1,11 @@
 pub mod atp_builder;
 pub mod atp_processor;
 pub mod conditional_builder;
+pub mod block_builder;
 
+use crate::api::block_builder::BlockBuilder;
 use crate::api::conditional_builder::ConditionalBuilderEach;
+use crate::tokens::instructions::cblk::Cblk;
 use crate::tokens::instructions::ifdc;
 use crate::tokens::{ transforms::*, InstructionMethods };
 use crate::utils::errors::{ AtpError };
@@ -1446,6 +1449,32 @@ pub trait AtpConditionalMethods: AtpBuilderMethods {
             self.push_token(token)?;
         }
 
+        Ok(self)
+    }
+}
+
+pub trait AtpBlockMethods: AtpBuilderMethods {
+    fn block_assoc<F>(&mut self, block_name: &'static str, f: F) -> Result<&mut Self, AtpError>
+        where F: FnOnce(&mut BlockBuilder) -> Result<(), AtpError>
+    {
+        let mut block_builder = BlockBuilder::new(block_name);
+
+        f(&mut block_builder)?;
+
+        let result = block_builder.build();
+
+        for token in result.into_iter() {
+            self.push_token(token)?;
+        }
+        Ok(self)
+    }
+
+    fn call_block(&mut self, block_name: &'static str) -> Result<&mut Self, AtpError> {
+        let mut t = Box::new(Cblk::default());
+
+        t.from_params(&vec![AtpParamTypes::String(block_name.to_string())])?;
+
+        self.push_token(t)?;
         Ok(self)
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    api::{ AtpBuilderMethods, AtpConditionalMethods },
+    api::{ AtpBlockMethods, AtpBuilderMethods, AtpConditionalMethods },
     tokens::InstructionMethods,
     utils::errors::AtpError,
 };
@@ -31,3 +31,4 @@ impl<'ap> AtpBuilderMethods for AtpBuilder<'ap> {
 }
 
 impl<'ap> AtpConditionalMethods for AtpBuilder<'ap> {}
+impl<'ap> AtpBlockMethods for AtpBuilder<'ap> {}
