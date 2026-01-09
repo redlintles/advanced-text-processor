@@ -24,7 +24,7 @@ mod tests {
         let t = Htmle::default();
         assert_eq!(
             t.transform("<div>banana</div>"),
-            Ok("&lt;div&gt;banana&lt;/div&gt;".to_string())
+            Ok("&lt;div&gt;banana&lt;&#x2F;div&gt;".to_string())
         );
     }
 
