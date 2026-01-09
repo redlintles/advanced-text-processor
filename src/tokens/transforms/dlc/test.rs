@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn transform_removes_entire_string() {
         let t = Dlc::params(0, 100).unwrap();
-        assert_eq!(t.transform("abc").unwrap(), "");
+        assert_eq!(t.transform("abc"), Ok("".to_string()));
     }
 
     #[test]
@@ -109,7 +109,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_params() {
-            let t = Dlc::params(3, 6).unwrap();
+            let t = Dlc::params(2, 7).unwrap();
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13
@@ -135,10 +135,11 @@ mod tests {
             let p1_start = i;
             let p1_end = p1_start + (p1_total - 8);
             let p1_payload = bc[p1_start..p1_end].to_vec();
+            i = p1_end;
 
             let decoded1 = AtpParamTypes::from_bytecode(p1_payload).unwrap();
             match decoded1 {
-                AtpParamTypes::Usize(n) => assert_eq!(n, 3),
+                AtpParamTypes::Usize(n) => assert_eq!(n, 2),
                 _ => panic!("Expected Usize param #1"),
             }
 
@@ -151,7 +152,7 @@ mod tests {
 
             let decoded2 = AtpParamTypes::from_bytecode(p2_payload).unwrap();
             match decoded2 {
-                AtpParamTypes::Usize(n) => assert_eq!(n, 6),
+                AtpParamTypes::Usize(n) => assert_eq!(n, 7),
                 _ => panic!("Expected Usize param #2"),
             }
         }

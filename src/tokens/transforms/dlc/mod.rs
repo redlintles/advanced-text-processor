@@ -45,41 +45,46 @@ impl InstructionMethods for Dlc {
     }
 
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
+        let len = input.chars().count();
+
+        // opcional: se string vazia, deletar "tudo" vira vazio
+        if len == 0 {
+            return Ok("".to_string());
+        }
+
+        let mut end = self.end_index;
+
+        // ✅ clamp correto (inclusive range)
+        if end >= len {
+            end = len - 1;
+        }
+
+        check_chunk_bound_indexes(self.start_index, end, Some(input))?;
+
         let start_index = input
             .char_indices()
             .nth(self.start_index)
             .map(|(i, _)| i)
-            .ok_or_else(||
+            .ok_or_else(|| {
                 AtpError::new(
                     AtpErrorCode::IndexOutOfRange(
                         format!(
                             "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
-                            input.char_indices().count().saturating_sub(1),
+                            input.chars().count().saturating_sub(1),
                             self.start_index
                         ).into()
                     ),
                     self.to_atp_line(),
                     input.to_string()
                 )
-            )?;
+            })?;
+
+        // ✅ agora end é garantidamente <= last_index, então end+1 pode ser == len
         let end_index = input
             .char_indices()
-            .nth(self.end_index + 1)
+            .nth(end + 1)
             .map(|(i, _)| i)
-            .ok_or_else(||
-                AtpError::new(
-                    AtpErrorCode::IndexOutOfRange(
-                        format!(
-                            "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
-                            input.chars().count().saturating_sub(1),
-                            self.end_index
-                        ).into()
-                    ),
-                    self.to_atp_line(),
-                    input.to_string()
-                )
-            )?;
+            .unwrap_or_else(|| input.len()); // se end é o último char, after começa no fim
 
         let before = &input[..start_index.min(input.len())];
         let after = &input[end_index.min(input.len())..];
