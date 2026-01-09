@@ -52,7 +52,10 @@ impl InstructionMethods for Ctr {
         "ctr"
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
+        if input.trim().is_empty() {
+            return Ok("".to_string());
+        }
+
         // Since the user will probably not know the length of the string in the middle of the processing
         // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
 
@@ -61,6 +64,7 @@ impl InstructionMethods for Ctr {
         if end > total {
             end = total;
         }
+        check_chunk_bound_indexes(self.start_index, end, Some(input))?;
 
         let result = input
             .split_whitespace()

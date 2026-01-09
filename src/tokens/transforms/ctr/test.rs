@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn transform_empty_input_stays_empty() {
-        let t = Ctr::params(0, 0).unwrap();
+        let t = Ctr::params(0, 1).unwrap();
         assert_eq!(t.transform(""), Ok("".to_string()));
     }
 
