@@ -36,6 +36,32 @@ impl InstructionMethods for Urld {
         "urld;\n".into()
     }
     fn transform(&self, input: &str) -> Result<String, AtpError> {
+        // Validação de percent encoding
+        let bytes = input.as_bytes();
+        let len = bytes.len();
+
+        let mut i = 0;
+        while i < len {
+            if bytes[i] == b'%' {
+                if
+                    i + 2 >= len ||
+                    !bytes[i + 1].is_ascii_hexdigit() ||
+                    !bytes[i + 2].is_ascii_hexdigit()
+                {
+                    return Err(
+                        AtpError::new(
+                            AtpErrorCode::TextParsingError("Failed parsing URL string".into()),
+                            "urld",
+                            input.to_string()
+                        )
+                    );
+                }
+                i += 3;
+                continue;
+            }
+            i += 1;
+        }
+
         Ok(
             urlencoding
                 ::decode(input)
