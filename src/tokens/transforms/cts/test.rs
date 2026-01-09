@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
-        let t = Cts::params(5);
+        let t = Cts::params(7);
         let got = t.transform("one two");
         assert!(got.is_err());
     }

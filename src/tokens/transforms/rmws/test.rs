@@ -2,7 +2,10 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
-    use crate::{ tokens::{ InstructionMethods, transforms::rmws::Rmws }, utils::params::AtpParamTypes };
+    use crate::{
+        tokens::{ InstructionMethods, transforms::rmws::Rmws },
+        utils::params::AtpParamTypes,
+    };
 
     #[test]
     fn rmws_get_string_repr_ok() {
@@ -77,16 +80,27 @@ mod tests {
         }
 
         #[test]
-        fn rmws_to_bytecode_non_empty_and_has_opcode_prefix() {
+        fn rmws_to_bytecode_non_empty_and_no_params() {
             let t = Rmws::default();
             let bc = t.to_bytecode();
-            assert!(!bc.is_empty());
 
-            // Opcodes no seu projeto costumam ser u32 BE no começo do buffer.
-            // Então checamos os 4 primeiros bytes.
-            assert!(bc.len() >= 4);
-            let op = u32::from_be_bytes([bc[0], bc[1], bc[2], bc[3]]);
-            assert_eq!(op, 0x31);
+            // header mínimo: 8 + 4 + 1 = 13 bytes
+            assert!(bc.len() >= 13);
+
+            let mut i = 0;
+
+            let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
+            i += 8;
+
+            // total_size = tamanho do "body" (opcode+count+params...)
+            assert_eq!(total_size as usize, bc.len() - 8);
+
+            let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
+            i += 4;
+            assert_eq!(opcode, 0x31);
+
+            let param_count = bc[i] as usize;
+            assert_eq!(param_count, 0);
         }
     }
 }

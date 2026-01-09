@@ -123,29 +123,29 @@ mod tests {
             // Cada param: [total u64][type u32][payload_size u32][payload...]
             // Implementação atual de to_bytecode emite: Usize(max_len) depois String(text)
 
-            // Param 1
+            // Param 1: String("xy")
             let _p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
             i += 8;
             let p1_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
             i += 4;
             let p1_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
             i += 4;
-            assert_eq!(p1_type, 0x02); // Usize
+            assert_eq!(p1_type, 0x01); // String
             let p1_payload = &bc[i..i + p1_payload_size];
             i += p1_payload_size;
-            assert_eq!(usize::from_be_bytes(p1_payload.try_into().unwrap()), 7);
+            assert_eq!(std::str::from_utf8(p1_payload).unwrap(), "xy");
 
-            // Param 2
+            // Param 2: Usize(7)
             let _p2_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
             i += 8;
             let p2_type = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
             i += 4;
             let p2_payload_size = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap()) as usize;
             i += 4;
-            assert_eq!(p2_type, 0x01); // String
+            assert_eq!(p2_type, 0x02); // Usize
             let p2_payload = &bc[i..i + p2_payload_size];
             i += p2_payload_size;
-            assert_eq!(std::str::from_utf8(p2_payload).unwrap(), "xy");
+            assert_eq!(usize::from_be_bytes(p2_payload.try_into().unwrap()), 7);
 
             assert_eq!(i, i); // Anti unused var warning, fix this for testing purposes on the bytecode size
         }
