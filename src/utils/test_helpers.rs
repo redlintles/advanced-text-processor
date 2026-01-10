@@ -1,4 +1,4 @@
-use crate::api::AtpConditionalMethods;
+use crate::api::{ AtpBlockMethods, AtpConditionalMethods };
 use crate::utils::errors::AtpError;
 use crate::api::{ AtpBuilderMethods, atp_processor::AtpProcessor };
 
@@ -93,6 +93,21 @@ pub fn build_all_tokens_pipeline_safe(processor: &mut AtpProcessor) -> Result<St
                 .delete_first()?;
             Ok(())
         })?
+        .block_assoc("x", |b| {
+            b
+                .add_to_beginning("laranja")?
+                .delete_first()?
+                .replace_all_with("anja", "anjo")?
+                .to_uppercase_chunk(0, 40)?
+                .if_do_contains_each("Q", |cb| {
+                    cb.replace_all_with("_", "!!!!!!!!!")?;
+                    Ok(())
+                })?;
+
+            Ok(())
+        })?
+        .call_block("x")?
+        .call_block("x")?
         .build();
 
     Ok(id)
