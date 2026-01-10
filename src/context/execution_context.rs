@@ -11,7 +11,9 @@ pub enum ToClean {
     Block(String),
     Var(String),
 }
+
 // First thought of a simple hashmap, but it wouldn't suffice my needs
+#[allow(dead_code)]
 pub struct VarEntry {
     value: VarValues,
     mutable: bool,

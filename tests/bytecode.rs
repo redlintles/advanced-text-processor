@@ -1,12 +1,9 @@
 #[cfg(feature = "test_access")]
 #[cfg(test)]
 pub mod bytecode {
-    use std::{ fs::File, io::Read, path::Path };
+    use std::{ fs::File, io::Read };
 
-    use atp::{
-        api::atp_processor::AtpProcessorMethods,
-        tokens::{ InstructionMethods, transforms::rpt },
-    };
+    use atp::{ tokens::{ InstructionMethods, transforms::rpt } };
 
     #[cfg(test)]
     mod write_bytecode_to_file_tests {

@@ -519,6 +519,7 @@ impl AtpParamTypes {
 
                     // Se for um token real, incrementa depth e checa limite
                     // Verificamos se o next item é realmente um token
+                    #[allow(unused_parens)]
                     if
                         let Ok(next_param_type) = ({
                             let mut cursor = Cursor::new(full_param.as_slice());
@@ -833,7 +834,7 @@ mod tests {
     fn bc_string(s: &str) -> Vec<u8> {
         bc_param(PARAM_STRING, s.as_bytes())
     }
-
+    #[allow(dead_code)]
     fn bc_usize(n: usize) -> Vec<u8> {
         bc_param(PARAM_USIZE, &n.to_be_bytes())
     }
