@@ -278,9 +278,36 @@ mod tests {
     use super::*;
     use std::borrow::Cow;
 
+    fn disable_colors() {
+        // Mantém os testes determinísticos (sem ANSI).
+        colored::control::set_override(false);
+    }
+
+    // ============================================================
+    // AtpError
+    // ============================================================
+
     #[test]
-    fn atp_error_display_no_weird_comma_and_contains_sections() {
-        colored::control::set_override(false); // stable tests (no ANSI)
+    fn atp_error_new_sets_fields_and_helpers_return_strs() {
+        disable_colors();
+
+        let err = AtpError::new(
+            AtpErrorCode::ValidationError(Cow::Borrowed("bad params")),
+            Cow::Borrowed("raw"),
+            Cow::Borrowed("banana")
+        );
+
+        assert_eq!(err.instruction, Cow::Borrowed("raw"));
+        assert_eq!(err.input, Cow::Borrowed("banana"));
+
+        assert_eq!(err.instruction_str(), "raw");
+        assert_eq!(err.input_str(), "banana");
+    }
+
+    #[test]
+    fn atp_error_display_contains_sections_and_no_weird_comma() {
+        disable_colors();
+
         let err = AtpError::new(
             AtpErrorCode::InvalidIndex(Cow::Borrowed("index inválido")),
             "dlc",
@@ -288,43 +315,270 @@ mod tests {
         );
 
         let s = format!("{err}");
+
+        // Título e seções
         assert!(s.contains("Erro"));
         assert!(s.contains("Código:"));
         assert!(s.contains("Mensagem:"));
         assert!(s.contains("Instruction:"));
         assert!(s.contains("Input:"));
+
+        // Conteúdo
+        assert!(s.contains("dlc"));
+        assert!(s.contains("banana"));
+
+        // Bug clássico de formatação
         assert!(!s.contains("\n,Input"), "Não deve existir '\\n,Input' no Display");
     }
 
+    // ============================================================
+    // AtpErrorCode (message/get_message, Display, get_error_code, severity_color)
+    // ============================================================
+
     #[test]
-    fn error_code_message_borrowed_and_get_message_matches() {
+    fn error_code_message_and_get_message_match_and_are_borrowed() {
         let code = AtpErrorCode::TokenNotFound(Cow::Borrowed("no token"));
         assert_eq!(code.message().as_ref(), "no token");
         assert_eq!(code.get_message().as_ref(), "no token");
     }
 
     #[test]
-    fn print_errors_writer_helper_is_testable() {
-        colored::control::set_override(false);
+    fn error_code_display_includes_labels_code_and_message() {
+        disable_colors();
+
+        let code = AtpErrorCode::FileNotFound(Cow::Borrowed("missing file"));
+        let s = format!("{code}");
+
+        assert!(s.contains("Código:"));
+        assert!(s.contains("Mensagem:"));
+        // FileNotFound => 1
+        assert!(s.contains("1"), "Display deve conter o código numérico esperado (1)");
+        assert!(s.contains("missing file"));
+    }
+
+    #[test]
+    fn get_error_code_matches_all_variants() {
+        use AtpErrorCode::*;
+
+        // cobre todos os braços do match de get_error_code()
+        assert_eq!(FileNotFound(Cow::Borrowed("x")).get_error_code(), 1);
+        assert_eq!(TokenNotFound(Cow::Borrowed("x")).get_error_code(), 2);
+        assert_eq!(TokenArrayNotFound(Cow::Borrowed("x")).get_error_code(), 3);
+        assert_eq!(FileReadingError(Cow::Borrowed("x")).get_error_code(), 4);
+        assert_eq!(FileWritingError(Cow::Borrowed("x")).get_error_code(), 5);
+        assert_eq!(FileOpeningError(Cow::Borrowed("x")).get_error_code(), 6);
+        assert_eq!(BytecodeNotFound(Cow::Borrowed("x")).get_error_code(), 7);
+        assert_eq!(BlockNotFound(Cow::Borrowed("x")).get_error_code(), 8);
+        assert_eq!(VariableNotFound(Cow::Borrowed("x")).get_error_code(), 9);
+        assert_eq!(NonMutableVariableError(Cow::Borrowed("x")).get_error_code(), 10);
+        assert_eq!(InvalidOperands(Cow::Borrowed("x")).get_error_code(), 11);
+        assert_eq!(IndexOutOfRange(Cow::Borrowed("x")).get_error_code(), 12);
+        assert_eq!(InvalidIndex(Cow::Borrowed("x")).get_error_code(), 13);
+        assert_eq!(InvalidParameters(Cow::Borrowed("x")).get_error_code(), 14);
+        assert_eq!(InvalidArgumentNumber(Cow::Borrowed("x")).get_error_code(), 15);
+        assert_eq!(BytecodeParamNotRecognized(Cow::Borrowed("x")).get_error_code(), 16);
+        assert_eq!(TextParsingError(Cow::Borrowed("x")).get_error_code(), 17);
+        assert_eq!(BytecodeParsingError(Cow::Borrowed("x")).get_error_code(), 18);
+        assert_eq!(BytecodeParamParsingError(Cow::Borrowed("x")).get_error_code(), 19);
+        assert_eq!(ValidationError(Cow::Borrowed("x")).get_error_code(), 20);
+        assert_eq!(ZeroDivisionError(Cow::Borrowed("x")).get_error_code(), 21);
+    }
+
+    #[test]
+    fn severity_color_red_for_hard_errors() {
+        use AtpErrorCode::*;
+
+        assert_eq!(ZeroDivisionError(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(InvalidOperands(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(ValidationError(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(InvalidParameters(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(InvalidArgumentNumber(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(BytecodeParsingError(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(BytecodeParamParsingError(Cow::Borrowed("x")).severity_color(), Color::Red);
+        assert_eq!(TextParsingError(Cow::Borrowed("x")).severity_color(), Color::Red);
+    }
+
+    #[test]
+    fn severity_color_yellow_for_missing_things() {
+        use AtpErrorCode::*;
+
+        assert_eq!(FileNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(FileOpeningError(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(FileReadingError(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(FileWritingError(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(TokenNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(TokenArrayNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(BlockNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(VariableNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(NonMutableVariableError(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(BytecodeNotFound(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+        assert_eq!(BytecodeParamNotRecognized(Cow::Borrowed("x")).severity_color(), Color::Yellow);
+    }
+
+    #[test]
+    fn severity_color_magenta_for_indexish() {
+        use AtpErrorCode::*;
+
+        assert_eq!(InvalidIndex(Cow::Borrowed("x")).severity_color(), Color::Magenta);
+        assert_eq!(IndexOutOfRange(Cow::Borrowed("x")).severity_color(), Color::Magenta);
+    }
+
+    #[test]
+    fn message_returns_the_same_inner_reference_for_all_variants() {
+        // cobre o match "achatado" (| A(x) | B(x) => x) do method message()
+        // com alguns exemplos de grupos diferentes.
+        use AtpErrorCode::*;
+
+        let m1 = FileNotFound(Cow::Borrowed("a")).message().as_ref();
+        let m2 = InvalidOperands(Cow::Borrowed("b")).message().as_ref();
+        let m3 = IndexOutOfRange(Cow::Borrowed("c")).message().as_ref();
+        let m4 = BytecodeParamNotRecognized(Cow::Borrowed("d")).message().as_ref();
+
+        assert_eq!(m1, "a");
+        assert_eq!(m2, "b");
+        assert_eq!(m3, "c");
+        assert_eq!(m4, "d");
+    }
+
+    // ============================================================
+    // ErrorManager (add_error/has_errors/reserve_errors/will_log/will_panic/write_errors/handle_error)
+    // ============================================================
+
+    #[test]
+    fn error_manager_default_and_add_error_has_errors() {
+        disable_colors();
 
         let mut mgr = ErrorManager::default();
+        assert!(!mgr.has_errors());
+
         mgr.add_error(AtpError::new(AtpErrorCode::TokenNotFound(Cow::Borrowed("x")), "inst", "in"));
+
+        assert!(mgr.has_errors());
+        assert_eq!(mgr.error_vec.len(), 1);
+    }
+
+    #[test]
+    fn error_manager_reserve_errors_does_not_decrease_capacity() {
+        let mut mgr = ErrorManager::default();
+
+        let before = mgr.error_vec.capacity();
+        mgr.reserve_errors(256);
+        let after = mgr.error_vec.capacity();
+
+        assert!(after >= before, "reserve não deve reduzir capacity");
+    }
+
+    #[test]
+    fn will_log_toggles_show_warnings_and_does_not_panic() {
+        let mut mgr = ErrorManager::default();
+
+        mgr.will_log(true);
+        assert!(mgr.show_warnings);
+
+        mgr.will_log(false);
+        assert!(!mgr.show_warnings);
+    }
+
+    #[test]
+    fn will_panic_toggles_panic_mode_flag() {
+        let mut mgr = ErrorManager::default();
+
+        mgr.will_panic(true);
+        assert!(mgr.panic_with_error);
+
+        mgr.will_panic(false);
+        assert!(!mgr.panic_with_error);
+    }
+
+    #[test]
+    fn write_errors_writes_expected_sections_and_indices_for_multiple_errors() {
+        disable_colors();
+
+        let mut mgr = ErrorManager::default();
+        mgr.add_error(
+            AtpError::new(AtpErrorCode::TokenNotFound(Cow::Borrowed("first")), "inst1", "in1")
+        );
+        mgr.add_error(
+            AtpError::new(AtpErrorCode::InvalidIndex(Cow::Borrowed("second")), "inst2", "in2")
+        );
 
         let mut buf: Vec<u8> = vec![];
         mgr.write_errors(&mut buf).unwrap();
 
         let out = String::from_utf8(buf).unwrap();
+
+        // seções do writer helper
         assert!(out.contains("Code:"));
         assert!(out.contains("Instruction:"));
         assert!(out.contains("Message:"));
         assert!(out.contains("Processing:"));
+
+        // índices enumerados
+        assert!(out.contains("[0]"));
+        assert!(out.contains("[1]"));
+
+        // conteúdo das mensagens/instruções/inputs
+        assert!(out.contains("first"));
+        assert!(out.contains("second"));
+        assert!(out.contains("inst1"));
+        assert!(out.contains("inst2"));
+        assert!(out.contains("in1"));
+        assert!(out.contains("in2"));
     }
 
     #[test]
-    fn token_array_not_found_closure_returns_stable_clone() {
-        colored::control::set_override(false);
+    fn handle_error_stores_error_and_does_not_panic_when_panic_mode_off() {
+        disable_colors();
+
+        let mut mgr = ErrorManager::default();
+        mgr.will_log(false);
+        mgr.will_panic(false);
+
+        mgr.handle_error(
+            AtpError::new(AtpErrorCode::ValidationError(Cow::Borrowed("oops")), "inst", "input")
+        );
+
+        assert!(mgr.has_errors());
+        assert_eq!(mgr.error_vec.len(), 1);
+        assert_eq!(mgr.error_vec[0].instruction_str(), "inst");
+        assert_eq!(mgr.error_vec[0].input_str(), "input");
+    }
+
+    #[test]
+    fn handle_error_panics_when_panic_mode_on_and_still_stores_error_first() {
+        disable_colors();
+
+        let mut mgr = ErrorManager::default();
+        mgr.will_log(false);
+        mgr.will_panic(true);
+
+        let err = AtpError::new(
+            AtpErrorCode::ZeroDivisionError(Cow::Borrowed("div0")),
+            "div",
+            "10/0"
+        );
+
+        let result = std::panic::catch_unwind(
+            std::panic::AssertUnwindSafe(|| {
+                mgr.handle_error(err);
+            })
+        );
+
+        assert!(result.is_err(), "deve panicar quando panic_with_error=true");
+        assert!(mgr.has_errors(), "deve ter armazenado o erro antes do panic");
+        assert_eq!(mgr.error_vec.len(), 1);
+    }
+
+    // ============================================================
+    // token_array_not_found
+    // ============================================================
+
+    #[test]
+    fn token_array_not_found_closure_returns_stable_clone_and_contains_identifier() {
+        disable_colors();
 
         let f = token_array_not_found("abc");
+
         let e1 = f();
         let e2 = f();
 
@@ -339,11 +593,5 @@ mod tests {
             }
             _ => panic!("Esperado TokenArrayNotFound"),
         }
-    }
-
-    #[test]
-    fn get_error_code_is_u16_and_matches_expected_values() {
-        assert_eq!(AtpErrorCode::FileNotFound(Cow::Borrowed("x")).get_error_code(), 1u16);
-        assert_eq!(AtpErrorCode::ZeroDivisionError(Cow::Borrowed("x")).get_error_code(), 21u16);
     }
 }
