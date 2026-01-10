@@ -11,7 +11,6 @@ pub mod transforms;
 /// InstructionMethods
 ///
 /// Basic Contract which every token should implement
-
 pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     fn needs_context(&self) -> bool {
         false

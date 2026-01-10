@@ -156,18 +156,19 @@ mod bytecode {
 
     #[test]
     fn atpparam_param_to_bytecode_has_internal_structure() {
-        // Este teste NÃO faz roundtrip (encoder/decoder não batem), mas checa o layout interno atual.
         let p = AtpParamTypes::String("abc".to_string());
-        let (_total_u64, b) = p.param_to_bytecode();
+        let (total_u64, b) = p.param_to_bytecode();
 
-        // type u32
-        let ty = u32::from_be_bytes(b[0..4].try_into().unwrap());
+        // total u64 (8)
+        let total = u64::from_be_bytes(b[0..8].try_into().unwrap());
+        assert_eq!(total, total_u64);
+        assert_eq!(total as usize, b.len());
+
+        // type u32 (4)
+        let ty = u32::from_be_bytes(b[8..12].try_into().unwrap());
         assert_eq!(ty, 0x01);
 
-        // em seguida você grava u64 param_total_size (legacy)
-        let _total = u64::from_be_bytes(b[4..12].try_into().unwrap());
-
-        // depois payload_size u32
+        // payload_size u32 (4)
         let size = u32::from_be_bytes(b[12..16].try_into().unwrap());
         assert_eq!(size, 3);
 
