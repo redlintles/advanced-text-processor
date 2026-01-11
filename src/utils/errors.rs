@@ -154,6 +154,7 @@ pub enum AtpErrorCode {
     ValidationError(Cow<'static, str>),
     InvalidArgumentNumber(Cow<'static, str>),
     ZeroDivisionError(Cow<'static, str>),
+    TryIntoFailError(Cow<'static, str>),
 }
 
 impl Display for AtpErrorCode {
@@ -195,6 +196,7 @@ impl AtpErrorCode {
             Self::BytecodeParamParsingError(_) => 19u16,
             Self::ValidationError(_) => 20u16,
             Self::ZeroDivisionError(_) => 21u16,
+            Self::TryIntoFailError(_) => 22u16,
         }
     }
 
@@ -226,6 +228,7 @@ impl AtpErrorCode {
             | Self::BlockNotFound(x)
             | Self::VariableNotFound(x)
             | Self::NonMutableVariableError(x)
+            | Self::TryIntoFailError(x)
             | Self::BytecodeParamNotRecognized(x) => x,
         }
     }
@@ -241,7 +244,7 @@ impl AtpErrorCode {
             | Self::BytecodeParsingError(_)
             | Self::BytecodeParamParsingError(_)
             | Self::TextParsingError(_) => Color::Red,
-
+            | Self::TryIntoFailError(_)
             // "Missing things" / lookup failures
             | Self::FileNotFound(_)
             | Self::FileOpeningError(_)
@@ -382,6 +385,7 @@ mod tests {
         assert_eq!(BytecodeParamParsingError(Cow::Borrowed("x")).get_error_code(), 19);
         assert_eq!(ValidationError(Cow::Borrowed("x")).get_error_code(), 20);
         assert_eq!(ZeroDivisionError(Cow::Borrowed("x")).get_error_code(), 21);
+        assert_eq!(TryIntoFailError(Cow::Borrowed("x")).get_error_code(), 22);
     }
 
     #[test]

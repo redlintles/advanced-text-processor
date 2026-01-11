@@ -22,6 +22,72 @@ pub enum AtpParamTypes {
     Token(Box<dyn InstructionMethods>),
 }
 
+impl From<String> for AtpParamTypes {
+    fn from(value: String) -> Self {
+        AtpParamTypes::String(value)
+    }
+}
+
+impl From<usize> for AtpParamTypes {
+    fn from(value: usize) -> Self {
+        AtpParamTypes::Usize(value)
+    }
+}
+
+impl From<Box<dyn InstructionMethods>> for AtpParamTypes {
+    fn from(value: Box<dyn InstructionMethods>) -> Self {
+        AtpParamTypes::Token(value)
+    }
+}
+
+impl From<AtpParamTypes> for String {
+    fn from(value: AtpParamTypes) -> String {
+        match value {
+            AtpParamTypes::String(v) => v.to_string(),
+            AtpParamTypes::Usize(v) => v.to_string(),
+            AtpParamTypes::Token(v) => v.to_atp_line().into(),
+        }
+    }
+}
+
+impl TryFrom<AtpParamTypes> for usize {
+    type Error = AtpError;
+    fn try_from(value: AtpParamTypes) -> Result<Self, AtpError> {
+        match value {
+            AtpParamTypes::Usize(v) => Ok(v),
+            _ =>
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::TryIntoFailError(
+                            "Failed conversion from AtpParamTypes To Usize".into()
+                        ),
+                        "try_into",
+                        ""
+                    )
+                ),
+        }
+    }
+}
+
+impl TryFrom<AtpParamTypes> for Box<dyn InstructionMethods> {
+    type Error = AtpError;
+    fn try_from(value: AtpParamTypes) -> Result<Self, AtpError> {
+        match value {
+            AtpParamTypes::Token(v) => Ok(v),
+            _ =>
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::TryIntoFailError(
+                            "Failed conversion from AtpParamTypes To Token".into()
+                        ),
+                        "try_into",
+                        ""
+                    )
+                ),
+        }
+    }
+}
+
 /// Debug customizado para evitar exigir Debug em dyn InstructionMethods
 impl std::fmt::Debug for AtpParamTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
