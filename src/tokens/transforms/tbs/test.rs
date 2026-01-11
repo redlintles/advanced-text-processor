@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tbs::Tbs };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,31 +22,41 @@ mod tests {
     #[test]
     fn transform_trims_both_sides_spaces() {
         let t = Tbs::default();
-        assert_eq!(t.transform("   banana   ").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("   banana   ", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_trims_tabs_newlines_too() {
         let t = Tbs::default();
-        assert_eq!(t.transform("\t\n  banana \r\n").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("\t\n  banana \r\n", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_no_outer_whitespace_unchanged() {
         let t = Tbs::default();
-        assert_eq!(t.transform("banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_only_whitespace_becomes_empty() {
         let t = Tbs::default();
-        assert_eq!(t.transform("     ").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("     ", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Tbs::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]

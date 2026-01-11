@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::rev::Rev };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,26 +22,34 @@ mod tests {
     #[test]
     fn transform_reverses_ascii() {
         let t = Rev::default();
-        assert_eq!(t.transform("foobar").unwrap(), "raboof");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foobar", &mut ctx).unwrap(), "raboof");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Rev::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_single_char_is_same() {
         let t = Rev::default();
-        assert_eq!(t.transform("x").unwrap(), "x");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("x", &mut ctx).unwrap(), "x");
     }
 
     #[test]
     fn transform_unicode_safe() {
         // chars() => reversão por scalar values (não por byte)
         let t = Rev::default();
-        assert_eq!(t.transform("áβç").unwrap(), "çβá");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("áβç", &mut ctx).unwrap(), "çβá");
     }
 
     #[test]

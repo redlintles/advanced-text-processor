@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
+        context::execution_context::GlobalExecutionContext,
         tokens::{ InstructionMethods, transforms::rmws::Rmws },
         utils::params::AtpParamTypes,
     };
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn rmws_transform_basic_ok() {
         let t = Rmws::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja cheia de canja").unwrap(),
+            t.transform("banana laranja cheia de canja", &mut ctx).unwrap(),
             "bananalaranjacheiadecanja"
         );
     }
@@ -31,19 +34,25 @@ mod tests {
     #[test]
     fn rmws_transform_preserves_non_whitespace_ok() {
         let t = Rmws::default();
-        assert_eq!(t.transform("  a\tb\nc\r\nd  ").unwrap(), "abcd");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("  a\tb\nc\r\nd  ", &mut ctx).unwrap(), "abcd");
     }
 
     #[test]
     fn rmws_transform_empty_ok() {
         let t = Rmws::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn rmws_transform_only_whitespace_ok() {
         let t = Rmws::default();
-        assert_eq!(t.transform(" \t\n\r  ").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform(" \t\n\r  ", &mut ctx).unwrap(), "");
     }
 
     #[test]
@@ -53,7 +62,9 @@ mod tests {
         // então uso um que costuma ser reconhecido (EM SPACE).
         let t = Rmws::default();
         let input = format!("a\u{2003}b\u{2003}c");
-        assert_eq!(t.transform(&input).unwrap(), "abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform(&input, &mut ctx).unwrap(), "abc");
     }
 
     #[test]

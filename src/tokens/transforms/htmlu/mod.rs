@@ -5,7 +5,11 @@ use std::borrow::Cow;
 
 use html_escape::decode_html_entities;
 
-use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{
+    context::execution_context::GlobalExecutionContext,
+    tokens::InstructionMethods,
+    utils::{ errors::AtpError, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 
@@ -34,7 +38,7 @@ impl InstructionMethods for Htmlu {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "htmlu;\n".into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(decode_html_entities(input).to_string())
     }
 

@@ -12,6 +12,7 @@ pub mod bytecode {
         use std::path::PathBuf;
 
         use atp::bytecode::writer::write_bytecode_to_file;
+        use atp::context::execution_context::{ GlobalExecutionContext };
         use atp::tokens::InstructionMethods;
 
         use tempfile::tempdir;
@@ -41,7 +42,11 @@ pub mod bytecode {
                 self.atp.clone().into()
             }
 
-            fn transform(&self, _input: &str) -> Result<String, atp::utils::errors::AtpError> {
+            fn transform(
+                &self,
+                _input: &str,
+                _context: &mut GlobalExecutionContext
+            ) -> Result<String, atp::utils::errors::AtpError> {
                 todo!()
             }
 

@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tua::Tua };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,25 +22,33 @@ mod tests {
     #[test]
     fn transform_uppercases_ascii() {
         let t = Tua::default();
-        assert_eq!(t.transform("banana").unwrap(), "BANANA");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "BANANA");
     }
 
     #[test]
     fn transform_preserves_non_letters() {
         let t = Tua::default();
-        assert_eq!(t.transform("ba-na_na 123!").unwrap(), "BA-NA_NA 123!");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ba-na_na 123!", &mut ctx).unwrap(), "BA-NA_NA 123!");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Tua::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_unicode_uppercase() {
         let t = Tua::default();
-        assert_eq!(t.transform("áéíóú ç").unwrap(), "ÁÉÍÓÚ Ç");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("áéíóú ç", &mut ctx).unwrap(), "ÁÉÍÓÚ Ç");
     }
 
     #[test]

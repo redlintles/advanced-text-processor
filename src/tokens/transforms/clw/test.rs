@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::clw::Clw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -22,25 +23,33 @@ mod tests {
     #[test]
     fn transform_capitalizes_last_word_basic_case() {
         let t = Clw::default();
-        assert_eq!(t.transform("foo bar"), Ok("foo Bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar", &mut ctx), Ok("foo Bar".to_string()));
     }
 
     #[test]
     fn transform_empty_input_stays_empty() {
         let t = Clw::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_single_word_capitalizes_that_word() {
         let t = Clw::default();
-        assert_eq!(t.transform("hello"), Ok("Hello".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("hello", &mut ctx), Ok("Hello".to_string()));
     }
 
     #[test]
     fn transform_preserves_previous_words() {
         let t = Clw::default();
-        assert_eq!(t.transform("foo bar baz"), Ok("foo bar Baz".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar baz", &mut ctx), Ok("foo bar Baz".to_string()));
     }
 
     #[test]
@@ -49,7 +58,9 @@ mod tests {
         // "foo " vira ["foo", ""] e o "último" vira "".
         // Então o resultado fica "foo " (permanece igual).
         let t = Clw::default();
-        assert_eq!(t.transform("foo "), Ok("foo ".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo ", &mut ctx), Ok("foo ".to_string()));
     }
 
     #[test]

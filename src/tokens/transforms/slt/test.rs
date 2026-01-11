@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::slt::Slt };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -24,7 +25,9 @@ mod tests {
     #[test]
     fn transform_selects_basic_slice() {
         let t = Slt::params(1, 3).unwrap();
-        assert_eq!(t.transform("banana").unwrap(), "ana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "ana");
     }
 
     #[test]
@@ -32,13 +35,17 @@ mod tests {
         // banàna => b a n à n a
         // indices: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
         let t = Slt::params(1, 4).unwrap();
-        assert_eq!(t.transform("banàna").unwrap(), "anàn");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banàna", &mut ctx).unwrap(), "anàn");
     }
 
     #[test]
     fn transform_end_index_beyond_len_selects_until_end() {
         let t = Slt::params(1, 9999).unwrap();
-        assert_eq!(t.transform("banana").unwrap(), "anana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "anana");
     }
 
     #[test]
@@ -48,7 +55,9 @@ mod tests {
             start_index: 5,
             end_index: 1,
         };
-        assert!(matches!(t.transform("banana"), Err(_)));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert!(matches!(t.transform("banana", &mut ctx), Err(_)));
     }
 
     #[test]

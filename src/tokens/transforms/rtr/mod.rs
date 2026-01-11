@@ -4,6 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
@@ -35,7 +36,7 @@ impl Rtr {
 }
 
 impl InstructionMethods for Rtr {
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(
                 AtpError::new(

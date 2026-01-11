@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::htmle::Htmle;
     use crate::utils::errors::AtpErrorCode;
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn transform_escapes_html_like_doc_example() {
         let t = Htmle::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("<div>banana</div>"),
+            t.transform("<div>banana</div>", &mut ctx),
             Ok("&lt;div&gt;banana&lt;&#x2F;div&gt;".to_string())
         );
     }
@@ -31,8 +34,10 @@ mod tests {
     #[test]
     fn transform_escapes_quotes_and_ampersand() {
         let t = Htmle::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform(r#"<a href="x&y">"#),
+            t.transform(r#"<a href="x&y">"#, &mut ctx),
             Ok("&lt;a href=&quot;x&amp;y&quot;&gt;".to_string())
         );
     }
@@ -40,13 +45,17 @@ mod tests {
     #[test]
     fn transform_no_special_chars_is_identity() {
         let t = Htmle::default();
-        assert_eq!(t.transform("banana"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
     fn transform_preserves_unicode_text() {
         let t = Htmle::default();
-        assert_eq!(t.transform("maçã & pão"), Ok("maçã &amp; pão".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("maçã & pão", &mut ctx), Ok("maçã &amp; pão".to_string()));
     }
 
     #[test]

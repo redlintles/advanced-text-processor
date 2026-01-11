@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tls::Tls };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,31 +22,41 @@ mod tests {
     #[test]
     fn transform_trims_left_spaces_only() {
         let t = Tls::default();
-        assert_eq!(t.transform("   banana   ").unwrap(), "banana   ");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("   banana   ", &mut ctx).unwrap(), "banana   ");
     }
 
     #[test]
     fn transform_trims_left_whitespace_tabs_newlines_too() {
         let t = Tls::default();
-        assert_eq!(t.transform("\t\n\r   banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("\t\n\r   banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_no_left_whitespace_unchanged() {
         let t = Tls::default();
-        assert_eq!(t.transform("banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_only_whitespace_becomes_empty() {
         let t = Tls::default();
-        assert_eq!(t.transform("     ").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("     ", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Tls::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]

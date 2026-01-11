@@ -4,8 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{ errors::{ AtpError }, validations::{ check_chunk_bound_indexes, check_vec_len } },
+    utils::{ errors::AtpError, validations::{ check_chunk_bound_indexes, check_vec_len } },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -48,7 +49,7 @@ impl InstructionMethods for Tlcc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tlcc {} {};\n", self.start_index, self.end_index).into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
         let total_chars = input.chars().count();

@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::sslt::Sslt };
     use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -22,21 +23,26 @@ mod tests {
     #[test]
     fn transform_selects_expected_piece() {
         let t = Sslt::params("_", 1).unwrap();
-        assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo", &mut ctx), Ok("foo".to_string()));
     }
 
     #[test]
     fn transform_supports_empty_segments() {
         // "a__b" split "_" => ["a", "", "b"]
         let t = Sslt::params("_", 1).unwrap();
-        assert_eq!(t.transform("a__b"), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a__b", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_errors_on_out_of_range() {
         let t = Sslt::params("_", 99).unwrap();
+        let mut ctx = GlobalExecutionContext::new();
 
-        let got = t.transform("a_b");
+        let got = t.transform("a_b", &mut ctx);
 
         let expected = Err(
             AtpError::new(

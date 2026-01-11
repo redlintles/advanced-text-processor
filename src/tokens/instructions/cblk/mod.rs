@@ -33,8 +33,20 @@ impl InstructionMethods for Cblk {
         format!("cblk {};", self.block_name).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
-        Ok(input.to_string())
+    fn transform(
+        &self,
+        input: &str,
+        context: &mut GlobalExecutionContext
+    ) -> Result<String, crate::utils::errors::AtpError> {
+        let mut result = input.to_string();
+        let tokens = context.take_block(&self.block_name)?;
+
+        for token in tokens.iter() {
+            result = token.transform(&result, &mut *context)?;
+        }
+
+        context.put_block(&self.block_name, tokens);
+        Ok(result)
     }
 
     fn from_params(
@@ -54,22 +66,5 @@ impl InstructionMethods for Cblk {
         ]);
 
         result
-    }
-    fn needs_context(&self) -> bool {
-        true
-    }
-
-    fn transform_with_context(
-        &self,
-        input: &str,
-        context: &mut GlobalExecutionContext
-    ) -> Result<String, crate::utils::errors::AtpError> {
-        let mut result = input.to_string();
-        let tokens = context.get_block(&self.block_name)?;
-
-        for token in tokens.iter() {
-            result = token.transform(&result)?;
-        }
-        Ok(result)
     }
 }

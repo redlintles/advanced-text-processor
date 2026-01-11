@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::rtl::Rtl };
     use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,45 +22,58 @@ mod tests {
     #[test]
     fn transform_rotates_left_basic() {
         let t = Rtl::params(3);
-        assert_eq!(t.transform("banana").unwrap(), "anaban");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "anaban");
     }
 
     #[test]
     fn transform_times_zero_returns_same() {
         let t = Rtl::params(0);
-        assert_eq!(t.transform("banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_times_equal_len_returns_same() {
         let t = Rtl::params(6); // len("banana") == 6
-        assert_eq!(t.transform("banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_times_greater_than_len_uses_modulo() {
         let t = Rtl::params(7); // 7 % 6 = 1
-        assert_eq!(t.transform("banana").unwrap(), "ananab");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "ananab");
     }
 
     #[test]
     fn transform_single_char_always_same() {
         let t = Rtl::params(999);
-        assert_eq!(t.transform("x").unwrap(), "x");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("x", &mut ctx).unwrap(), "x");
     }
 
     #[test]
     fn transform_unicode_safe_rotation() {
         // "áβç" (3 chars) rotate 1 => "βçá"
         let t = Rtl::params(1);
-        assert_eq!(t.transform("áβç").unwrap(), "βçá");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("áβç", &mut ctx).unwrap(), "βçá");
     }
 
     #[test]
     fn transform_empty_input_returns_error() {
         let t = Rtl::params(1);
+        let mut ctx = GlobalExecutionContext::new();
 
-        let got = t.transform("");
+        let got = t.transform("", &mut ctx);
 
         let expected = Err(
             AtpError::new(

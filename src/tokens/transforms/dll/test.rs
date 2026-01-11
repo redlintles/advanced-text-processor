@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dll::Dll;
     use crate::utils::errors::AtpErrorCode;
@@ -22,31 +23,41 @@ mod tests {
     #[test]
     fn transform_deletes_last_char_basic() {
         let t = Dll::default();
-        assert_eq!(t.transform("banana"), Ok("banan".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banan".to_string()));
     }
 
     #[test]
     fn transform_empty_string_stays_empty() {
         let t = Dll::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_single_char_becomes_empty() {
         let t = Dll::default();
-        assert_eq!(t.transform("a"), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_last_char_removed_safely_accented() {
         let t = Dll::default();
-        assert_eq!(t.transform("abá"), Ok("ab".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("abá", &mut ctx), Ok("ab".to_string()));
     }
 
     #[test]
     fn transform_unicode_last_char_removed_safely_emoji() {
         let t = Dll::default();
-        assert_eq!(t.transform("boom💥"), Ok("boom".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("boom💥", &mut ctx), Ok("boom".to_string()));
     }
 
     #[test]

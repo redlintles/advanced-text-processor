@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dlc::Dlc;
     use crate::utils::errors::{ AtpErrorCode };
@@ -30,8 +31,10 @@ mod tests {
     fn transform_removes_middle_chunk() {
         // remove "nana" (1..5) from "bananalaranja..."
         let t = Dlc::params(1, 5).unwrap();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("bananalaranjacheiadecanja"),
+            t.transform("bananalaranjacheiadecanja", &mut ctx),
             Ok("blaranjacheiadecanja".to_string())
         );
     }
@@ -39,19 +42,25 @@ mod tests {
     #[test]
     fn transform_removes_entire_string() {
         let t = Dlc::params(0, 100).unwrap();
-        assert_eq!(t.transform("abc"), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("abc", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_safe() {
         let t = Dlc::params(1, 2).unwrap();
-        assert_eq!(t.transform("ábcd"), Ok("ád".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábcd", &mut ctx), Ok("ád".to_string()));
     }
 
     #[test]
     fn transform_fails_on_invalid_index() {
         let t = Dlc::params(10, 20).unwrap();
-        let got = t.transform("abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("abc", &mut ctx);
         assert!(got.is_err());
     }
 

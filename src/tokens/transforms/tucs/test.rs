@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tucs::Tucs };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,7 +22,9 @@ mod tests {
     #[test]
     fn transform_uppercases_single_char() {
         let t = Tucs::params(1);
-        assert_eq!(t.transform("banana"), Ok("bAnana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bAnana".to_string()));
     }
 
     #[test]

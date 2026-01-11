@@ -1,6 +1,7 @@
 #![cfg(feature = "test_access")]
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::rpt::Rpt };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -20,19 +21,25 @@ mod tests {
     #[test]
     fn transform_repeats_input_n_times() {
         let t = Rpt::params(3);
-        assert_eq!(t.transform("banana").unwrap(), "bananabananabanana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "bananabananabanana");
     }
 
     #[test]
     fn transform_zero_times_returns_empty_string() {
         let t = Rpt::params(0);
-        assert_eq!(t.transform("banana").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_empty_input_still_empty() {
         let t = Rpt::params(5);
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]

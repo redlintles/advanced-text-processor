@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::{ AtpParamTypes };
 
 use crate::utils::validations::check_vec_len;
@@ -44,7 +45,7 @@ impl InstructionMethods for Ins {
         format!("ins {} {};\n", self.index, self.text_to_insert).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if self.index > input.chars().count() {
             return Err(
                 AtpError::new(

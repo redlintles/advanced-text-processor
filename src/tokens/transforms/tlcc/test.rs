@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tlcc::Tlcc };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,16 +22,20 @@ mod tests {
     #[test]
     fn transform_lowercases_only_the_chunk() {
         let t = Tlcc::params(1, 4).unwrap();
+        let mut ctx = GlobalExecutionContext::new();
+
         // BANANA => BananA (1..4 inclusive)
-        assert_eq!(t.transform("BANANA"), Ok("BananA".to_string()));
+        assert_eq!(t.transform("BANANA", &mut ctx), Ok("BananA".to_string()));
     }
 
     #[test]
     fn transform_supports_unicode_safely() {
         // "ÁBÇDÊ" lowercasing chunk should not break UTF-8
         let t = Tlcc::params(1, 3).unwrap();
+        let mut ctx = GlobalExecutionContext::new();
+
         // indexes: 0 Á, 1 B, 2 Ç, 3 D, 4 Ê
-        assert_eq!(t.transform("ÁBÇDÊ"), Ok("ÁbçdÊ".to_string()));
+        assert_eq!(t.transform("ÁBÇDÊ", &mut ctx), Ok("ÁbçdÊ".to_string()));
     }
 
     #[test]

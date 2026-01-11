@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::jsnc::Jsnc;
     use crate::utils::errors::AtpErrorCode;
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Jsnc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja cheia de canja"),
+            t.transform("banana laranja cheia de canja", &mut ctx),
             Ok("banana_laranja_cheia_de_canja".to_string())
         );
     }
@@ -31,14 +34,18 @@ mod tests {
     #[test]
     fn transform_single_word_lowercases() {
         let t = Jsnc::default();
-        assert_eq!(t.transform("Banana"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("Banana", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
     fn transform_collapses_whitespace() {
         let t = Jsnc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("  banana   laranja \n cheia\tde   canja  "),
+            t.transform("  banana   laranja \n cheia\tde   canja  ", &mut ctx),
             Ok("banana_laranja_cheia_de_canja".to_string())
         );
     }
@@ -46,13 +53,17 @@ mod tests {
     #[test]
     fn transform_empty_string_returns_empty() {
         let t = Jsnc::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_preserved_and_lowercased() {
         let t = Jsnc::default();
-        assert_eq!(t.transform("Maçã Com Canela"), Ok("maçã_com_canela".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("Maçã Com Canela", &mut ctx), Ok("maçã_com_canela".to_string()));
     }
 
     #[test]

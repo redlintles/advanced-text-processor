@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::instructions::ifdc::Ifdc;
     use crate::tokens::{ InstructionMethods, transforms::dlf::Dlf };
     use crate::utils::errors::{ AtpErrorCode };
@@ -17,12 +18,13 @@ mod tests {
     fn transform_executes_inner_if_contains() {
         // Se Dlf faz "prefixo laranja" ou algo diferente, troque esse teste.
         // Aqui eu só testo o fluxo: contém => chama inner, não contém => retorna input
+        let mut ctx = GlobalExecutionContext::new();
         let token = Ifdc::params("xy", Box::new(Dlf::default()));
 
-        let a = token.transform("abcxydef");
+        let a = token.transform("abcxydef", &mut ctx);
         assert!(a.is_ok(), "contains -> inner executed (at least does not fail)");
 
-        let b = token.transform("banana").unwrap();
+        let b = token.transform("banana", &mut ctx).unwrap();
         assert_eq!(b, "banana".to_string(), "does nothing when not contains");
     }
 

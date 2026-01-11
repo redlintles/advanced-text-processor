@@ -3,7 +3,11 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{
+    context::execution_context::GlobalExecutionContext,
+    tokens::InstructionMethods,
+    utils::{ errors::AtpError, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 
@@ -18,7 +22,7 @@ impl InstructionMethods for Tua {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tua;\n".into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(input.to_uppercase())
     }
     #[cfg(feature = "bytecode")]

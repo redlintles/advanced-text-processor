@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 
 use crate::utils::validations::check_vec_len;
@@ -31,7 +32,7 @@ impl InstructionMethods for Rev {
         "rev;\n".into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(input.chars().rev().collect())
     }
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError> {

@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dlb::Dlb;
     use crate::utils::errors::AtpErrorCode;
@@ -29,8 +30,10 @@ mod tests {
     fn transform_deletes_before_index_example_like_doc() {
         // index 3 em "banana ..." remove "ban" => "ana ..."
         let t = Dlb::params(3);
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja vermelha azul"),
+            t.transform("banana laranja vermelha azul", &mut ctx),
             Ok("ana laranja vermelha azul".to_string())
         );
     }
@@ -39,7 +42,9 @@ mod tests {
     fn transform_index_zero_keeps_string_intact() {
         // drain(0..0) não remove nada
         let t = Dlb::params(0);
-        assert_eq!(t.transform("abcdef"), Ok("abcdef".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("abcdef", &mut ctx), Ok("abcdef".to_string()));
     }
 
     #[test]
@@ -47,14 +52,18 @@ mod tests {
         // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
         // index 1 remove só o primeiro char => "bcdef"
         let t = Dlb::params(1);
-        assert_eq!(t.transform("ábcdef"), Ok("bcdef".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábcdef", &mut ctx), Ok("bcdef".to_string()));
     }
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         // check_index_against_input deve falhar antes do drain
         let t = Dlb::params(999);
-        let got = t.transform("abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("abc", &mut ctx);
         assert!(got.is_err());
     }
 

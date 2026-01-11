@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tucw::Tucw };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,8 +22,10 @@ mod tests {
     #[test]
     fn transform_uppercases_one_word_by_index() {
         let t = Tucw::params(1);
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja cheia de canja"),
+            t.transform("banana laranja cheia de canja", &mut ctx),
             Ok("banana LARANJA cheia de canja".to_string())
         );
     }

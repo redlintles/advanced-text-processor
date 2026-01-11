@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::ctc::Ctc;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -29,8 +30,10 @@ mod tests {
     #[test]
     fn transform_capitalizes_chunk_simple_letters() {
         // exemplo do doc: 1..5 em "bananabananosa" => "bAnanabananosa"
+        let mut ctx = GlobalExecutionContext::new();
+
         let t = Ctc::params(1, 5).unwrap();
-        assert_eq!(t.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
+        assert_eq!(t.transform("bananabananosa", &mut ctx), Ok("bAnanabananosa".to_string()));
     }
 
     #[test]
@@ -42,15 +45,19 @@ mod tests {
         // "xx foo bar" (sem o espaço antes de yy) termina no índice 10? vamos computar:
         // string: x(0) x(1) ' '(2) f(3) o(4) o(5) ' '(6) b(7) a(8) r(9) ' '(10) y(11) y(12)
         // chunk [3..10) => chars 3..10 => "foo bar" (até antes do espaço)
+        let mut ctx = GlobalExecutionContext::new();
+
         let t = Ctc::params(3, 10).unwrap();
-        assert_eq!(t.transform(input), Ok("xx Foo Bar yy".to_string()));
+        assert_eq!(t.transform(input, &mut ctx), Ok("xx Foo Bar yy".to_string()));
     }
 
     #[test]
     fn transform_end_index_clamps_to_len() {
         let input = "hello";
         let t = Ctc::params(0, 999).unwrap(); // end enorme, deve clamp
-        assert_eq!(t.transform(input), Ok("Hello".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform(input, &mut ctx), Ok("Hello".to_string()));
     }
 
     #[test]
@@ -60,14 +67,18 @@ mod tests {
         let input = "ábc def";
         // capitalizar chunk "ábc" => "Ábc"
         let t = Ctc::params(0, 3).unwrap();
-        assert_eq!(t.transform(input), Ok("Ábc def".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform(input, &mut ctx), Ok("Ábc def".to_string()));
     }
 
     #[test]
     fn transform_errors_on_out_of_bounds_start() {
         let input = "abc";
         let t = Ctc::params(5, 6).unwrap(); // params() só valida relação, não input
-        let got: Result<String, AtpError> = t.transform(input);
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got: Result<String, AtpError> = t.transform(input, &mut ctx);
         assert!(got.is_err());
     }
 

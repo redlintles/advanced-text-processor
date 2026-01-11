@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::padr::Padr;
     use crate::utils::errors::AtpErrorCode;
@@ -22,7 +23,9 @@ mod tests {
     #[test]
     fn transform_returns_input_unchanged_if_already_at_or_above_max_len() {
         let t = Padr::params("xy", 3);
-        assert_eq!(t.transform("banana"), Ok("banana".to_string())); // len 6 >= 3
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string())); // len 6 >= 3
     }
 
     #[test]
@@ -30,7 +33,9 @@ mod tests {
         // "banana" tem 6 chars, max_len=7 => precisa de 1 char de padding.
         // extend_string("xy", 1) => "x" (pelo exemplo da doc)
         let t = Padr::params("xy", 7);
-        assert_eq!(t.transform("banana"), Ok("bananax".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bananax".to_string()));
     }
 
     #[test]
@@ -38,7 +43,9 @@ mod tests {
         // 6 -> 10 precisa de 4 chars
         // extend_string("xy", 4) => "xyxy" (comportamento esperado de repetição)
         let t = Padr::params("xy", 10);
-        assert_eq!(t.transform("banana"), Ok("bananaxyxy".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bananaxyxy".to_string()));
     }
 
     #[test]

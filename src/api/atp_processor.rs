@@ -8,14 +8,14 @@ use colored::*;
 use crate::api::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
-use crate::context::execution_context::GlobalExecutionContext;
+use crate::context::execution_context::{ GlobalContextMethods, GlobalExecutionContext };
 use crate::tokens::InstructionMethods;
 
 use crate::utils::apply::apply_transform;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
 
-use crate::utils::errors::{ AtpError, ErrorManager, token_array_not_found };
+use crate::utils::errors::{ AtpError, AtpErrorCode, ErrorManager, token_array_not_found };
 
 /// ATP Processor
 ///
@@ -623,7 +623,8 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        match token.transform(input) {
+        let mut context = GlobalExecutionContext::new();
+        match token.transform(input, &mut context) {
             Ok(x) => Ok(x),
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -658,17 +659,46 @@ impl AtpProcessorMethods for AtpProcessor {
                 &mut context
             )?;
 
-            // Note: format! aloca, mas agora você faz 1 print no final.
-            log.push_str(
-                &format!(
-                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
-                    counter.to_string().blue(),
-                    (counter + 1).to_string().blue(),
-                    token.to_atp_line().yellow(),
-                    result.red(),
-                    temp.green()
-                )
-            );
+            if token.get_string_repr() == "blk" {
+                // Gambiarra feia, futuramente pensar em forma melhor de consultar os parâmetros de um token
+                let line = token.to_atp_line();
+                let mut it = line.split_whitespace();
+
+                it.next();
+                let v = it
+                    .next()
+                    .ok_or_else(||
+                        AtpError::new(
+                            AtpErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+                            "process_all_with_debug",
+                            ""
+                        )
+                    )?;
+
+                log.push_str(
+                    &format!(
+                        "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+                        counter.to_string().blue(),
+                        (counter + 1).to_string().blue(),
+                        "Block Declaration: ".to_string().green(),
+                        token.to_atp_line().yellow(),
+                        v.to_string().green(),
+                        context.get_formatted_block_items(v)?
+                    )
+                );
+            } else {
+                // Note: format! aloca, mas agora você faz 1 print no final.
+                log.push_str(
+                    &format!(
+                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
+                        counter.to_string().blue(),
+                        (counter + 1).to_string().blue(),
+                        token.to_atp_line().yellow(),
+                        result.red(),
+                        temp.green()
+                    )
+                );
+            }
 
             if (counter as usize) + 1 < tokens.len() {
                 log.push_str(&"-".repeat(dashes));
@@ -687,7 +717,8 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        let output = match token.transform(input) {
+        let mut ctx = GlobalExecutionContext::new();
+        let output = match token.transform(input, &mut ctx) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -778,7 +809,8 @@ impl AtpProcessorMethods for AtpProcessor {
         token: Box<dyn InstructionMethods>,
         input: &str
     ) -> Result<String, AtpError> {
-        let output = match token.transform(input) {
+        let mut ctx = GlobalExecutionContext::new();
+        let output = match token.transform(input, &mut ctx) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());

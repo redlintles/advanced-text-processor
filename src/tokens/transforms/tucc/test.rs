@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tucc::Tucc };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -22,7 +23,9 @@ mod tests {
     fn transform_uppercases_chunk_inclusive() {
         // 1..=4 em "banana" => "a n a n" vira "A N A N"
         let t = Tucc::params(1, 4).unwrap();
-        assert_eq!(t.transform("banana"), Ok("bANANa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bANANa".to_string()));
     }
 
     #[test]

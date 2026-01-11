@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::jsonu::Jsonu;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -23,8 +24,9 @@ mod tests {
     fn transform_matches_doc_example() {
         let t = Jsonu::default();
         let expected_output = "{banana: '10'}".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform("\"{banana: '10'}\""), Ok(expected_output));
+        assert_eq!(t.transform("\"{banana: '10'}\"", &mut ctx), Ok(expected_output));
     }
 
     #[test]
@@ -34,14 +36,17 @@ mod tests {
         // JSON string com escapes
         let input = "\"a \\\"quote\\\" and a \\\\ slash\\nline2\\tend\\r\"";
         let expected = "a \"quote\" and a \\ slash\nline2\tend\r".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
     fn transform_empty_json_string_returns_empty() {
         let t = Jsonu::default();
-        assert_eq!(t.transform("\"\""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("\"\"", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
@@ -50,8 +55,9 @@ mod tests {
 
         let input = "\"maçã 🍎\"";
         let expected = "maçã 🍎".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
@@ -60,8 +66,9 @@ mod tests {
 
         // não é uma string JSON válida (faltam aspas, ou JSON inválido)
         let input = "{banana: '10'}";
+        let mut ctx = GlobalExecutionContext::new();
 
-        let got = t.transform(input);
+        let got = t.transform(input, &mut ctx);
 
         let expected = Err(
             AtpError::new(
@@ -101,9 +108,10 @@ mod tests {
         let dec = Jsonu::default();
 
         let original = "banana \"laranja\" \\ canja\n\tfim\rmaçã 🍎";
+        let mut ctx = GlobalExecutionContext::new();
 
-        let encoded = enc.transform(original).unwrap();
-        let decoded = dec.transform(&encoded).unwrap();
+        let encoded = enc.transform(original, &mut ctx).unwrap();
+        let decoded = dec.transform(&encoded, &mut ctx).unwrap();
 
         assert_eq!(decoded, original.to_string());
     }

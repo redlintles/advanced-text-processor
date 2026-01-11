@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::tokens::InstructionMethods;
 
 use crate::utils::params::AtpParamTypes;
@@ -38,7 +39,7 @@ impl InstructionMethods for Jsonu {
         "jsonu;\n".into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(
             serde_json
                 ::from_str::<String>(input)

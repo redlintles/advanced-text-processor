@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::jcmc::Jcmc;
     use crate::utils::errors::AtpErrorCode;
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Jcmc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja cheia de canja"),
+            t.transform("banana laranja cheia de canja", &mut ctx),
             Ok("bananaLaranjaCheiaDeCanja".to_string())
         );
     }
@@ -31,15 +34,19 @@ mod tests {
     #[test]
     fn transform_single_word_is_identity() {
         let t = Jcmc::default();
-        assert_eq!(t.transform("banana"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
     fn transform_trims_and_collapses_whitespace() {
         // split_whitespace() colapsa espaços/tabs/newlines
         let t = Jcmc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("  banana   laranja \n cheia\tde   canja  "),
+            t.transform("  banana   laranja \n cheia\tde   canja  ", &mut ctx),
             Ok("bananaLaranjaCheiaDeCanja".to_string())
         );
     }
@@ -47,15 +54,19 @@ mod tests {
     #[test]
     fn transform_empty_string_returns_empty() {
         let t = Jcmc::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_preserved() {
         let t = Jcmc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         // depende do capitalize() do seu projeto, mas normalmente:
         // "maçã" -> "Maçã"
-        assert_eq!(t.transform("maçã com canela"), Ok("maçãComCanela".to_string()));
+        assert_eq!(t.transform("maçã com canela", &mut ctx), Ok("maçãComCanela".to_string()));
     }
 
     #[test]

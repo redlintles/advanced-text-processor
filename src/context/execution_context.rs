@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError, AtpErrorCode } };
 
 pub enum VarValues {
@@ -48,7 +47,7 @@ pub trait GlobalContextMethods {
         block_id: &str,
         token: Box<dyn InstructionMethods>
     ) -> Result<(), AtpError>;
-    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn InstructionMethods>>, AtpError>;
+    fn get_formatted_block_items(&mut self, block_id: &str) -> Result<String, AtpError>;
 
     fn add_var(&mut self, id: &str, var_entry: VarEntry) -> Result<(), AtpError>;
     fn get_var(&self, var_id: &str) -> Result<&VarEntry, AtpError>;
@@ -56,6 +55,8 @@ pub trait GlobalContextMethods {
 
     // It would require a more complex implementation. but would help optimizing atp in the future. This will remove data that will no longer be used from the context.
     fn clean_context(&mut self) -> () {}
+    fn take_block(&mut self, block_id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError>;
+    fn put_block(&mut self, block_id: &str, block: Vec<Box<dyn InstructionMethods>>);
 }
 
 impl GlobalExecutionContext {
@@ -85,19 +86,54 @@ impl GlobalContextMethods for GlobalExecutionContext {
         Ok(())
     }
 
-    fn get_block(&self, block_id: &str) -> Result<&Vec<Box<dyn InstructionMethods>>, AtpError> {
-        match self.blocks.get(block_id) {
-            Some(tokens) => { Ok(tokens) }
-            None => {
-                Err(
-                    AtpError::new(
-                        AtpErrorCode::BlockNotFound("Block not found".into()),
-                        "context.get_block",
-                        block_id.to_string()
-                    )
+    fn take_block(&mut self, block_id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
+        self.blocks
+            .remove(block_id)
+            .ok_or_else(|| {
+                AtpError::new(
+                    AtpErrorCode::BlockNotFound("Block not found".into()),
+                    "context.take_block",
+                    block_id.to_string()
                 )
-            }
+            })
+    }
+
+    fn put_block(&mut self, block_id: &str, block: Vec<Box<dyn InstructionMethods>>) {
+        self.blocks.insert(block_id.to_string(), block);
+    }
+
+    fn get_formatted_block_items(&mut self, block_id: &str) -> Result<String, AtpError> {
+        use colored::Colorize;
+
+        let block_items = self.take_block(block_id)?;
+        let mut result = String::new();
+
+        let len = block_items.len();
+        if len == 0 {
+            result.push_str("\t\t\t\t(EMPTY BLOCK)\n");
+            return Ok(result);
         }
+
+        for (i, token) in block_items.iter().enumerate() {
+            let is_last = i + 1 == len;
+
+            let prefix = if is_last {
+                if len == 1 {
+                    "(BLOCK CREATED): ".green()
+                } else {
+                    "(BLOCK ALREADY EXISTS) ADDING: ".green()
+                }
+            } else {
+                // sem prefixo para itens antigos
+                "".normal()
+            };
+
+            result.push_str(&format!("\t\t\t\t{}{}\n", prefix, token.to_atp_line().yellow()));
+        }
+
+        self.put_block(block_id, block_items);
+
+        Ok(result)
     }
 
     fn add_var(&mut self, id: &str, var_entry: VarEntry) -> Result<(), AtpError> {

@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::rlw::Rlw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -35,33 +36,43 @@ mod tests {
     #[test]
     fn transform_replaces_last_occurrence_doc_example() {
         let t = Rlw::params("a", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("aaaab".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaab".to_string()));
     }
 
     #[test]
     fn transform_when_no_match_returns_original() {
         let t = Rlw::params("z", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("aaaaa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
     }
 
     #[test]
     fn transform_replaces_last_match_when_regex_groups() {
         // aqui "a+" casa o bloco inteiro como UM match, então trocar "último match" == trocar o único match.
         let t = Rlw::params("a+", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("b".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("b".to_string()));
     }
 
     #[test]
     fn transform_replaces_last_match_only() {
         let t = Rlw::params(r"\d+", "X").unwrap();
-        assert_eq!(t.transform("a1 b22 c333"), Ok("a1 b22 cX".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a1 b22 c333", &mut ctx), Ok("a1 b22 cX".to_string()));
     }
 
     #[test]
     fn transform_handles_utf8_safely() {
         // se o regex encontra "ã", a substituição precisa manter UTF-8 correto
         let t = Rlw::params("ã", "A").unwrap();
-        assert_eq!(t.transform("maçã maçã"), Ok("maçã maçA".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("maçã maçã", &mut ctx), Ok("maçã maçA".to_string()));
     }
 
     // ============================

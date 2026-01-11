@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::{
     tokens::InstructionMethods,
@@ -41,7 +42,7 @@ impl InstructionMethods for Tucw {
         format!("tucw {};\n", self.index).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_index_against_words(self.index, input)?;
         Ok(
             input

@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::tokens::InstructionMethods;
 
 use crate::utils::errors::{ AtpError };
@@ -34,7 +35,7 @@ impl InstructionMethods for Splc {
         "splc;\n".into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(
             input
                 .chars()

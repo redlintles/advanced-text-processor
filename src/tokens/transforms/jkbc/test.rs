@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::jkbc::Jkbc;
     use crate::utils::errors::AtpErrorCode;
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Jkbc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("banana laranja cheia de canja"),
+            t.transform("banana laranja cheia de canja", &mut ctx),
             Ok("banana-laranja-cheia-de-canja".to_string())
         );
     }
@@ -31,14 +34,18 @@ mod tests {
     #[test]
     fn transform_single_word_lowercases() {
         let t = Jkbc::default();
-        assert_eq!(t.transform("BaNaNa"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("BaNaNa", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
     fn transform_collapses_whitespace_and_lowercases() {
         let t = Jkbc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("  Banana   LARANJA \n Cheia\tDe   Canja  "),
+            t.transform("  Banana   LARANJA \n Cheia\tDe   Canja  ", &mut ctx),
             Ok("banana-laranja-cheia-de-canja".to_string())
         );
     }
@@ -46,14 +53,18 @@ mod tests {
     #[test]
     fn transform_empty_string_returns_empty() {
         let t = Jkbc::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_lowercase_behavior() {
         let t = Jkbc::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         // unicode + lowercasing (Rust faz lowercase unicode-aware)
-        assert_eq!(t.transform("MAÇÃ COM CANELA"), Ok("maçã-com-canela".to_string()));
+        assert_eq!(t.transform("MAÇÃ COM CANELA", &mut ctx), Ok("maçã-com-canela".to_string()));
     }
 
     #[test]

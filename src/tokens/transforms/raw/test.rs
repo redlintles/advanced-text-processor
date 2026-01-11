@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::raw::Raw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -36,19 +37,25 @@ mod tests {
     #[test]
     fn transform_replaces_all_occurrences_doc_example() {
         let t = Raw::params("a", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("bbbbb".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("bbbbb".to_string()));
     }
 
     #[test]
     fn transform_with_regex_pattern() {
         let t = Raw::params(r"\d+", "X").unwrap();
-        assert_eq!(t.transform("a1 b22 c333"), Ok("aX bX cX".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a1 b22 c333", &mut ctx), Ok("aX bX cX".to_string()));
     }
 
     #[test]
     fn transform_no_matches_returns_same_string() {
         let t = Raw::params("zzz", "_").unwrap();
-        assert_eq!(t.transform("banana"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
@@ -59,11 +66,12 @@ mod tests {
             AtpParamTypes::String("a+".to_string()),
             AtpParamTypes::String("b".to_string())
         ];
+        let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.from_params(&params), Ok(()));
         assert_eq!(t.pattern.as_str(), "a+");
         assert_eq!(t.text_to_replace, "b".to_string());
-        assert_eq!(t.transform("aaaa"), Ok("b".to_string()));
+        assert_eq!(t.transform("aaaa", &mut ctx), Ok("b".to_string()));
     }
 
     #[test]

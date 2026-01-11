@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::errors::AtpError;
 use crate::utils::validations::check_vec_len;
 use crate::{
@@ -50,7 +51,7 @@ impl InstructionMethods for Ctc {
     fn get_string_repr(&self) -> &'static str {
         "ctc"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let len = input.chars().count();
 
         let mut end = self.end_index;

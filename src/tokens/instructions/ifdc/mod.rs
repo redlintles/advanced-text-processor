@@ -6,7 +6,10 @@ use std::borrow::Cow;
 #[cfg(feature = "bytecode")]
 use crate::to_bytecode;
 
-use crate::{ tokens::{ InstructionMethods, transforms::dlf::Dlf } };
+use crate::{
+    context::execution_context::GlobalExecutionContext,
+    tokens::{ InstructionMethods, transforms::dlf::Dlf },
+};
 
 use crate::utils::errors::{ AtpError };
 
@@ -60,9 +63,9 @@ impl InstructionMethods for Ifdc {
         "ifdc"
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, c: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if input.contains(&self.text) {
-            return Ok(self.inner.transform(input)?);
+            return Ok(self.inner.transform(input, &mut *c)?);
         }
 
         Ok(input.to_string())

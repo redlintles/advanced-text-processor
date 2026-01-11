@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::urle::Urle;
     use crate::utils::errors::AtpErrorCode;
@@ -22,7 +23,9 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Urle::default();
-        assert_eq!(t.transform("banana laranja"), Ok("banana%20laranja".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana laranja", &mut ctx), Ok("banana%20laranja".to_string()));
     }
 
     #[test]
@@ -32,8 +35,9 @@ mod tests {
         // reservado: ?, =, &, /, :
         let input = "a?b=c&d/e:f";
         let expected = "a%3Fb%3Dc%26d%2Fe%3Af".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
@@ -44,14 +48,17 @@ mod tests {
 
         let input = "a+b c";
         let expected = "a%2Bb%20c".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
     fn transform_empty_string_returns_empty() {
         let t = Urle::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
@@ -61,8 +68,9 @@ mod tests {
         // "maçã 🍎" em UTF-8 percent-encoded
         let input = "maçã 🍎";
         let expected = "ma%C3%A7%C3%A3%20%F0%9F%8D%8E".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]

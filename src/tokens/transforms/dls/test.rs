@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dls::Dls;
     use crate::utils::errors::AtpErrorCode;
@@ -29,39 +30,51 @@ mod tests {
     fn transform_deletes_single_char_basic_example() {
         // index 3 em "banana" remove 'a' => "banna"
         let t = Dls::params(3);
-        assert_eq!(t.transform("banana"), Ok("banna".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banna".to_string()));
     }
 
     #[test]
     fn transform_deletes_first_char() {
         let t = Dls::params(0);
-        assert_eq!(t.transform("banana"), Ok("anana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("anana".to_string()));
     }
 
     #[test]
     fn transform_deletes_last_char() {
         let t = Dls::params(5);
-        assert_eq!(t.transform("banana"), Ok("banan".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banan".to_string()));
     }
 
     #[test]
     fn transform_unicode_safe_deletes_accented_char() {
         // "ábc" removendo index 0 => "bc"
         let t = Dls::params(0);
-        assert_eq!(t.transform("ábc"), Ok("bc".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábc", &mut ctx), Ok("bc".to_string()));
     }
 
     #[test]
     fn transform_unicode_safe_deletes_emoji() {
         // "a💥b" indices por char: 0:'a', 1:'💥', 2:'b'
         let t = Dls::params(1);
-        assert_eq!(t.transform("a💥b"), Ok("ab".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a💥b", &mut ctx), Ok("ab".to_string()));
     }
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         let t = Dls::params(999);
-        let got = t.transform("abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("abc", &mut ctx);
         assert!(got.is_err());
     }
 

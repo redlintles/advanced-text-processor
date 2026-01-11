@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::{ check_index_against_input, check_vec_len };
 use crate::{ tokens::InstructionMethods };
@@ -40,7 +41,7 @@ impl InstructionMethods for Dla {
         format!("dla {};\n", self.index).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
 
         let mut s = String::from(input);

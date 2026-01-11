@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::ctr::Ctr;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -29,7 +30,9 @@ mod tests {
     #[test]
     fn transform_capitalizes_range_basic_case() {
         let t = Ctr::params(1, 5).unwrap();
-        assert_eq!(t.transform("foo bar mar"), Ok("foo Bar Mar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar mar", &mut ctx), Ok("foo Bar Mar".to_string()));
     }
 
     #[test]
@@ -37,7 +40,9 @@ mod tests {
         // indices por split_whitespace():
         // 0: "aa", 1:"bb", 2:"cc", 3:"dd"
         let t = Ctr::params(1, 2).unwrap();
-        assert_eq!(t.transform("aa bb cc dd"), Ok("aa Bb Cc dd".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aa bb cc dd", &mut ctx), Ok("aa Bb Cc dd".to_string()));
     }
 
     #[test]
@@ -45,19 +50,25 @@ mod tests {
         // total words = 3, end_index = 999 => clamp para total (3)
         // range vira 1..=3, então capitaliza índices 1 e 2 (3 não existe)
         let t = Ctr::params(1, 999).unwrap();
-        assert_eq!(t.transform("foo bar baz"), Ok("foo Bar Baz".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar baz", &mut ctx), Ok("foo Bar Baz".to_string()));
     }
 
     #[test]
     fn transform_empty_input_stays_empty() {
         let t = Ctr::params(0, 1).unwrap();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_errors_when_start_out_of_bounds_for_input_words() {
         let t = Ctr::params(5, 6).unwrap(); // relação ok, mas input tem poucas palavras
-        let got: Result<String, AtpError> = t.transform("one two");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got: Result<String, AtpError> = t.transform("one two", &mut ctx);
         assert!(got.is_err());
     }
 

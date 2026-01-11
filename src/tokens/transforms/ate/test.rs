@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::ate::Ate;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -28,19 +29,25 @@ mod tests {
     #[test]
     fn transform_appends_text() {
         let t = Ate::params(" bar");
-        assert_eq!(t.transform("foo"), Ok("foo bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo", &mut ctx), Ok("foo bar".to_string()));
     }
 
     #[test]
     fn transform_with_empty_text_keeps_input() {
         let t = Ate::params("");
-        assert_eq!(t.transform("foo"), Ok("foo".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo", &mut ctx), Ok("foo".to_string()));
     }
 
     #[test]
     fn transform_with_empty_input_returns_only_text() {
         let t = Ate::params("bar");
-        assert_eq!(t.transform(""), Ok("bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("bar".to_string()));
     }
 
     #[test]

@@ -4,6 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
@@ -35,7 +36,7 @@ impl InstructionMethods for Urld {
     fn to_atp_line(&self) -> Cow<'static, str> {
         "urld;\n".into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         // Validação de percent encoding
         let bytes = input.as_bytes();
         let len = bytes.len();

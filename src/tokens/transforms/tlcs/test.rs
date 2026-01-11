@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tlcs::Tlcs };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,14 +22,18 @@ mod tests {
     #[test]
     fn transform_lowercases_single_char_ascii() {
         let t = Tlcs::params(1);
-        assert_eq!(t.transform("BANANA"), Ok("BaNANA".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("BANANA", &mut ctx), Ok("BaNANA".to_string()));
     }
 
     #[test]
     fn transform_lowercases_single_char_unicode() {
         // Índices por CHAR: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
         let t = Tlcs::params(3);
-        assert_eq!(t.transform("banÀna"), Ok("banàna".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banÀna", &mut ctx), Ok("banàna".to_string()));
     }
 
     #[test]

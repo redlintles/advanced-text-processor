@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dla::Dla;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -29,13 +30,17 @@ mod tests {
     fn transform_deletes_after_index_example_like_doc() {
         // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
         let t = Dla::params(3);
-        assert_eq!(t.transform("banana laranja vermelha azul"), Ok("bana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana laranja vermelha azul", &mut ctx), Ok("bana".to_string()));
     }
 
     #[test]
     fn transform_index_zero_keeps_first_char_only() {
         let t = Dla::params(0);
-        assert_eq!(t.transform("abcdef"), Ok("a".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("abcdef", &mut ctx), Ok("a".to_string()));
     }
 
     #[test]
@@ -43,14 +48,18 @@ mod tests {
         // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
         // index 1 mantém "áb"
         let t = Dla::params(1);
-        assert_eq!(t.transform("ábcdef"), Ok("áb".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábcdef", &mut ctx), Ok("áb".to_string()));
     }
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         // check_index_against_input deve falhar antes do drain
         let t = Dla::params(999);
-        let got = t.transform("abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("abc", &mut ctx);
         assert!(got.is_err());
     }
 
@@ -60,8 +69,9 @@ mod tests {
         // se index aponta pro último char, nth(index+1) vira None -> cai no Err(IndexOutOfRange)
         let input = "abc";
         let t = Dla::params(2); // último char
+        let mut ctx = GlobalExecutionContext::new();
 
-        let got = t.transform(input);
+        let got = t.transform(input, &mut ctx);
 
         let expected = Err(
             AtpError::new(

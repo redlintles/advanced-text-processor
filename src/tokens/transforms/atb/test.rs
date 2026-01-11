@@ -5,6 +5,7 @@
 #[cfg(test)]
 mod common {
     use crate::{
+        context::execution_context::GlobalExecutionContext,
         tokens::{ InstructionMethods, transforms::atb::Atb },
         utils::{ errors::AtpErrorCode, params::AtpParamTypes },
     };
@@ -17,20 +18,25 @@ mod common {
 
     #[test]
     fn transform_prepends_text() {
+        let mut ctx = GlobalExecutionContext::new();
         let t = Atb::params("foo");
-        assert_eq!(t.transform(" bar").unwrap(), "foo bar");
+        assert_eq!(t.transform(" bar", &mut ctx).unwrap(), "foo bar");
     }
 
     #[test]
     fn transform_empty_input() {
+        let mut ctx = GlobalExecutionContext::new();
+
         let t = Atb::params("foo");
-        assert_eq!(t.transform("").unwrap(), "foo");
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "foo");
     }
 
     #[test]
     fn transform_empty_prefix() {
+        let mut ctx = GlobalExecutionContext::new();
+
         let t = Atb::params("");
-        assert_eq!(t.transform("bar").unwrap(), "bar");
+        assert_eq!(t.transform("bar", &mut ctx).unwrap(), "bar");
     }
 
     #[test]
@@ -48,11 +54,14 @@ mod common {
     #[test]
     fn atb_from_params_accepts_single_string_param() {
         let mut t = Atb::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         let params = vec![AtpParamTypes::String("foo".to_string())];
 
         t.from_params(&params).unwrap();
         assert_eq!(t.text, "foo");
-        assert_eq!(t.transform(" bar").unwrap(), "foo bar");
+
+        assert_eq!(t.transform(" bar", &mut ctx).unwrap(), "foo bar");
     }
 
     #[test]
@@ -81,6 +90,7 @@ mod common {
         // [u32 type][u32 payload_size][payload]
         //
         // Então pulamos o u64 param_total_size.
+        let mut ctx = GlobalExecutionContext::new();
 
         let original = Atb::params("hello");
         let bytes = original.to_bytecode();
@@ -104,7 +114,7 @@ mod common {
         rebuilt.from_params(&vec![parsed_param]).unwrap();
 
         assert_eq!(rebuilt.text, "hello");
-        assert_eq!(rebuilt.transform(" world").unwrap(), "hello world");
+        assert_eq!(rebuilt.transform(" world", &mut ctx).unwrap(), "hello world");
     }
 }
 

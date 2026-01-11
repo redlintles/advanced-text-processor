@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::errors::{ AtpError };
 
 use crate::utils::params::AtpParamTypes;
@@ -51,7 +52,7 @@ impl InstructionMethods for Ctr {
     fn get_string_repr(&self) -> &'static str {
         "ctr"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if input.trim().is_empty() {
             return Ok("".to_string());
         }

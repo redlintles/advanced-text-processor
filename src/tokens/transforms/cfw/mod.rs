@@ -4,8 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{ errors::{ AtpError }, transforms::capitalize, validations::check_vec_len },
+    utils::{ errors::AtpError, transforms::capitalize, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -28,7 +29,7 @@ impl InstructionMethods for Cfw {
     fn get_string_repr(&self) -> &'static str {
         "cfw"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         Ok(capitalize(input))
     }
 

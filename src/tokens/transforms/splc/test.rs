@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::splc::Splc };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,26 +22,34 @@ mod tests {
     #[test]
     fn transform_splits_ascii_chars() {
         let t = Splc::default();
-        assert_eq!(t.transform("banana").unwrap(), "b a n a n a");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "b a n a n a");
     }
 
     #[test]
     fn transform_keeps_existing_spaces_as_chars() {
         let t = Splc::default();
-        assert_eq!(t.transform("a b").unwrap(), "a   b");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a b", &mut ctx).unwrap(), "a   b");
         // explicação: chars = ['a',' ','b'] => "a" + " " + " " + " " + "b" => "a␠␠␠b"
     }
 
     #[test]
     fn transform_unicode_chars_ok() {
         let t = Splc::default();
-        assert_eq!(t.transform("áβ🍌").unwrap(), "á β 🍌");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("áβ🍌", &mut ctx).unwrap(), "á β 🍌");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Splc::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]

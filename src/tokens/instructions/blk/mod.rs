@@ -32,11 +32,16 @@ impl InstructionMethods for Blk {
     }
 
     fn to_atp_line(&self) -> std::borrow::Cow<'static, str> {
-        format!("blk {} assoc {};", self.block_name, self.inner.to_atp_line()).into()
+        format!("blk {} assoc {}", self.block_name, self.inner.to_atp_line()).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
-        Ok(input.to_string())
+    fn transform(
+        &self,
+        input: &str,
+        context: &mut GlobalExecutionContext
+    ) -> Result<String, crate::utils::errors::AtpError> {
+        context.add_to_block(&self.block_name, self.inner.clone())?;
+        return Ok(input.to_string());
     }
 
     fn from_params(
@@ -59,17 +64,5 @@ impl InstructionMethods for Blk {
         ]);
 
         result
-    }
-    fn needs_context(&self) -> bool {
-        true
-    }
-
-    fn transform_with_context(
-        &self,
-        input: &str,
-        context: &mut GlobalExecutionContext
-    ) -> Result<String, crate::utils::errors::AtpError> {
-        context.add_to_block(&self.block_name, self.inner.clone())?;
-        Ok(input.to_string())
     }
 }

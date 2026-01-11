@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::jsone::Jsone;
     use crate::utils::errors::AtpErrorCode;
@@ -23,8 +24,9 @@ mod tests {
     fn transform_matches_doc_example() {
         let t = Jsone::default();
         let expected_output = "\"{banana: '10'}\"".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform("{banana: '10'}"), Ok(expected_output));
+        assert_eq!(t.transform("{banana: '10'}", &mut ctx), Ok(expected_output));
     }
 
     #[test]
@@ -36,8 +38,9 @@ mod tests {
 
         // serde_json::to_string gera string JSON com aspas externas e escapes internos
         let expected = "\"a \\\"quote\\\" and a \\\\ slash\"".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
@@ -46,14 +49,17 @@ mod tests {
 
         let input = "line1\nline2\tend\r";
         let expected = "\"line1\\nline2\\tend\\r\"".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
     fn transform_empty_string_is_quoted_empty() {
         let t = Jsone::default();
-        assert_eq!(t.transform(""), Ok("\"\"".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("\"\"".to_string()));
     }
 
     #[test]
@@ -63,8 +69,9 @@ mod tests {
         let input = "maçã 🍎";
         // serde_json mantém unicode (não escapa como \uXXXX por padrão)
         let expected = "\"maçã 🍎\"".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]

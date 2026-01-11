@@ -5,6 +5,7 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
@@ -65,7 +66,7 @@ impl InstructionMethods for Rcw {
         format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if self.count == 0 {
             return Ok(input.to_string());
         }

@@ -4,8 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{ errors::{ AtpError }, validations::{ check_chunk_bound_indexes, check_vec_len } },
+    utils::{ errors::AtpError, validations::{ check_chunk_bound_indexes, check_vec_len } },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -47,7 +48,7 @@ impl InstructionMethods for Tucc {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tucc {} {};\n", self.start_index, self.end_index).into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_chunk_bound_indexes(self.start_index, self.end_index, Some(input))?;
 
         // Since the user will probably not know the length of the string in the middle of the processing

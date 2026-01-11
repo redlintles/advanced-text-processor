@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::htmlu::Htmlu;
     use crate::utils::errors::AtpErrorCode;
@@ -22,8 +23,10 @@ mod tests {
     #[test]
     fn transform_unescapes_html_like_doc_example() {
         let t = Htmlu::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("&lt;div&gt;banana&lt;/div&gt;"),
+            t.transform("&lt;div&gt;banana&lt;/div&gt;", &mut ctx),
             Ok("<div>banana</div>".to_string())
         );
     }
@@ -31,8 +34,10 @@ mod tests {
     #[test]
     fn transform_unescapes_quotes_and_ampersand() {
         let t = Htmlu::default();
+        let mut ctx = GlobalExecutionContext::new();
+
         assert_eq!(
-            t.transform("&lt;a href=&quot;x&amp;y&quot;&gt;"),
+            t.transform("&lt;a href=&quot;x&amp;y&quot;&gt;", &mut ctx),
             Ok(r#"<a href="x&y">"#.to_string())
         );
     }
@@ -40,20 +45,26 @@ mod tests {
     #[test]
     fn transform_no_entities_is_identity() {
         let t = Htmlu::default();
-        assert_eq!(t.transform("banana"), Ok("banana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string()));
     }
 
     #[test]
     fn transform_preserves_unicode_text() {
         let t = Htmlu::default();
-        assert_eq!(t.transform("maçã &amp; pão"), Ok("maçã & pão".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("maçã &amp; pão", &mut ctx), Ok("maçã & pão".to_string()));
     }
 
     #[test]
     fn transform_roundtrip_with_htmle_string_expectation() {
         // Sem depender diretamente do token HTMLE: apenas valida decodificação correta
         let t = Htmlu::default();
-        assert_eq!(t.transform("a&lt;b&amp;c&gt;d"), Ok("a<b&c>d".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a&lt;b&amp;c&gt;d", &mut ctx), Ok("a<b&c>d".to_string()));
     }
 
     #[test]

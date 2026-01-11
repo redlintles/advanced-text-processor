@@ -12,17 +12,6 @@ pub mod transforms;
 ///
 /// Basic Contract which every token should implement
 pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
-    fn needs_context(&self) -> bool {
-        false
-    }
-    fn transform_with_context(
-        &self,
-        input: &str,
-        _context: &mut GlobalExecutionContext
-    ) -> Result<String, AtpError> {
-        Ok(input.to_string())
-    }
-
     /// to_atp_line
     ///
     /// Converts the token to an ATP line to be written in an .atp file
@@ -30,7 +19,11 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     /// transform
     ///
     /// Responsible for applying the respective token transformation to `input`
-    fn transform(&self, input: &str) -> Result<String, AtpError>;
+    fn transform(
+        &self,
+        input: &str,
+        context: &mut GlobalExecutionContext
+    ) -> Result<String, AtpError>;
 
     /// get_string_repr
     ///

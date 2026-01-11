@@ -3,7 +3,11 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{
+    context::execution_context::GlobalExecutionContext,
+    tokens::InstructionMethods,
+    utils::{ errors::AtpError, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 /// Token `Ate` — Add to End
@@ -37,7 +41,7 @@ impl InstructionMethods for Ate {
         format!("ate {};\n", self.text).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let mut s = String::from(input);
         s.push_str(&self.text);
         Ok(s)

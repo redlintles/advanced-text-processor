@@ -3,7 +3,11 @@ pub mod test;
 
 use std::borrow::Cow;
 
-use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError }, validations::check_vec_len } };
+use crate::{
+    context::execution_context::GlobalExecutionContext,
+    tokens::InstructionMethods,
+    utils::{ errors::AtpError, validations::check_vec_len },
+};
 
 use crate::utils::params::AtpParamTypes;
 /// DLF - Delete First
@@ -28,7 +32,7 @@ impl InstructionMethods for Dlf {
         "dlf;\n".into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         // Se a string é vazia, não há o que deletar.
         if input.is_empty() {
             return Ok(String::new());

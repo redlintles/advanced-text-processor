@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::ins::Ins;
     use crate::utils::errors::AtpErrorCode;
@@ -17,14 +18,18 @@ mod tests {
     #[test]
     fn transform_inserts_after_index_like_doc_example() {
         let t = Ins::params(2, "laranja");
-        assert_eq!(t.transform("banana"), Ok("banlaranjaana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("banlaranjaana".to_string()));
     }
 
     #[test]
     fn transform_index_zero_inserts_after_first_char() {
         // index 0 -> after 'b'
         let t = Ins::params(0, "X");
-        assert_eq!(t.transform("banana"), Ok("bXanana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bXanana".to_string()));
     }
 
     #[test]
@@ -32,7 +37,9 @@ mod tests {
         // chars: b a n a n a (len 6), last index = 5
         // usa nth(index+1) -> None -> split_at(len) => append
         let t = Ins::params(5, "X");
-        assert_eq!(t.transform("banana"), Ok("bananaX".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bananaX".to_string()));
     }
 
     #[test]
@@ -40,7 +47,9 @@ mod tests {
         // detalhe: o código só erra se index > chars_count, então index == chars_count PASSA.
         // byte_index usa nth(index+1) => None -> append.
         let t = Ins::params(6, "X"); // chars_count("banana") = 6
-        assert_eq!(t.transform("banana"), Ok("bananaX".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("bananaX".to_string()));
     }
 
     #[test]
@@ -48,13 +57,17 @@ mod tests {
         // input: "ábc" (chars: á b c)
         // index 0 => after 'á'
         let t = Ins::params(0, "X");
-        assert_eq!(t.transform("ábc"), Ok("áXbc".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábc", &mut ctx), Ok("áXbc".to_string()));
     }
 
     #[test]
     fn transform_errors_when_index_too_large() {
         let t = Ins::params(999, "X");
-        let got = t.transform("abc");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("abc", &mut ctx);
         assert!(got.is_err());
 
         // opcional: valida o tipo do erro (não o texto, pq tem detalhe bytes/chars)

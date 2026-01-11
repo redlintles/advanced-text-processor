@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::errors::{ AtpError, AtpErrorCode };
 
 use crate::utils::params::AtpParamTypes;
@@ -40,7 +41,7 @@ impl InstructionMethods for Dlb {
         format!("dlb {};\n", self.index).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let mut s = String::from(input);
 
         check_index_against_input(self.index, input)?;

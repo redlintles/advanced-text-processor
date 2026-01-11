@@ -4,8 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{ errors::{ AtpError }, validations::{ check_index_against_input, check_vec_len } },
+    utils::{ errors::AtpError, validations::{ check_index_against_input, check_vec_len } },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -44,7 +45,7 @@ impl InstructionMethods for Tucs {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("tucs {};\n", self.index).into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         let result: String = input
             .char_indices()

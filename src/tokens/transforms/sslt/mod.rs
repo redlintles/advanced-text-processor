@@ -5,6 +5,7 @@ use std::borrow::Cow;
 
 use regex::Regex;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{ tokens::InstructionMethods };
@@ -54,7 +55,7 @@ impl InstructionMethods for Sslt {
     fn get_string_repr(&self) -> &'static str {
         "sslt"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let item = self.pattern
             .split(input)
             .nth(self.index)

@@ -4,6 +4,7 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
     utils::{ transforms::capitalize, validations::{ check_index_against_input, check_vec_len } },
 };
@@ -44,7 +45,7 @@ impl InstructionMethods for Cts {
     fn get_string_repr(&self) -> &'static str {
         "cts"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         check_index_against_input(self.index, input)?;
         let v = input.split_whitespace().collect::<Vec<_>>();
 

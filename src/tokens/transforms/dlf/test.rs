@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dlf::Dlf;
     use crate::utils::errors::AtpErrorCode;
@@ -22,31 +23,41 @@ mod tests {
     #[test]
     fn transform_deletes_first_char_basic() {
         let t = Dlf::default();
-        assert_eq!(t.transform("banana"), Ok("anana".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx), Ok("anana".to_string()));
     }
 
     #[test]
     fn transform_empty_string_stays_empty() {
         let t = Dlf::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_single_char_becomes_empty() {
         let t = Dlf::default();
-        assert_eq!(t.transform("a"), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_unicode_first_char_removed_safely_accented() {
         let t = Dlf::default();
-        assert_eq!(t.transform("ábc"), Ok("bc".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ábc", &mut ctx), Ok("bc".to_string()));
     }
 
     #[test]
     fn transform_unicode_first_char_removed_safely_emoji() {
         let t = Dlf::default();
-        assert_eq!(t.transform("💥boom"), Ok("boom".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("💥boom", &mut ctx), Ok("boom".to_string()));
     }
 
     #[test]

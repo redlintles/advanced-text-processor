@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::rcw::Rcw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -36,25 +37,33 @@ mod tests {
     #[test]
     fn transform_replaces_count_occurrences_doc_example() {
         let t = Rcw::params("a", "b", 3).unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("bbbaa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("bbbaa".to_string()));
     }
 
     #[test]
     fn transform_count_zero_returns_same_string() {
         let t = Rcw::params("a", "b", 0).unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("aaaaa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
     }
 
     #[test]
     fn transform_count_larger_than_matches_replaces_all_matches() {
         let t = Rcw::params("a", "b", 99).unwrap();
-        assert_eq!(t.transform("aa"), Ok("bb".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aa", &mut ctx), Ok("bb".to_string()));
     }
 
     #[test]
     fn transform_with_regex_pattern_replaces_n_times() {
         let t = Rcw::params(r"\d+", "X", 2).unwrap();
-        assert_eq!(t.transform("a1 b22 c333 d4444"), Ok("aX bX c333 d4444".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a1 b22 c333 d4444", &mut ctx), Ok("aX bX c333 d4444".to_string()));
     }
 
     // ============================

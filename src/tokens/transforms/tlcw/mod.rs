@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{
@@ -43,7 +44,11 @@ impl InstructionMethods for Tlcw {
         format!("tlcw {};\n", self.index).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, crate::utils::errors::AtpError> {
+    fn transform(
+        &self,
+        input: &str,
+        _: &mut GlobalExecutionContext
+    ) -> Result<String, crate::utils::errors::AtpError> {
         check_index_against_words(self.index, input)?;
         Ok(
             input

@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::urld::Urld;
     use crate::utils::errors::{ AtpError, AtpErrorCode };
@@ -22,7 +23,9 @@ mod tests {
     #[test]
     fn transform_matches_doc_example() {
         let t = Urld::default();
-        assert_eq!(t.transform("banana%20laranja"), Ok("banana laranja".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana%20laranja", &mut ctx), Ok("banana laranja".to_string()));
     }
 
     #[test]
@@ -31,8 +34,9 @@ mod tests {
 
         let input = "a%3Fb%3Dc%26d%2Fe%3Af";
         let expected = "a?b=c&d/e:f".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
@@ -44,13 +48,17 @@ mod tests {
         let input = "a%2Bb%20c";
         let expected = "a+b c".to_string();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
     fn transform_empty_string_returns_empty() {
         let t = Urld::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
@@ -59,8 +67,9 @@ mod tests {
 
         let input = "ma%C3%A7%C3%A3%20%F0%9F%8D%8E";
         let expected = "maçã 🍎".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
@@ -69,8 +78,9 @@ mod tests {
 
         // '%' seguido de algo que não forma um byte hex válido
         let input = "banana%2Glaranja";
+        let mut ctx = GlobalExecutionContext::new();
 
-        let got = t.transform(input);
+        let got = t.transform(input, &mut ctx);
 
         let expected = Err(
             AtpError::new(
@@ -91,9 +101,10 @@ mod tests {
         let dec = Urld::default();
 
         let original = "banana \"laranja\" \\ canja\n\tfim\rmaçã 🍎 ?&=/:";
+        let mut ctx = GlobalExecutionContext::new();
 
-        let encoded = enc.transform(original).unwrap();
-        let decoded = dec.transform(&encoded).unwrap();
+        let encoded = enc.transform(original, &mut ctx).unwrap();
+        let decoded = dec.transform(&encoded, &mut ctx).unwrap();
 
         assert_eq!(decoded, original.to_string());
     }

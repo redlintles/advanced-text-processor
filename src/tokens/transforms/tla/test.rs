@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tla::Tla };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,26 +22,34 @@ mod tests {
     #[test]
     fn transform_lowercases_ascii() {
         let t = Tla::default();
-        assert_eq!(t.transform("BANANA").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("BANANA", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_preserves_non_letters() {
         let t = Tla::default();
-        assert_eq!(t.transform("BA-NA_NA 123!").unwrap(), "ba-na_na 123!");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("BA-NA_NA 123!", &mut ctx).unwrap(), "ba-na_na 123!");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Tla::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_unicode_lowercase() {
         // Unicode casefolding/lowercasing
         let t = Tla::default();
-        assert_eq!(t.transform("ÁÉÍÓÚ Ç").unwrap(), "áéíóú ç");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("ÁÉÍÓÚ Ç", &mut ctx).unwrap(), "áéíóú ç");
     }
 
     #[test]

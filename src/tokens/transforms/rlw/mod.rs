@@ -6,6 +6,7 @@ use std::borrow::Cow;
 use regex::Regex;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, validations::check_vec_len },
 };
@@ -62,7 +63,7 @@ impl InstructionMethods for Rlw {
         format!("rlw {} {};\n", self.pattern, self.text_to_replace).into()
     }
 
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let caps: Vec<_> = self.pattern.find_iter(input).collect();
 
         if let Some(m) = caps.last() {

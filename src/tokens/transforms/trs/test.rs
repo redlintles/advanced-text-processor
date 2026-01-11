@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::trs::Trs };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -21,37 +22,49 @@ mod tests {
     #[test]
     fn transform_trims_end_spaces_only() {
         let t = Trs::default();
-        assert_eq!(t.transform("   banana   ").unwrap(), "   banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("   banana   ", &mut ctx).unwrap(), "   banana");
     }
 
     #[test]
     fn transform_does_not_trim_start() {
         let t = Trs::default();
-        assert_eq!(t.transform("   banana").unwrap(), "   banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("   banana", &mut ctx).unwrap(), "   banana");
     }
 
     #[test]
     fn transform_no_trailing_whitespace_unchanged() {
         let t = Trs::default();
-        assert_eq!(t.transform("banana").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_only_whitespace_becomes_empty() {
         let t = Trs::default();
-        assert_eq!(t.transform("      ").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("      ", &mut ctx).unwrap(), "");
     }
 
     #[test]
     fn transform_trims_tabs_and_newlines_at_end() {
         let t = Trs::default();
-        assert_eq!(t.transform("banana \t\n\r").unwrap(), "banana");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("banana \t\n\r", &mut ctx).unwrap(), "banana");
     }
 
     #[test]
     fn transform_empty_is_empty() {
         let t = Trs::default();
-        assert_eq!(t.transform("").unwrap(), "");
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx).unwrap(), "");
     }
 
     #[test]

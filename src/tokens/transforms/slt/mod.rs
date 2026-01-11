@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{ tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes };
@@ -45,7 +46,7 @@ impl InstructionMethods for Slt {
     fn get_string_repr(&self) -> &'static str {
         "slt"
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let len = input.chars().count();
         let mut end = self.end_index;
 

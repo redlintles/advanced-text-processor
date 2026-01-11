@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::tlcw::Tlcw };
     use crate::utils::errors::{ AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
@@ -23,14 +24,17 @@ mod tests {
         let t = Tlcw::params(1);
         let input = "BANANA LARANJA CHEIA DE CANJA";
         let expected = "BANANA laranja CHEIA DE CANJA".to_string();
+        let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.transform(input), Ok(expected));
+        assert_eq!(t.transform(input, &mut ctx), Ok(expected));
     }
 
     #[test]
     fn transform_index_zero_lowercases_first_word() {
         let t = Tlcw::params(0);
-        assert_eq!(t.transform("BANANA LARANJA"), Ok("banana LARANJA".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("BANANA LARANJA", &mut ctx), Ok("banana LARANJA".to_string()));
     }
 
     #[test]

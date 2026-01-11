@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::cfw::Cfw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -22,19 +23,25 @@ mod tests {
     #[test]
     fn transform_capitalizes_first_word() {
         let t = Cfw::default();
-        assert_eq!(t.transform("foo bar"), Ok("Foo bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar", &mut ctx), Ok("Foo bar".to_string()));
     }
 
     #[test]
     fn transform_empty_input_stays_empty() {
         let t = Cfw::default();
-        assert_eq!(t.transform(""), Ok("".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
     }
 
     #[test]
     fn transform_single_word() {
         let t = Cfw::default();
-        assert_eq!(t.transform("hello"), Ok("Hello".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("hello", &mut ctx), Ok("Hello".to_string()));
     }
 
     // Se sua função capitalize() lida com espaços/pontuação de um jeito específico,
@@ -42,7 +49,9 @@ mod tests {
     #[test]
     fn transform_preserves_rest_of_string_basic_case() {
         let t = Cfw::default();
-        assert_eq!(t.transform("foo bar baz"), Ok("Foo bar baz".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar baz", &mut ctx), Ok("Foo bar baz".to_string()));
     }
 
     #[test]

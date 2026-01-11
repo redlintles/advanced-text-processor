@@ -4,8 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
+    context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{ errors::{ AtpError }, transforms::extend_string, validations::check_vec_len },
+    utils::{ errors::AtpError, transforms::extend_string, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -48,7 +49,7 @@ impl InstructionMethods for Padr {
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("padr {} {};\n", self.text, self.max_len).into()
     }
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         let character_count = input.chars().count();
 
         if character_count >= self.max_len {

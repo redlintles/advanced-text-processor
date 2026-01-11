@@ -3,6 +3,7 @@ pub mod test;
 
 use std::borrow::Cow;
 
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::params::AtpParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{ tokens::InstructionMethods };
@@ -35,7 +36,7 @@ impl Rtl {
 }
 
 impl InstructionMethods for Rtl {
-    fn transform(&self, input: &str) -> Result<String, AtpError> {
+    fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(
                 AtpError::new(

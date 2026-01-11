@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::rfw::Rfw;
     use crate::utils::errors::{ AtpErrorCode };
@@ -35,26 +36,34 @@ mod tests {
     #[test]
     fn transform_replaces_first_occurrence_doc_example() {
         let t = Rfw::params("a", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("baaaa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("baaaa".to_string()));
     }
 
     #[test]
     fn transform_replaces_first_match_when_regex_groups() {
         // "a+" casa o bloco inteiro de 'a' como um único match, então só 1 troca acontece.
         let t = Rfw::params("a+", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("b".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("b".to_string()));
     }
 
     #[test]
     fn transform_when_no_match_returns_original() {
         let t = Rfw::params("z", "b").unwrap();
-        assert_eq!(t.transform("aaaaa"), Ok("aaaaa".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
     }
 
     #[test]
     fn transform_with_regex_works_on_first_match_only() {
         let t = Rfw::params(r"\d+", "X").unwrap();
-        assert_eq!(t.transform("a1 b22 c333"), Ok("aX b22 c333".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a1 b22 c333", &mut ctx), Ok("aX b22 c333".to_string()));
     }
     // ============================
     // Bytecode-only tests

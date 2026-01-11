@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::cts::Cts;
     use crate::utils::errors::AtpErrorCode;
@@ -28,32 +29,42 @@ mod tests {
     #[test]
     fn transform_capitalizes_word_at_index() {
         let t = Cts::params(1);
-        assert_eq!(t.transform("foo bar"), Ok("foo Bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar", &mut ctx), Ok("foo Bar".to_string()));
     }
 
     #[test]
     fn transform_capitalizes_first_word() {
         let t = Cts::params(0);
-        assert_eq!(t.transform("foo bar"), Ok("Foo bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo bar", &mut ctx), Ok("Foo bar".to_string()));
     }
 
     #[test]
     fn transform_capitalizes_last_word() {
         let t = Cts::params(2);
-        assert_eq!(t.transform("a b c"), Ok("a b C".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("a b c", &mut ctx), Ok("a b C".to_string()));
     }
 
     #[test]
     fn transform_collapses_whitespace_due_to_split_whitespace() {
         // split_whitespace normaliza espaços/tabs/newlines
         let t = Cts::params(1);
-        assert_eq!(t.transform("foo   bar"), Ok("foo Bar".to_string()));
+        let mut ctx = GlobalExecutionContext::new();
+
+        assert_eq!(t.transform("foo   bar", &mut ctx), Ok("foo Bar".to_string()));
     }
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         let t = Cts::params(7);
-        let got = t.transform("one two");
+        let mut ctx = GlobalExecutionContext::new();
+
+        let got = t.transform("one two", &mut ctx);
         assert!(got.is_err());
     }
 
