@@ -155,6 +155,7 @@ pub enum AtpErrorCode {
     InvalidArgumentNumber(Cow<'static, str>),
     ZeroDivisionError(Cow<'static, str>),
     TryIntoFailError(Cow<'static, str>),
+    IncompatibleTypeError(Cow<'static, str>),
 }
 
 impl Display for AtpErrorCode {
@@ -197,6 +198,7 @@ impl AtpErrorCode {
             Self::ValidationError(_) => 20u16,
             Self::ZeroDivisionError(_) => 21u16,
             Self::TryIntoFailError(_) => 22u16,
+            Self::IncompatibleTypeError(_) => 23u16,
         }
     }
 
@@ -229,6 +231,7 @@ impl AtpErrorCode {
             | Self::VariableNotFound(x)
             | Self::NonMutableVariableError(x)
             | Self::TryIntoFailError(x)
+            | Self::IncompatibleTypeError(x)
             | Self::BytecodeParamNotRecognized(x) => x,
         }
     }
@@ -237,6 +240,7 @@ impl AtpErrorCode {
         match self {
             // "Hard" errors
             | Self::ZeroDivisionError(_)
+            | Self::IncompatibleTypeError(_)
             | Self::InvalidOperands(_)
             | Self::ValidationError(_)
             | Self::InvalidParameters(_)
@@ -386,6 +390,7 @@ mod tests {
         assert_eq!(ValidationError(Cow::Borrowed("x")).get_error_code(), 20);
         assert_eq!(ZeroDivisionError(Cow::Borrowed("x")).get_error_code(), 21);
         assert_eq!(TryIntoFailError(Cow::Borrowed("x")).get_error_code(), 22);
+        assert_eq!(TryIntoFailError(Cow::Borrowed("x")).get_error_code(), 23);
     }
 
     #[test]
