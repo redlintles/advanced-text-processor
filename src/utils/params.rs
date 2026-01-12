@@ -2,14 +2,7 @@ use core::str;
 use std::{ array::TryFromSliceError, borrow::Cow, io::{ Cursor, Read }, sync::Arc };
 
 use crate::{
-    globals::table::{
-        InstructionParam,
-        ParamType,
-        QuerySource,
-        QueryTarget,
-        TargetValue,
-        TOKEN_TABLE,
-    },
+    globals::table::{ SyntaxDef, SyntaxToken, QuerySource, QueryTarget, TargetValue, TOKEN_TABLE },
     tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
@@ -148,7 +141,7 @@ impl AtpParamTypes {
     // --------------------------
 
     pub fn from_expected(
-        expected: Arc<[InstructionParam]>,
+        expected: Arc<[SyntaxDef]>,
         chunks: &[String]
     ) -> Result<Vec<AtpParamTypes>, AtpError> {
         let (parsed, consumed) = Self::parse_with_cursor(
@@ -173,7 +166,7 @@ impl AtpParamTypes {
     }
 
     fn parse_with_cursor(
-        expected: Arc<[InstructionParam]>,
+        expected: Arc<[SyntaxDef]>,
         chunks: &[String],
         mut i: usize,
         token_depth: u8,
@@ -184,8 +177,8 @@ impl AtpParamTypes {
         let this_is_block_like = Self::is_block_like_signature(&expected);
 
         for p in expected.iter() {
-            match p.param_type {
-                ParamType::Literal(expected_literal) => {
+            match p.token {
+                SyntaxToken::Literal(expected_literal) => {
                     let literal = chunks
                         .get(i)
                         .ok_or_else(|| {
@@ -212,7 +205,7 @@ impl AtpParamTypes {
                     i += 1;
                 }
 
-                ParamType::String => {
+                SyntaxToken::String => {
                     let s = chunks
                         .get(i)
                         .ok_or_else(|| {
@@ -226,7 +219,7 @@ impl AtpParamTypes {
                     i += 1;
                 }
 
-                ParamType::Usize => {
+                SyntaxToken::Usize => {
                     let s = chunks
                         .get(i)
                         .ok_or_else(|| {
@@ -240,7 +233,7 @@ impl AtpParamTypes {
                     i += 1;
                 }
 
-                ParamType::Token => {
+                SyntaxToken::Token => {
                     // Decide o modo do próximo nível
                     let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
                         AssocMode::AssocPayload
@@ -295,10 +288,10 @@ impl AtpParamTypes {
                     let nested_expected = match
                         TOKEN_TABLE.find((
                             QuerySource::Identifier(nested_key.clone()),
-                            QueryTarget::Params,
+                            QueryTarget::Syntax,
                         ))?
                     {
-                        TargetValue::Params(p) => p,
+                        TargetValue::Syntax(p) => p,
                         _ => unreachable!("Invalid Query result (Params)"),
                     };
 
@@ -338,20 +331,17 @@ impl AtpParamTypes {
                     nested_token.from_params(&nested_params)?;
                     out.push(AtpParamTypes::Token(nested_token));
                 }
-
-                ParamType::VarRef => todo!(),
-                ParamType::BlockRef => todo!(),
             }
         }
 
         Ok((out, i))
     }
 
-    fn is_block_like_signature(expected: &Arc<[InstructionParam]>) -> bool {
+    fn is_block_like_signature(expected: &Arc<[SyntaxDef]>) -> bool {
         expected.len() == 3 &&
-            matches!(expected[0].param_type, ParamType::String) &&
-            matches!(expected[1].param_type, ParamType::Literal("assoc")) &&
-            matches!(expected[2].param_type, ParamType::Token)
+            matches!(expected[0].token, SyntaxToken::String) &&
+            matches!(expected[1].token, SyntaxToken::Literal("assoc")) &&
+            matches!(expected[2].token, SyntaxToken::Token)
     }
 
     // --------------------------
@@ -521,9 +511,9 @@ impl AtpParamTypes {
 
                 // Parametros esperados para esse token
                 let expected = match
-                    TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Params))?
+                    TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Syntax))?
                 {
-                    TargetValue::Params(p) => p,
+                    TargetValue::Syntax(p) => p,
                     _ => unreachable!(),
                 };
 
@@ -634,10 +624,10 @@ impl AtpParamTypes {
                                     QuerySource::Identifier(
                                         Cow::Owned(tok.get_string_repr().to_string())
                                     ),
-                                    QueryTarget::Params,
+                                    QueryTarget::Syntax,
                                 ))?
                             {
-                                TargetValue::Params(p) => p,
+                                TargetValue::Syntax(p) => p,
                                 _ => unreachable!(),
                             };
 
@@ -686,18 +676,15 @@ impl AtpParamTypes {
         }
     }
 
-    fn param_index_is_token_in_signature(
-        expected: &Arc<[InstructionParam]>,
-        param_index: usize
-    ) -> bool {
-        let mut effective_types: Vec<ParamType> = Vec::with_capacity(expected.len());
+    fn param_index_is_token_in_signature(expected: &Arc<[SyntaxDef]>, param_index: usize) -> bool {
+        let mut effective_types: Vec<SyntaxToken> = Vec::with_capacity(expected.len());
         for ip in expected.iter() {
-            if matches!(ip.param_type, ParamType::Literal(_)) {
+            if matches!(ip.token, SyntaxToken::Literal(_)) {
                 continue;
             }
-            effective_types.push(ip.param_type);
+            effective_types.push(ip.token);
         }
-        matches!(effective_types.get(param_index), Some(ParamType::Token))
+        matches!(effective_types.get(param_index), Some(SyntaxToken::Token))
     }
 
     // --------------------------
@@ -834,23 +821,17 @@ impl AtpParamTypes {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::globals::table::{
-        InstructionParam,
-        QuerySource,
-        QueryTarget,
-        TargetValue,
-        TOKEN_TABLE,
-    };
+    use crate::globals::table::{ SyntaxDef, QuerySource, QueryTarget, TargetValue, TOKEN_TABLE };
     use std::sync::Arc;
 
     // -----------------------------
     // Helpers (TOKEN TABLE)
     // -----------------------------
 
-    fn expected_for(id: &str) -> Arc<[InstructionParam]> {
+    fn expected_for(id: &str) -> Arc<[SyntaxDef]> {
         let key = std::borrow::Cow::Owned(id.to_string());
-        match TOKEN_TABLE.find((QuerySource::Identifier(key), QueryTarget::Params)).unwrap() {
-            TargetValue::Params(p) => p,
+        match TOKEN_TABLE.find((QuerySource::Identifier(key), QueryTarget::Syntax)).unwrap() {
+            TargetValue::Syntax(p) => p,
             _ => unreachable!("Expected Params"),
         }
     }
