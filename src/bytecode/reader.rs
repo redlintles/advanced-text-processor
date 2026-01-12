@@ -1,7 +1,7 @@
 use std::{ fs::OpenOptions, io::{ BufReader, Read }, path::Path };
 
 use crate::{
-    globals::table::{ ParamType, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
+    globals::table::{ SyntaxToken, QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
     tokens::InstructionMethods,
     utils::{
         errors::{ AtpError, AtpErrorCode },
@@ -10,20 +10,20 @@ use crate::{
     },
 };
 
-fn param_type_from_code(code: u32) -> Option<ParamType> {
+fn param_type_from_code(code: u32) -> Option<SyntaxToken> {
     match code {
-        0x01 => Some(ParamType::String),
-        0x02 => Some(ParamType::Usize),
-        0x03 => Some(ParamType::Token),
+        0x01 => Some(SyntaxToken::String),
+        0x02 => Some(SyntaxToken::Usize),
+        0x03 => Some(SyntaxToken::Token),
         _ => None,
     }
 }
 
-fn bytecode_compatible(expected: &ParamType, actual: &ParamType) -> bool {
+fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken) -> bool {
     match (expected, actual) {
-        (ParamType::String, ParamType::String) => true,
-        (ParamType::Usize, ParamType::Usize) => true,
-        (ParamType::Token, ParamType::Token) => true,
+        (SyntaxToken::String, SyntaxToken::String) => true,
+        (SyntaxToken::Usize, SyntaxToken::Usize) => true,
+        (SyntaxToken::Token, SyntaxToken::Token) => true,
         _ => false,
     }
 }
@@ -183,9 +183,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
 
         // expected params (schema)
         let expected = match
-            TOKEN_TABLE.find((QuerySource::Bytecode(instruction_type), QueryTarget::Params))?
+            TOKEN_TABLE.find((QuerySource::Bytecode(instruction_type), QueryTarget::Syntax))?
         {
-            TargetValue::Params(p) => p,
+            TargetValue::Syntax(p) => p,
             _ => unreachable!("Invalid query result (Params)"),
         };
 
@@ -284,9 +284,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMet
             })?;
 
             while expected_i < expected.len() {
-                let expected_pt = &expected[expected_i].param_type;
+                let expected_pt = &expected[expected_i].token;
 
-                if matches!(expected_pt, ParamType::Literal(_)) {
+                if matches!(expected_pt, SyntaxToken::Literal(_)) {
                     expected_i += 1;
                     continue;
                 }

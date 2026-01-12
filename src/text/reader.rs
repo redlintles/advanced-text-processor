@@ -47,9 +47,9 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn InstructionMethods>,
     ))?;
 
     let token_param_types = match
-        TOKEN_TABLE.find((QuerySource::Identifier(chunks[0].clone().into()), QueryTarget::Params))?
+        TOKEN_TABLE.find((QuerySource::Identifier(chunks[0].clone().into()), QueryTarget::Syntax))?
     {
-        TargetValue::Params(p) => p,
+        TargetValue::Syntax(p) => p,
         _ => unreachable!(" Invalid Query result"),
     };
 
