@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError, AtpErrorCode } };
-
+#[derive(Clone)]
 pub enum VarValues {
     String(String),
     Usize(usize),
+    Token(Box<dyn InstructionMethods>),
 }
 
 pub enum ToClean {
@@ -14,8 +15,8 @@ pub enum ToClean {
 // First thought of a simple hashmap, but it wouldn't suffice my needs
 #[allow(dead_code)]
 pub struct VarEntry {
-    value: VarValues,
-    mutable: bool,
+    pub value: VarValues,
+    pub mutable: bool,
 }
 // This Object will be re-created every time the program starts.
 // Some tokens could access this object for additional data
