@@ -37,7 +37,7 @@ pub enum QueryTarget {
     Identifier,
     Bytecode,
     Token,
-    Params,
+    Syntax,
 }
 
 #[derive(Clone)]
@@ -45,7 +45,7 @@ pub enum TargetValue {
     Identifier(&'static str),
     Bytecode(u32),
     Token(TokenRef),
-    Params(Arc<[InstructionParam]>),
+    Syntax(Arc<[SyntaxDef]>),
 }
 
 pub struct TokenTable {
@@ -53,8 +53,8 @@ pub struct TokenTable {
     code_to_id: HashMap<u32, &'static str>,
     id_to_token: HashMap<&'static str, TokenRef>,
     code_to_token: HashMap<u32, TokenRef>,
-    id_to_expected: HashMap<&'static str, Arc<[InstructionParam]>>,
-    code_to_expected: HashMap<u32, Arc<[InstructionParam]>>,
+    id_to_syntax: HashMap<&'static str, Arc<[SyntaxDef]>>,
+    code_to_syntax: HashMap<u32, Arc<[SyntaxDef]>>,
 }
 
 impl TokenTable {
@@ -110,42 +110,40 @@ impl TokenTable {
                 let tok = self.code_to_token.get(&code).ok_or_else(err)?;
                 Ok(TargetValue::Token(tok.clone_ref()))
             }
-            (QuerySource::Identifier(id), QueryTarget::Params) => {
-                let params = self.id_to_expected.get(id.as_ref()).ok_or_else(err)?;
-                Ok(TargetValue::Params(params.clone()))
+            (QuerySource::Identifier(id), QueryTarget::Syntax) => {
+                let params = self.id_to_syntax.get(id.as_ref()).ok_or_else(err)?;
+                Ok(TargetValue::Syntax(params.clone()))
             }
-            (QuerySource::Bytecode(code), QueryTarget::Params) => {
-                let params = self.code_to_expected.get(&code).ok_or_else(err)?;
-                Ok(TargetValue::Params(params.clone()))
+            (QuerySource::Bytecode(code), QueryTarget::Syntax) => {
+                let params = self.code_to_syntax.get(&code).ok_or_else(err)?;
+                Ok(TargetValue::Syntax(params.clone()))
             }
         }
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ParamType {
+pub enum SyntaxToken {
     String,
     Usize,
     Token,
-    VarRef,
-    BlockRef,
     Literal(&'static str),
 }
 
-pub struct InstructionParam {
-    pub param_type: ParamType,
+pub struct SyntaxDef {
+    pub token: SyntaxToken,
     pub optional: bool,
 }
 
-impl InstructionParam {
-    pub fn opt(param_type: ParamType) -> Self {
-        InstructionParam {
-            param_type,
+impl SyntaxDef {
+    pub fn opt(token: SyntaxToken) -> Self {
+        SyntaxDef {
+            token,
             optional: true,
         }
     }
-    pub fn req(param_type: ParamType) -> Self {
-        InstructionParam {
-            param_type,
+    pub fn req(token: SyntaxToken) -> Self {
+        SyntaxDef {
+            token,
             optional: false,
         }
     }
@@ -169,8 +167,8 @@ macro_rules! define_token_table {
             let mut id_to_token: HashMap<&'static str, TokenRef> = HashMap::new();
             let mut code_to_token: HashMap<u32, TokenRef> = HashMap::new();
 
-            let mut id_to_expected: HashMap<&'static str, Arc<[InstructionParam]>> = HashMap::new();
-            let mut code_to_expected: HashMap<u32, Arc<[InstructionParam]>> = HashMap::new();
+            let mut id_to_syntax: HashMap<&'static str, Arc<[SyntaxDef]>> = HashMap::new();
+            let mut code_to_syntax: HashMap<u32, Arc<[SyntaxDef]>> = HashMap::new();
 
             $(
                 let token: TokenRef = ($ctor)();
@@ -193,8 +191,8 @@ macro_rules! define_token_table {
 
                 let arc_params = Arc::new($params);
 
-                id_to_expected.insert($id, arc_params.clone());
-                code_to_expected.insert($code, arc_params);
+                id_to_syntax.insert($id, arc_params.clone());
+                code_to_syntax.insert($code, arc_params);
             )*
 
             TokenTable {
@@ -202,8 +200,8 @@ macro_rules! define_token_table {
                 code_to_id,
                 id_to_token,
                 code_to_token,
-                id_to_expected,
-                code_to_expected,
+                id_to_syntax,
+                code_to_syntax,
             }
         });
     };
@@ -216,19 +214,19 @@ define_token_table! {
             "atb",
             0x01,
             || TokenRef::Shared(Arc::new(atb::Atb::default())),
-            [InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String)],
         ),
         (
             "ate",
             0x02,
             || TokenRef::Shared(Arc::new(ate::Ate::default())),
-            [InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String)],
         ),
         (
             "dlc",
             0x08,
             || TokenRef::Shared(Arc::new(dlc::Dlc::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         ("dlf", 0x03, || TokenRef::Shared(Arc::new(dlf::Dlf::default())), []),
         ("dll", 0x04, || TokenRef::Shared(Arc::new(dll::Dll::default())), []),
@@ -236,35 +234,35 @@ define_token_table! {
             "dla",
             0x09,
             || TokenRef::Shared(Arc::new(dla::Dla::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "dlb",
             0x0a,
             || TokenRef::Shared(Arc::new(dlb::Dlb::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "rfw",
             0x0b,
             || TokenRef::Shared(Arc::new(rfw::Rfw::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::String)],
         ),
         (
             "rcw",
             0x10,
             || TokenRef::Shared(Arc::new(rcw::Rcw::default())),
             [
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::Usize),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::Usize),
             ],
         ),
         (
             "raw",
             0x0c,
             || TokenRef::Shared(Arc::new(raw::Raw::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::String)],
         ),
         ("tbs", 0x05, || TokenRef::Shared(Arc::new(tbs::Tbs::default())), []),
         ("tls", 0x06, || TokenRef::Shared(Arc::new(tls::Tls::default())), []),
@@ -273,25 +271,25 @@ define_token_table! {
             "rpt",
             0x0d,
             || TokenRef::Shared(Arc::new(rpt::Rpt::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "rtr",
             0x0f,
             || TokenRef::Shared(Arc::new(rtr::Rtr::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "rtl",
             0x0e,
             || TokenRef::Shared(Arc::new(rtl::Rtl::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "slt",
             0x11,
             || TokenRef::Shared(Arc::new(slt::Slt::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         ("tua", 0x12, || TokenRef::Shared(Arc::new(tua::Tua::default())), []),
         ("tla", 0x13, || TokenRef::Shared(Arc::new(tla::Tla::default())), []),
@@ -299,25 +297,25 @@ define_token_table! {
             "tucs",
             0x14,
             || TokenRef::Shared(Arc::new(tucs::Tucs::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "tlcs",
             0x15,
             || TokenRef::Shared(Arc::new(tlcs::Tlcs::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "tucc",
             0x16,
             || TokenRef::Shared(Arc::new(tucc::Tucc::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "tlcc",
             0x17,
             || TokenRef::Shared(Arc::new(tlcc::Tlcc::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         ("cfw", 0x18, || TokenRef::Shared(Arc::new(cfw::Cfw::default())), []),
         ("clw", 0x19, || TokenRef::Shared(Arc::new(clw::Clw::default())), []),
@@ -325,40 +323,40 @@ define_token_table! {
             "sslt",
             0x1a,
             || TokenRef::Shared(Arc::new(sslt::Sslt::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "ctc",
             0x1b,
             || TokenRef::Shared(Arc::new(ctc::Ctc::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "ctr",
             0x1c,
             || TokenRef::Shared(Arc::new(ctr::Ctr::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "cts",
             0x1d,
             || TokenRef::Shared(Arc::new(cts::Cts::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "rlw",
             0x1e,
             || TokenRef::Shared(Arc::new(rlw::Rlw::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::String)],
         ),
         (
             "rnw",
             0x1f,
             || TokenRef::Shared(Arc::new(rnw::Rnw::default())),
             [
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::Usize),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::Usize),
             ],
         ),
         ("urle", 0x20, || TokenRef::Shared(Arc::new(urle::Urle::default())), []),
@@ -373,19 +371,19 @@ define_token_table! {
             "ins",
             0x28,
             || TokenRef::Shared(Arc::new(ins::Ins::default())),
-            [InstructionParam::req(ParamType::Usize), InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::String)],
         ),
         (
             "tlcw",
             0x29,
             || TokenRef::Shared(Arc::new(tlcw::Tlcw::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "tucw",
             0x2a,
             || TokenRef::Shared(Arc::new(tucw::Tucw::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         ("jkbc", 0x2b, || TokenRef::Shared(Arc::new(jkbc::Jkbc::default())), []),
         ("jcmc", 0x2d, || TokenRef::Shared(Arc::new(jcmc::Jcmc::default())), []),
@@ -394,29 +392,29 @@ define_token_table! {
             "padl",
             0x2f,
             || TokenRef::Shared(Arc::new(padl::Padl::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "padr",
             0x30,
             || TokenRef::Shared(Arc::new(padr::Padr::default())),
-            [InstructionParam::req(ParamType::String), InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Usize)],
         ),
         ("rmws", 0x31, || TokenRef::Shared(Arc::new(rmws::Rmws::default())), []),
         (
             "dls",
             0x32,
             || TokenRef::Shared(Arc::new(dls::Dls::default())),
-            [InstructionParam::req(ParamType::Usize)],
+            [SyntaxDef::req(SyntaxToken::Usize)],
         ),
         (
             "ifdc",
             0x33,
             || TokenRef::Shared(Arc::new(ifdc::Ifdc::default())),
             [
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::Literal("do")),
-                InstructionParam::req(ParamType::Token),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::Literal("do")),
+                SyntaxDef::req(SyntaxToken::Token),
             ],
         ),
         (
@@ -424,16 +422,16 @@ define_token_table! {
             0x34,
             || TokenRef::Shared(Arc::new(blk::Blk::default())),
             [
-                InstructionParam::req(ParamType::String),
-                InstructionParam::req(ParamType::Literal("assoc")),
-                InstructionParam::req(ParamType::Token),
+                SyntaxDef::req(SyntaxToken::String),
+                SyntaxDef::req(SyntaxToken::Literal("assoc")),
+                SyntaxDef::req(SyntaxToken::Token),
             ],
         ),
         (
             "cblk",
             0x35,
             || TokenRef::Shared(Arc::new(blk::Blk::default())),
-            [InstructionParam::req(ParamType::String)],
+            [SyntaxDef::req(SyntaxToken::String)],
         ),
     ];
 }
