@@ -28,7 +28,7 @@ use crate::{ tokens::InstructionMethods };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::rcw::Rcw};
 ///
-/// let token = Rcw::params(&"a", "b", 3).unwrap();
+/// let token = Rcw::new(&"a", "b", 3).unwrap();
 ///
 /// assert_eq!(token.transform("aaaaa"), Ok("bbbaa".to_string()));
 /// ```
@@ -38,13 +38,19 @@ pub struct Rcw {
     pub pattern: Regex,
     pub count: usize,
     pub text_to_replace: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Rcw {
-    pub fn params(pattern: &str, text_to_replace: &str, count: usize) -> Result<Self, String> {
+    pub fn new(pattern: &str, text_to_replace: &str, count: usize) -> Result<Self, String> {
         let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
         Ok(Rcw {
             text_to_replace: text_to_replace.to_string(),
+            params: vec![
+                pattern.to_string().into(),
+                text_to_replace.to_string().into(),
+                count.into()
+            ],
             pattern,
             count,
         })
@@ -57,11 +63,15 @@ impl Default for Rcw {
             pattern: Regex::new("").unwrap(),
             text_to_replace: "_".to_string(),
             count: 0 as usize,
+            params: vec!["".to_string().into(), "".to_string().into(), (0).into()],
         }
     }
 }
 
 impl InstructionMethods for Rcw {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rcw {} {} {};\n", self.pattern, self.text_to_replace, self.count).into()
     }

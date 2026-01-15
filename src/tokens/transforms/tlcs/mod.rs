@@ -20,24 +20,28 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::tlcs::Tlcs};
 ///
-/// let token = Tlcs::params(1);
+/// let token = Tlcs::new(1);
 ///
 /// assert_eq!(token.transform("BANANA"), Ok("BaNANA".to_string()));
 ///
 /// ```
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Tlcs {
     index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Tlcs {
-    pub fn params(index: usize) -> Self {
-        Tlcs { index }
+    pub fn new(index: usize) -> Self {
+        Tlcs { index, params: vec![index.into()] }
     }
 }
 
 impl InstructionMethods for Tlcs {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "tlcs"
     }

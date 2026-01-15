@@ -12,14 +12,14 @@ mod common {
 
     #[test]
     fn params_sets_text() {
-        let t = Atb::params("foo");
+        let t = Atb::new("foo");
         assert_eq!(t.text, "foo");
     }
 
     #[test]
     fn transform_prepends_text() {
         let mut ctx = GlobalExecutionContext::new();
-        let t = Atb::params("foo");
+        let t = Atb::new("foo");
         assert_eq!(t.transform(" bar", &mut ctx).unwrap(), "foo bar");
     }
 
@@ -27,7 +27,7 @@ mod common {
     fn transform_empty_input() {
         let mut ctx = GlobalExecutionContext::new();
 
-        let t = Atb::params("foo");
+        let t = Atb::new("foo");
         assert_eq!(t.transform("", &mut ctx).unwrap(), "foo");
     }
 
@@ -35,13 +35,13 @@ mod common {
     fn transform_empty_prefix() {
         let mut ctx = GlobalExecutionContext::new();
 
-        let t = Atb::params("");
+        let t = Atb::new("");
         assert_eq!(t.transform("bar", &mut ctx).unwrap(), "bar");
     }
 
     #[test]
     fn to_atp_line_exact_format() {
-        let t = Atb::params("foo");
+        let t = Atb::new("foo");
         let line = t.to_atp_line();
         assert_eq!(line.as_ref(), "atb foo;\n");
     }
@@ -92,7 +92,7 @@ mod common {
         // Então pulamos o u64 param_total_size.
         let mut ctx = GlobalExecutionContext::new();
 
-        let original = Atb::params("hello");
+        let original = Atb::new("hello");
         let bytes = original.to_bytecode();
 
         // sanity: param_count deve ser 1
@@ -121,8 +121,9 @@ mod common {
 #[cfg(all(test, feature = "bytecode"))]
 mod bytecode {
     use crate::{
+        context::execution_context::GlobalExecutionContext,
         tokens::{ InstructionMethods, transforms::atb::Atb },
-        utils::params::AtpParamTypes,
+        utils::{ errors::AtpError, params::AtpParamTypes },
     };
 
     // Helper: encode a param in the exact format that AtpParamTypes::from_bytecode expects:
@@ -165,9 +166,10 @@ mod bytecode {
     }
 
     #[test]
-    fn atpparam_param_to_bytecode_has_internal_structure() {
+    fn atpparam_param_to_bytecode_has_internal_structure() -> Result<(), AtpError> {
         let p = AtpParamTypes::String("abc".to_string());
-        let (total_u64, b) = p.param_to_bytecode();
+        let mut dummy_context = GlobalExecutionContext::new();
+        let (total_u64, b) = p.param_to_bytecode(&mut dummy_context)?;
 
         // total u64 (8)
         let total = u64::from_be_bytes(b[0..8].try_into().unwrap());
@@ -184,5 +186,7 @@ mod bytecode {
 
         // payload
         assert_eq!(&b[16..19], b"abc");
+
+        Ok(())
     }
 }

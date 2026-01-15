@@ -25,9 +25,14 @@ use crate::utils::params::AtpParamTypes;
 /// ```
 ///
 #[derive(Clone, Default)]
-pub struct Tbs {}
+pub struct Tbs {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Tbs {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tbs;\n".into()
     }

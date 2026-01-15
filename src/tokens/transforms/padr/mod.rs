@@ -23,7 +23,7 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::padr::Padr};
 ///
-/// let token = Padr::params("xy", 7);
+/// let token = Padr::new("xy", 7);
 ///
 /// assert_eq!(token.transform("banana"), Ok("bananax".to_string()));
 /// ```
@@ -31,18 +31,23 @@ use crate::utils::params::AtpParamTypes;
 pub struct Padr {
     pub text: String,
     pub max_len: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Padr {
-    pub fn params(text: &str, max_len: usize) -> Self {
+    pub fn new(text: &str, max_len: usize) -> Self {
         Padr {
             text: text.to_string(),
             max_len,
+            params: vec![text.to_string().into(), max_len.into()],
         }
     }
 }
 
 impl InstructionMethods for Padr {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "padr"
     }

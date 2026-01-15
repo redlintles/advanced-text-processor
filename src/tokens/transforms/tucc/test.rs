@@ -15,14 +15,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Tucc::params(1, 4).unwrap();
+        let t = Tucc::new(1, 4).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "tucc 1 4;\n");
     }
 
     #[test]
     fn transform_uppercases_chunk_inclusive() {
         // 1..=4 em "banana" => "a n a n" vira "A N A N"
-        let t = Tucc::params(1, 4).unwrap();
+        let t = Tucc::new(1, 4).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("bANANa".to_string()));
@@ -61,7 +61,7 @@ mod tests {
         }
         #[test]
         fn to_bytecode_has_opcode_and_two_params() {
-            let t = Tucc::params(2, 5).unwrap();
+            let t = Tucc::new(2, 5).unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

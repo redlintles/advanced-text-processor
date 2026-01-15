@@ -25,10 +25,15 @@ use crate::utils::validations::check_vec_len;
 /// assert_eq!(token.transform("   banana   "), Ok("banana   ".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Tls {}
+#[derive(Clone, Default)]
+pub struct Tls {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Tls {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         "tls;\n".into()
     }

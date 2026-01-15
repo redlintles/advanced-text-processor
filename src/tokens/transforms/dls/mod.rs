@@ -22,22 +22,26 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::dls::Dls};
 ///
-/// let token = Dls::params(3);
+/// let token = Dls::new(3);
 ///
 /// assert_eq!(token.transform("banana"), Ok("banna".to_string()));
 /// ```
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Dls {
     pub index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Dls {
-    pub fn params(index: usize) -> Self {
-        Dls { index }
+    pub fn new(index: usize) -> Self {
+        Dls { index, params: vec![index.into()] }
     }
 }
 
 impl InstructionMethods for Dls {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "dls"
     }

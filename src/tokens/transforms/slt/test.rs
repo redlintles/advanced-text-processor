@@ -4,7 +4,7 @@
 mod tests {
     use crate::context::execution_context::GlobalExecutionContext;
     use crate::tokens::{ InstructionMethods, transforms::slt::Slt };
-    use crate::utils::errors::{ AtpErrorCode };
+    use crate::utils::errors::{ AtpError, AtpErrorCode };
     use crate::utils::params::AtpParamTypes;
 
     #[test]
@@ -14,17 +14,15 @@ mod tests {
     }
 
     #[test]
-    fn to_atp_line_is_correct() {
-        let t = Slt {
-            start_index: 1,
-            end_index: 3,
-        };
+    fn to_atp_line_is_correct() -> Result<(), AtpError> {
+        let t = Slt::new(1, 3).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "slt 1 3;\n");
+        Ok(())
     }
 
     #[test]
     fn transform_selects_basic_slice() {
-        let t = Slt::params(1, 3).unwrap();
+        let t = Slt::new(1, 3).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "ana");
@@ -34,7 +32,7 @@ mod tests {
     fn transform_supports_unicode_safely() {
         // banàna => b a n à n a
         // indices: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
-        let t = Slt::params(1, 4).unwrap();
+        let t = Slt::new(1, 4).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banàna", &mut ctx).unwrap(), "anàn");
@@ -42,7 +40,7 @@ mod tests {
 
     #[test]
     fn transform_end_index_beyond_len_selects_until_end() {
-        let t = Slt::params(1, 9999).unwrap();
+        let t = Slt::new(1, 9999).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "anana");
@@ -51,10 +49,7 @@ mod tests {
     #[test]
     fn transform_rejects_invalid_bounds() {
         // start > end deve falhar (quem define isso é seu check_chunk_bound_indexes)
-        let t = Slt {
-            start_index: 5,
-            end_index: 1,
-        };
+        let t = Slt::new(5, 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert!(matches!(t.transform("banana", &mut ctx), Err(_)));
@@ -94,10 +89,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_contains_opcode_and_two_params() {
-            let t = Slt {
-                start_index: 1,
-                end_index: 3,
-            };
+            let t = Slt::new(1, 3).unwrap();
             let bc = t.to_bytecode();
 
             // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...

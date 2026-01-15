@@ -18,22 +18,26 @@ use crate::{
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::tucw::Tucw};
 ///
-/// let token = Tucw::params(1);
+/// let token = Tucw::new(1);
 ///
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana LARANJA cheia de canja".to_string()));
 ///
 /// ```
-#[derive(Clone, Default, Copy)]
+#[derive(Clone, Default)]
 pub struct Tucw {
     index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Tucw {
-    pub fn params(index: usize) -> Self {
-        Tucw { index }
+    pub fn new(index: usize) -> Self {
+        Tucw { index, params: vec![index.into()] }
     }
 }
 impl InstructionMethods for Tucw {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "tucw"
     }

@@ -28,7 +28,7 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::rfw::Rfw};
 ///
-/// let token = Rfw::params(&"a", "b").unwrap();
+/// let token = Rfw::new(&"a", "b").unwrap();
 ///
 /// assert_eq!(token.transform("aaaaa"), Ok("baaaa".to_string()));
 /// ```
@@ -37,13 +37,15 @@ use crate::utils::params::AtpParamTypes;
 pub struct Rfw {
     pub pattern: Regex,
     pub text_to_replace: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Rfw {
-    pub fn params(pattern: &str, text_to_replace: &str) -> Result<Self, String> {
+    pub fn new(pattern: &str, text_to_replace: &str) -> Result<Self, String> {
         let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
         Ok(Rfw {
             text_to_replace: text_to_replace.to_string(),
+            params: vec![pattern.to_string().into(), text_to_replace.to_string().into()],
             pattern,
         })
     }
@@ -54,11 +56,15 @@ impl Default for Rfw {
         Rfw {
             pattern: Regex::new("").unwrap(),
             text_to_replace: "_".to_string(),
+            params: vec!["".to_string().into(), "_".to_string().into()],
         }
     }
 }
 
 impl InstructionMethods for Rfw {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("rfw {} {};\n", self.pattern, self.text_to_replace).into()
     }

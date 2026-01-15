@@ -20,23 +20,27 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::dla::Dla};
 ///
-/// let token = Dla::params(3);
+/// let token = Dla::new(3);
 ///
 /// assert_eq!(token.transform("banana laranja vermelha azul"), Ok("bana".to_string()))
 ///
 /// ```
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Dla {
     pub index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Dla {
-    pub fn params(index: usize) -> Self {
-        Dla { index }
+    pub fn new(index: usize) -> Self {
+        Dla { index, params: vec![index.into()] }
     }
 }
 
 impl InstructionMethods for Dla {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dla {};\n", self.index).into()
     }

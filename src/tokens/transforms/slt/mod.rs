@@ -20,7 +20,7 @@ use crate::utils::errors::{ AtpError };
 /// ```rust
 /// use atp::tokens::{InstructionMethods,transforms::slt::Slt};
 ///
-/// let token = Slt::params(1,9999).unwrap();
+/// let token = Slt::new(1,9999).unwrap();
 ///
 /// assert_eq!(token.transform("banàna"), Ok("anàn".to_string()));
 ///
@@ -30,19 +30,24 @@ use crate::utils::errors::{ AtpError };
 pub struct Slt {
     pub start_index: usize,
     pub end_index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Slt {
-    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    pub fn new(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Slt {
             start_index,
             end_index,
+            params: vec![start_index.into(), end_index.into()],
         })
     }
 }
 
 impl InstructionMethods for Slt {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "slt"
     }

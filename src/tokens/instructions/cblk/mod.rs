@@ -11,17 +11,22 @@ pub mod test;
 #[derive(Clone)]
 pub struct Cblk {
     block_name: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Default for Cblk {
     fn default() -> Self {
         Cblk {
             block_name: "x".to_string(),
+            params: vec!["x".to_string().into()],
         }
     }
 }
 
 impl InstructionMethods for Cblk {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        return &self.params;
+    }
     fn get_opcode(&self) -> u32 {
         0x35
     }

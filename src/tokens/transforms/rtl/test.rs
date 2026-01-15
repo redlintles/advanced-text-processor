@@ -15,13 +15,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_contains_times() {
-        let t = Rtl::params(3);
+        let t = Rtl::new(3);
         assert_eq!(t.to_atp_line().as_ref(), "rtl 3;\n");
     }
 
     #[test]
     fn transform_rotates_left_basic() {
-        let t = Rtl::params(3);
+        let t = Rtl::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "anaban");
@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn transform_times_zero_returns_same() {
-        let t = Rtl::params(0);
+        let t = Rtl::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn transform_times_equal_len_returns_same() {
-        let t = Rtl::params(6); // len("banana") == 6
+        let t = Rtl::new(6); // len("banana") == 6
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "banana");
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn transform_times_greater_than_len_uses_modulo() {
-        let t = Rtl::params(7); // 7 % 6 = 1
+        let t = Rtl::new(7); // 7 % 6 = 1
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "ananab");
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn transform_single_char_always_same() {
-        let t = Rtl::params(999);
+        let t = Rtl::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("x", &mut ctx).unwrap(), "x");
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn transform_unicode_safe_rotation() {
         // "áβç" (3 chars) rotate 1 => "βçá"
-        let t = Rtl::params(1);
+        let t = Rtl::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("áβç", &mut ctx).unwrap(), "βçá");
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn transform_empty_input_returns_error() {
-        let t = Rtl::params(1);
+        let t = Rtl::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("", &mut ctx);
@@ -130,7 +130,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_contains_opcode_and_one_param() {
-            let t = Rtl::params(3);
+            let t = Rtl::new(3);
             let bc = t.to_bytecode();
 
             assert!(!bc.is_empty());

@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_index() {
-        let t = Cts::params(3);
+        let t = Cts::new(3);
         assert_eq!(t.index, 3);
     }
 
@@ -22,13 +22,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Cts::params(7);
+        let t = Cts::new(7);
         assert_eq!(t.to_atp_line().as_ref(), "cts 7;\n");
     }
 
     #[test]
     fn transform_capitalizes_word_at_index() {
-        let t = Cts::params(1);
+        let t = Cts::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo bar", &mut ctx), Ok("foo Bar".to_string()));
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn transform_capitalizes_first_word() {
-        let t = Cts::params(0);
+        let t = Cts::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo bar", &mut ctx), Ok("Foo bar".to_string()));
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn transform_capitalizes_last_word() {
-        let t = Cts::params(2);
+        let t = Cts::new(2);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a b c", &mut ctx), Ok("a b C".to_string()));
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn transform_collapses_whitespace_due_to_split_whitespace() {
         // split_whitespace normaliza espaços/tabs/newlines
-        let t = Cts::params(1);
+        let t = Cts::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo   bar", &mut ctx), Ok("foo Bar".to_string()));
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
-        let t = Cts::params(7);
+        let t = Cts::new(7);
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("one two", &mut ctx);
@@ -121,7 +121,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
-            let t = Cts::params(7);
+            let t = Cts::new(7);
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

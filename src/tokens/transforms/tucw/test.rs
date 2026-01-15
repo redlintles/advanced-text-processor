@@ -15,13 +15,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Tucw::params(1);
+        let t = Tucw::new(1);
         assert_eq!(t.to_atp_line().as_ref(), "tucw 1;\n");
     }
 
     #[test]
     fn transform_uppercases_one_word_by_index() {
-        let t = Tucw::params(1);
+        let t = Tucw::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(
@@ -64,7 +64,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_opcode_and_one_param() {
-            let t = Tucw::params(5);
+            let t = Tucw::new(5);
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

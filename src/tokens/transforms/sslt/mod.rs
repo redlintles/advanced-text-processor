@@ -22,7 +22,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::sslt::Sslt};
 ///
-/// let token = Sslt::params("_", 1).unwrap();
+/// let token = Sslt::new("_", 1).unwrap();
 ///
 /// assert_eq!(token.transform("foobar_foo_bar_bar_foo_barfoo"), Ok("foo".to_string()));
 ///
@@ -31,14 +31,15 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 pub struct Sslt {
     pub pattern: Regex,
     pub index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Sslt {
-    pub fn params(pattern: &str, index: usize) -> Result<Self, AtpError> {
+    pub fn new(pattern: &str, index: usize) -> Result<Self, AtpError> {
         let pattern = Regex::new(&pattern).map_err(|e| {
             AtpError::new(AtpErrorCode::BytecodeParsingError(e.to_string().into()), "", "")
         })?;
-        Ok(Sslt { pattern, index })
+        Ok(Sslt { index, params: vec![pattern.to_string().into(), index.into()], pattern })
     }
 }
 
@@ -47,11 +48,15 @@ impl Default for Sslt {
         Sslt {
             pattern: Regex::new("").unwrap(),
             index: 0,
+            params: vec!["".to_string().into(), (0).into()],
         }
     }
 }
 
 impl InstructionMethods for Sslt {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "sslt"
     }

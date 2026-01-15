@@ -15,7 +15,7 @@ mod tests {
 
     #[test]
     fn params_creates_valid_regex_and_fields() {
-        let t = Rcw::params("a+", "b", 3).unwrap();
+        let t = Rcw::new("a+", "b", 3).unwrap();
         assert_eq!(t.pattern.as_str(), "a+");
         assert_eq!(t.text_to_replace, "b".to_string());
         assert_eq!(t.count, 3);
@@ -23,20 +23,20 @@ mod tests {
 
     #[test]
     fn params_rejects_invalid_regex() {
-        let err = Rcw::params("(", "b", 1).unwrap_err();
+        let err = Rcw::new("(", "b", 1).unwrap_err();
         assert!(!err.is_empty());
     }
 
     #[test]
     fn to_atp_line_contains_pattern_replacement_and_count() {
-        let t = Rcw::params("a+", "b", 3).unwrap();
+        let t = Rcw::new("a+", "b", 3).unwrap();
         let line = t.to_atp_line();
         assert_eq!(line.as_ref(), "rcw a+ b 3;\n");
     }
 
     #[test]
     fn transform_replaces_count_occurrences_doc_example() {
-        let t = Rcw::params("a", "b", 3).unwrap();
+        let t = Rcw::new("a", "b", 3).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("bbbaa".to_string()));
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn transform_count_zero_returns_same_string() {
-        let t = Rcw::params("a", "b", 0).unwrap();
+        let t = Rcw::new("a", "b", 0).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn transform_count_larger_than_matches_replaces_all_matches() {
-        let t = Rcw::params("a", "b", 99).unwrap();
+        let t = Rcw::new("a", "b", 99).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aa", &mut ctx), Ok("bb".to_string()));
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn transform_with_regex_pattern_replaces_n_times() {
-        let t = Rcw::params(r"\d+", "X", 2).unwrap();
+        let t = Rcw::new(r"\d+", "X", 2).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a1 b22 c333 d4444", &mut ctx), Ok("aX bX c333 d4444".to_string()));
@@ -158,7 +158,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_three_params() {
-            let t = Rcw::params("a+", "b", 3).unwrap();
+            let t = Rcw::new("a+", "b", 3).unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

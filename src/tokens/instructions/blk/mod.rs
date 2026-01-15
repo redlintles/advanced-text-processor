@@ -1,8 +1,9 @@
 use crate::{
     context::execution_context::{ GlobalContextMethods, GlobalExecutionContext },
+    globals::var::TokenWrapper,
     parse_args,
     to_bytecode,
-    tokens::{ InstructionMethods, transforms::dlf::Dlf },
+    tokens::{ InstructionMethods },
     utils::{ params::AtpParamTypes, validations::check_vec_len },
 };
 
@@ -11,19 +12,27 @@ pub mod test;
 #[derive(Clone)]
 pub struct Blk {
     block_name: String,
-    inner: Box<dyn InstructionMethods>,
+    inner: TokenWrapper,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Default for Blk {
     fn default() -> Self {
         Blk {
             block_name: "x".to_string(),
-            inner: Box::new(Dlf::default()),
+            inner: TokenWrapper::default(),
+            params: vec![
+                AtpParamTypes::String("x".to_string()),
+                AtpParamTypes::Token(TokenWrapper::default())
+            ],
         }
     }
 }
 
 impl InstructionMethods for Blk {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        return &self.params;
+    }
     fn get_opcode(&self) -> u32 {
         0x34
     }

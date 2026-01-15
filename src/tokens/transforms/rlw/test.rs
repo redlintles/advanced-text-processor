@@ -15,27 +15,27 @@ mod tests {
 
     #[test]
     fn params_creates_valid_regex_and_fields() {
-        let t = Rlw::params("a+", "b").unwrap();
+        let t = Rlw::new("a+", "b").unwrap();
         assert_eq!(t.pattern.as_str(), "a+");
         assert_eq!(t.text_to_replace, "b".to_string());
     }
 
     #[test]
     fn params_rejects_invalid_regex() {
-        let err = Rlw::params("(", "b").unwrap_err();
+        let err = Rlw::new("(", "b").unwrap_err();
         assert!(!err.is_empty());
     }
 
     #[test]
     fn to_atp_line_contains_pattern_and_replacement() {
-        let t = Rlw::params("a+", "b").unwrap();
+        let t = Rlw::new("a+", "b").unwrap();
         let line = t.to_atp_line();
         assert_eq!(line.as_ref(), "rlw a+ b;\n");
     }
 
     #[test]
     fn transform_replaces_last_occurrence_doc_example() {
-        let t = Rlw::params("a", "b").unwrap();
+        let t = Rlw::new("a", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaab".to_string()));
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn transform_when_no_match_returns_original() {
-        let t = Rlw::params("z", "b").unwrap();
+        let t = Rlw::new("z", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn transform_replaces_last_match_when_regex_groups() {
         // aqui "a+" casa o bloco inteiro como UM match, então trocar "último match" == trocar o único match.
-        let t = Rlw::params("a+", "b").unwrap();
+        let t = Rlw::new("a+", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("b".to_string()));
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn transform_replaces_last_match_only() {
-        let t = Rlw::params(r"\d+", "X").unwrap();
+        let t = Rlw::new(r"\d+", "X").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a1 b22 c333", &mut ctx), Ok("a1 b22 cX".to_string()));
@@ -69,7 +69,7 @@ mod tests {
     #[test]
     fn transform_handles_utf8_safely() {
         // se o regex encontra "ã", a substituição precisa manter UTF-8 correto
-        let t = Rlw::params("ã", "A").unwrap();
+        let t = Rlw::new("ã", "A").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("maçã maçã", &mut ctx), Ok("maçã maçA".to_string()));
@@ -160,7 +160,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_two_params() {
-            let t = Rlw::params("a+", "b").unwrap();
+            let t = Rlw::new("a+", "b").unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

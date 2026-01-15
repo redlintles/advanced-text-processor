@@ -24,10 +24,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana"), Ok("anana".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Dlf {}
+#[derive(Clone, Default)]
+pub struct Dlf {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Dlf {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         "dlf;\n".into()
     }

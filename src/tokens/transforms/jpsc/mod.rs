@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("BananaLaranjaCheiaDeCanja".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Jpsc {}
+#[derive(Clone, Default)]
+pub struct Jpsc {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Jpsc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "jpsc"
     }

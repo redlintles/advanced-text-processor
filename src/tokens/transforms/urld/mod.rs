@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// ```
 ///
 
-#[derive(Copy, Clone, Default)]
-pub struct Urld {}
+#[derive(Clone, Default)]
+pub struct Urld {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Urld {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "urld"
     }

@@ -19,28 +19,33 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::dlc::Dlc};
 ///
-/// let token = Dlc::params(1,5).unwrap();
+/// let token = Dlc::new(1,5).unwrap();
 ///
 /// assert_eq!(token.transform("bananalaranjacheiadecanja"), Ok("blaranjacheiadecanja".to_string()))
 ///
 /// ```
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Dlc {
     pub start_index: usize,
     pub end_index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Dlc {
-    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    pub fn new(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Dlc {
             start_index,
             end_index,
+            params: vec![start_index.into(), end_index.into()],
         })
     }
 }
 
 impl InstructionMethods for Dlc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dlc {} {};\n", self.start_index, self.end_index).into()
     }

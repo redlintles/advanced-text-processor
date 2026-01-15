@@ -15,13 +15,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Tlcw::params(2);
+        let t = Tlcw::new(2);
         assert_eq!(t.to_atp_line().as_ref(), "tlcw 2;\n");
     }
 
     #[test]
     fn transform_lowercases_one_word_by_index() {
-        let t = Tlcw::params(1);
+        let t = Tlcw::new(1);
         let input = "BANANA LARANJA CHEIA DE CANJA";
         let expected = "BANANA laranja CHEIA DE CANJA".to_string();
         let mut ctx = GlobalExecutionContext::new();
@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn transform_index_zero_lowercases_first_word() {
-        let t = Tlcw::params(0);
+        let t = Tlcw::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("BANANA LARANJA", &mut ctx), Ok("banana LARANJA".to_string()));
@@ -70,7 +70,7 @@ mod tests {
         }
         #[test]
         fn to_bytecode_has_opcode_and_one_param() {
-            let t = Tlcw::params(7);
+            let t = Tlcw::new(7);
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

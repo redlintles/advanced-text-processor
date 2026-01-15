@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_text() {
-        let t = Ate::params(" bar");
+        let t = Ate::new(" bar");
         assert_eq!(t.text, " bar".to_string());
     }
 
@@ -22,13 +22,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Ate::params("xyz");
+        let t = Ate::new("xyz");
         assert_eq!(t.to_atp_line().as_ref(), "ate xyz;\n");
     }
 
     #[test]
     fn transform_appends_text() {
-        let t = Ate::params(" bar");
+        let t = Ate::new(" bar");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo", &mut ctx), Ok("foo bar".to_string()));
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn transform_with_empty_text_keeps_input() {
-        let t = Ate::params("");
+        let t = Ate::new("");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo", &mut ctx), Ok("foo".to_string()));
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn transform_with_empty_input_returns_only_text() {
-        let t = Ate::params("bar");
+        let t = Ate::new("bar");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("", &mut ctx), Ok("bar".to_string()));
@@ -109,7 +109,7 @@ mod tests {
             // Confere layout gerado por to_bytecode! + write_as_instruction_param:
             // [total_size u64][opcode u32][param_count u8][param...]
             // param = [param_total_size u64][param_type u32][payload_size u32][payload...]
-            let t = Ate::params(" bar");
+            let t = Ate::new(" bar");
             let bc = t.to_bytecode();
 
             // Header mínimo: 8 + 4 + 1 = 13 bytes

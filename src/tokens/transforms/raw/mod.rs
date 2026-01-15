@@ -28,7 +28,7 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::raw::Raw};
 ///
-/// let token = Raw::params(&"a", "b").unwrap();
+/// let token = Raw::new(&"a", "b").unwrap();
 ///
 /// assert_eq!(token.transform("aaaaa"), Ok("bbbbb".to_string()));
 /// ```
@@ -37,13 +37,15 @@ use crate::utils::params::AtpParamTypes;
 pub struct Raw {
     pub pattern: Regex,
     pub text_to_replace: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Raw {
-    pub fn params(pattern: &str, text_to_replace: &str) -> Result<Self, String> {
+    pub fn new(pattern: &str, text_to_replace: &str) -> Result<Self, String> {
         let pattern = Regex::new(&pattern).map_err(|x| x.to_string())?;
         Ok(Raw {
             text_to_replace: text_to_replace.to_string(),
+            params: vec![pattern.to_string().into(), text_to_replace.to_string().into()],
             pattern,
         })
     }
@@ -54,11 +56,15 @@ impl Default for Raw {
         Raw {
             pattern: Regex::new("").unwrap(),
             text_to_replace: "_".to_string(),
+            params: vec!["".to_string().into(), "_".to_string().into()],
         }
     }
 }
 
 impl InstructionMethods for Raw {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("raw {} {};\n", self.pattern, self.text_to_replace).into()
     }

@@ -28,10 +28,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("<div>banana</div>"), Ok("&lt;div&gt;banana&lt;&#x2F;div&gt;".to_string()));
 /// ```
 
-#[derive(Copy, Clone, Default)]
-pub struct Htmle {}
+#[derive(Clone, Default)]
+pub struct Htmle {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Htmle {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "htmle"
     }

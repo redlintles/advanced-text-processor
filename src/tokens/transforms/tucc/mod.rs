@@ -19,28 +19,33 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::tucc::Tucc};
 ///
-/// let token = Tucc::params(1,4).unwrap();
+/// let token = Tucc::new(1,4).unwrap();
 ///
 /// assert_eq!(token.transform("banana"), Ok("bANANa".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Tucc {
     start_index: usize,
     end_index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Tucc {
-    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    pub fn new(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Tucc {
             start_index,
             end_index,
+            params: vec![start_index.into(), end_index.into()],
         })
     }
 }
 
 impl InstructionMethods for Tucc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "tucc"
     }

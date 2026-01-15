@@ -21,10 +21,15 @@ use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError } };
 /// let token = Rev::default();
 /// assert_eq!(token.transform("foobar"), Ok("raboof".to_string()));
 /// ``````
-#[derive(Clone, Default, Copy)]
-pub struct Rev {}
+#[derive(Clone, Default)]
+pub struct Rev {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Rev {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "rev"
     }

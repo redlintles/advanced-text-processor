@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_accepts_valid_range() {
-        let t = Ctc::params(0, 1).unwrap();
+        let t = Ctc::new(0, 1).unwrap();
         assert_eq!(t.start_index, 0);
         assert_eq!(t.end_index, 1);
     }
@@ -23,7 +23,7 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Ctc::params(2, 7).unwrap();
+        let t = Ctc::new(2, 7).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "ctc 2 7;\n");
     }
 
@@ -32,7 +32,7 @@ mod tests {
         // exemplo do doc: 1..5 em "bananabananosa" => "bAnanabananosa"
         let mut ctx = GlobalExecutionContext::new();
 
-        let t = Ctc::params(1, 5).unwrap();
+        let t = Ctc::new(1, 5).unwrap();
         assert_eq!(t.transform("bananabananosa", &mut ctx), Ok("bAnanabananosa".to_string()));
     }
 
@@ -47,14 +47,14 @@ mod tests {
         // chunk [3..10) => chars 3..10 => "foo bar" (até antes do espaço)
         let mut ctx = GlobalExecutionContext::new();
 
-        let t = Ctc::params(3, 10).unwrap();
+        let t = Ctc::new(3, 10).unwrap();
         assert_eq!(t.transform(input, &mut ctx), Ok("xx Foo Bar yy".to_string()));
     }
 
     #[test]
     fn transform_end_index_clamps_to_len() {
         let input = "hello";
-        let t = Ctc::params(0, 999).unwrap(); // end enorme, deve clamp
+        let t = Ctc::new(0, 999).unwrap(); // end enorme, deve clamp
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform(input, &mut ctx), Ok("Hello".to_string()));
@@ -66,7 +66,7 @@ mod tests {
         // "á" é 1 char (2 bytes), mas índice por char deve funcionar
         let input = "ábc def";
         // capitalizar chunk "ábc" => "Ábc"
-        let t = Ctc::params(0, 3).unwrap();
+        let t = Ctc::new(0, 3).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform(input, &mut ctx), Ok("Ábc def".to_string()));
@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn transform_errors_on_out_of_bounds_start() {
         let input = "abc";
-        let t = Ctc::params(5, 6).unwrap(); // params() só valida relação, não input
+        let t = Ctc::new(5, 6).unwrap(); // params() só valida relação, não input
         let mut ctx = GlobalExecutionContext::new();
 
         let got: Result<String, AtpError> = t.transform(input, &mut ctx);
@@ -136,7 +136,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_two_params() {
-            let t = Ctc::params(2, 7).unwrap();
+            let t = Ctc::new(2, 7).unwrap();
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

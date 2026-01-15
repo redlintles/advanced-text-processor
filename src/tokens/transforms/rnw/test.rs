@@ -16,7 +16,7 @@ mod tests {
 
     #[test]
     fn params_creates_valid_regex_and_fields() {
-        let t = Rnw::params("a+", "b", 2).unwrap();
+        let t = Rnw::new("a+", "b", 2).unwrap();
         assert_eq!(t.pattern.as_str(), "a+");
         assert_eq!(t.text_to_replace, "b".to_string());
         assert_eq!(t.index, 2);
@@ -24,13 +24,13 @@ mod tests {
 
     #[test]
     fn params_rejects_invalid_regex() {
-        let err = Rnw::params("(", "b", 0).unwrap_err();
+        let err = Rnw::new("(", "b", 0).unwrap_err();
         assert!(!err.is_empty());
     }
 
     #[test]
     fn to_atp_line_contains_pattern_replacement_and_index() {
-        let t = Rnw::params("a+", "b", 2).unwrap();
+        let t = Rnw::new("a+", "b", 2).unwrap();
         let line = t.to_atp_line();
         assert_eq!(line.as_ref(), "rnw a+ b 2;\n");
     }
@@ -40,7 +40,7 @@ mod tests {
         // No código, index é 0-based:
         // input "aaaaa" com pattern "a" tem matches: [0],[1],[2],[3],[4]
         // index=2 => troca o 3º 'a'
-        let t = Rnw::params("a", "b", 2).unwrap();
+        let t = Rnw::new("a", "b", 2).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aabaa".to_string()));
@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn transform_index_0_replaces_first_occurrence() {
-        let t = Rnw::params("a", "b", 0).unwrap();
+        let t = Rnw::new("a", "b", 0).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("baaaa".to_string()));
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn transform_large_index_no_match_returns_original() {
-        let t = Rnw::params("a", "b", 999).unwrap();
+        let t = Rnw::new("a", "b", 999).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn transform_when_pattern_not_found_returns_original() {
-        let t = Rnw::params("z", "b", 0).unwrap();
+        let t = Rnw::new("z", "b", 0).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("aaaaa".to_string()));
@@ -74,7 +74,7 @@ mod tests {
     fn transform_replaces_correct_nth_for_multi_length_matches() {
         // matches "aa" in "aaaaaa": positions (0..2), (2..4), (4..6)
         // index=1 troca o segundo "aa"
-        let t = Rnw::params("aa", "X", 1).unwrap();
+        let t = Rnw::new("aa", "X", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaaa", &mut ctx), Ok("aaXaa".to_string()));
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn transform_handles_utf8_safely() {
         // troca a 2ª ocorrência de "ã" (0-based index=1)
-        let t = Rnw::params("ã", "A", 1).unwrap();
+        let t = Rnw::new("ã", "A", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("maçã maçã", &mut ctx), Ok("maçã maçA".to_string()));
@@ -97,7 +97,7 @@ mod tests {
         // Para input "ab", matches vazios em posições 0,1,2 (dependendo do motor)
         // Vamos só testar um caso simples e estável: substituir o primeiro match (index 0)
         // normalmente insere no começo.
-        let t = Rnw::params("", "X", 0).unwrap();
+        let t = Rnw::new("", "X", 0).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         let out = t.transform("ab", &mut ctx).unwrap();
@@ -195,7 +195,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_three_params() {
-            let t = Rnw::params("a+", "b", 2).unwrap();
+            let t = Rnw::new("a+", "b", 2).unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

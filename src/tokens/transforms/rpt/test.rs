@@ -14,13 +14,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_contains_times() {
-        let t = Rpt::params(3);
+        let t = Rpt::new(3);
         assert_eq!(t.to_atp_line().as_ref(), "rpt 3;\n");
     }
 
     #[test]
     fn transform_repeats_input_n_times() {
-        let t = Rpt::params(3);
+        let t = Rpt::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "bananabananabanana");
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn transform_zero_times_returns_empty_string() {
-        let t = Rpt::params(0);
+        let t = Rpt::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx).unwrap(), "");
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn transform_empty_input_still_empty() {
-        let t = Rpt::params(5);
+        let t = Rpt::new(5);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("", &mut ctx).unwrap(), "");
@@ -87,7 +87,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_contains_opcode_and_one_param() {
-            let t = Rpt::params(3);
+            let t = Rpt::new(3);
             let bc = t.to_bytecode();
 
             assert!(!bc.is_empty());

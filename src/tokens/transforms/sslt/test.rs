@@ -15,14 +15,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correctish() {
-        let t = Sslt::params("_", 1).unwrap();
+        let t = Sslt::new("_", 1).unwrap();
         // Regex Display imprime o pattern, então isso deve bater.
         assert_eq!(t.to_atp_line().as_ref(), "sslt _ 1;\n");
     }
 
     #[test]
     fn transform_selects_expected_piece() {
-        let t = Sslt::params("_", 1).unwrap();
+        let t = Sslt::new("_", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foobar_foo_bar_bar_foo_barfoo", &mut ctx), Ok("foo".to_string()));
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn transform_supports_empty_segments() {
         // "a__b" split "_" => ["a", "", "b"]
-        let t = Sslt::params("_", 1).unwrap();
+        let t = Sslt::new("_", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a__b", &mut ctx), Ok("".to_string()));
@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn transform_errors_on_out_of_range() {
-        let t = Sslt::params("_", 99).unwrap();
+        let t = Sslt::new("_", 99).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("a_b", &mut ctx);
@@ -89,7 +89,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_opcode_and_two_params() {
-            let t = Sslt::params("_", 1).unwrap();
+            let t = Sslt::new("_", 1).unwrap();
             let bc = t.to_bytecode();
 
             // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...

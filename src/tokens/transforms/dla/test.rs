@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_index() {
-        let t = Dla::params(3);
+        let t = Dla::new(3);
         assert_eq!(t.index, 3);
     }
 
@@ -22,14 +22,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Dla::params(7);
+        let t = Dla::new(7);
         assert_eq!(t.to_atp_line().as_ref(), "dla 7;\n");
     }
 
     #[test]
     fn transform_deletes_after_index_example_like_doc() {
         // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
-        let t = Dla::params(3);
+        let t = Dla::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana laranja vermelha azul", &mut ctx), Ok("bana".to_string()));
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn transform_index_zero_keeps_first_char_only() {
-        let t = Dla::params(0);
+        let t = Dla::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("abcdef", &mut ctx), Ok("a".to_string()));
@@ -47,7 +47,7 @@ mod tests {
     fn transform_unicode_safe_char_indexing() {
         // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
         // index 1 mantém "áb"
-        let t = Dla::params(1);
+        let t = Dla::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("ábcdef", &mut ctx), Ok("áb".to_string()));
@@ -56,7 +56,7 @@ mod tests {
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         // check_index_against_input deve falhar antes do drain
-        let t = Dla::params(999);
+        let t = Dla::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("abc", &mut ctx);
@@ -68,7 +68,7 @@ mod tests {
         // comportamento atual do código:
         // se index aponta pro último char, nth(index+1) vira None -> cai no Err(IndexOutOfRange)
         let input = "abc";
-        let t = Dla::params(2); // último char
+        let t = Dla::new(2); // último char
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform(input, &mut ctx);
@@ -138,7 +138,7 @@ mod tests {
         }
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
-            let t = Dla::params(7);
+            let t = Dla::new(7);
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

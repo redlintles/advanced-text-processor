@@ -11,10 +11,15 @@ use crate::{
 
 use crate::utils::params::AtpParamTypes;
 
-#[derive(Clone, Copy, Default)]
-pub struct Tua {}
+#[derive(Clone, Default)]
+pub struct Tua {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Tua {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "tua"
     }

@@ -20,23 +20,27 @@ use crate::{ tokens::InstructionMethods };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::dlb::Dlb};
 ///
-/// let token = Dlb::params(3);
+/// let token = Dlb::new(3);
 ///
 /// assert_eq!(token.transform("banana laranja vermelha azul"), Ok("ana laranja vermelha azul".to_string()))
 ///
 /// ```
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Dlb {
     pub index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Dlb {
-    pub fn params(index: usize) -> Self {
-        Dlb { index }
+    pub fn new(index: usize) -> Self {
+        Dlb { index, params: vec![index.into()] }
     }
 }
 
 impl InstructionMethods for Dlb {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("dlb {};\n", self.index).into()
     }

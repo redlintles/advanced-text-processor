@@ -19,7 +19,7 @@ use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError, AtpErrorCo
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::ins::Ins};
 ///
-/// let token = Ins::params(2,"laranja");
+/// let token = Ins::new(2,"laranja");
 ///
 /// assert_eq!(token.transform("banana"), Ok("banlaranjaana".to_string()));
 /// ```
@@ -27,17 +27,22 @@ use crate::{ tokens::InstructionMethods, utils::{ errors::{ AtpError, AtpErrorCo
 pub struct Ins {
     index: usize,
     text_to_insert: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Ins {
-    pub fn params(index: usize, text_to_insert: &str) -> Self {
+    pub fn new(index: usize, text_to_insert: &str) -> Self {
         Ins {
             index,
             text_to_insert: text_to_insert.to_string(),
+            params: vec![index.into(), text_to_insert.to_string().into()],
         }
     }
 }
 impl InstructionMethods for Ins {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "ins"
     }

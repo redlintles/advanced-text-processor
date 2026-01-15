@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("bananaLaranjaCheiaDeCanja".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Jcmc {}
+#[derive(Clone, Default)]
+pub struct Jcmc {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Jcmc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "jcmc"
     }

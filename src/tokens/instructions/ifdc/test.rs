@@ -3,13 +3,14 @@
 #[cfg(test)]
 mod tests {
     use crate::context::execution_context::GlobalExecutionContext;
+    use crate::globals::var::TokenWrapper;
     use crate::tokens::instructions::ifdc::Ifdc;
-    use crate::tokens::{ InstructionMethods, transforms::dlf::Dlf };
+    use crate::tokens::{ InstructionMethods };
     use crate::utils::errors::{ AtpErrorCode };
 
     #[test]
     fn to_atp_line_ok() {
-        let token = Ifdc::params("xy", Box::new(Dlf::default()));
+        let token = Ifdc::new("xy", TokenWrapper::default());
         let s = token.to_atp_line();
         assert!(s.contains("ifdc xy do"), "ifdc header ok");
     }
@@ -19,7 +20,7 @@ mod tests {
         // Se Dlf faz "prefixo laranja" ou algo diferente, troque esse teste.
         // Aqui eu só testo o fluxo: contém => chama inner, não contém => retorna input
         let mut ctx = GlobalExecutionContext::new();
-        let token = Ifdc::params("xy", Box::new(Dlf::default()));
+        let token = Ifdc::new("xy", TokenWrapper::default());
 
         let a = token.transform("abcxydef", &mut ctx);
         assert!(a.is_ok(), "contains -> inner executed (at least does not fail)");
@@ -55,7 +56,7 @@ mod tests {
             let params: Vec<AtpParamTypes> = vec![
                 AtpParamTypes::String("xy".to_string()),
                 // depende de como você representa tokens no bytecode:
-                AtpParamTypes::Token(Box::new(Dlf::default()))
+                AtpParamTypes::Token(TokenWrapper::default())
             ];
 
             assert_eq!(t.from_params(&params), Ok(()));

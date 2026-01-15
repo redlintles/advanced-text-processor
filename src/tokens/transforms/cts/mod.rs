@@ -26,22 +26,26 @@ use crate::utils::params::AtpParamTypes;
 ///
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::cts::Cts};
-/// let token = Cts::params(1);
+/// let token = Cts::new(1);
 /// assert_eq!(token.transform("foo bar"), Ok("foo Bar".to_string()));
 /// ```
 
 #[derive(Clone, Default)]
 pub struct Cts {
     pub index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Cts {
-    pub fn params(index: usize) -> Self {
-        Cts { index }
+    pub fn new(index: usize) -> Self {
+        Cts { index, params: vec![index.into()] }
     }
 }
 
 impl InstructionMethods for Cts {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "cts"
     }

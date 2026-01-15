@@ -8,7 +8,8 @@ use crate::to_bytecode;
 
 use crate::{
     context::execution_context::GlobalExecutionContext,
-    tokens::{ InstructionMethods, transforms::dlf::Dlf },
+    globals::var::TokenWrapper,
+    tokens::{ InstructionMethods },
 };
 
 use crate::utils::errors::{ AtpError };
@@ -24,37 +25,33 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, instructions::ifdc::Ifdc};
 ///
-/// let token = Ifdc::params("xy", "atb laranja;");
+/// let token = Ifdc::new("xy", "atb laranja;");
 ///
 /// assert_eq!(token.transform("larryxy"), Ok("laranjalarryxy".to_string())); // Adds laranja to the beginning
 /// assert_eq!(token.transform("banana"), Ok("banana".to_string())); // Does nothing
 ///
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Ifdc {
     text: String,
-    inner: Box<dyn InstructionMethods>,
-}
-
-impl Default for Ifdc {
-    fn default() -> Self {
-        Ifdc {
-            text: "teste".to_string(),
-            inner: Box::new(Dlf::default()),
-        }
-    }
+    inner: TokenWrapper,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Ifdc {
-    pub fn params(text: &str, inner: Box<dyn InstructionMethods>) -> Self {
+    pub fn new(text: &str, inner: TokenWrapper) -> Self {
         Ifdc {
             text: text.to_string(),
+            params: vec![text.to_string().into(), inner.clone().into()],
             inner,
         }
     }
 }
 
 impl InstructionMethods for Ifdc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        return &self.params;
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ifdc {} do {}", self.text, self.inner.to_atp_line()).into()
     }

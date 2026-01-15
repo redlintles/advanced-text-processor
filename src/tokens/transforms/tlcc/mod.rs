@@ -20,28 +20,33 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::tlcc::Tlcc};
 ///
-/// let token = Tlcc::params(1,4).unwrap();
+/// let token = Tlcc::new(1,4).unwrap();
 ///
 /// assert_eq!(token.transform("BANANA"), Ok("BananA".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Tlcc {
     start_index: usize,
     end_index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Tlcc {
-    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    pub fn new(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Tlcc {
             start_index,
             end_index,
+            params: vec![start_index.into(), end_index.into()],
         })
     }
 }
 
 impl InstructionMethods for Tlcc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "tlcc"
     }

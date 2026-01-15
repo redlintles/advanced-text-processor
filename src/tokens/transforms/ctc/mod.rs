@@ -28,26 +28,31 @@ use crate::utils::{ params::AtpParamTypes };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::ctc::Ctc};
 ///
-/// let token = Ctc::params(1, 5).unwrap();
+/// let token = Ctc::new(1, 5).unwrap();
 /// assert_eq!(token.transform("bananabananosa"), Ok("bAnanabananosa".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Ctc {
     pub start_index: usize,
     pub end_index: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Ctc {
-    pub fn params(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
+    pub fn new(start_index: usize, end_index: usize) -> Result<Self, AtpError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Ctc {
             start_index,
             end_index,
+            params: vec![start_index.into(), end_index.into()],
         })
     }
 }
 
 impl InstructionMethods for Ctc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "ctc"
     }

@@ -24,23 +24,28 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::atb::Atb};
 ///
-/// let token = Atb::params("foo");
+/// let token = Atb::new("foo");
 /// assert_eq!(token.transform(" bar"), Ok("foo bar".to_string()));
 /// ```
 #[derive(Clone, Default)]
 pub struct Atb {
     pub text: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Atb {
-    pub fn params(text: &str) -> Self {
+    pub fn new(text: &str) -> Self {
         Atb {
             text: text.to_string(),
+            params: vec![text.to_string().into()],
         }
     }
 }
 
 impl InstructionMethods for Atb {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        return &self.params;
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("atb {};\n", self.text).into()
     }

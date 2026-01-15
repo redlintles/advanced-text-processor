@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("   banana   "), Ok("   banana".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Trs {}
+#[derive(Clone, Default)]
+pub struct Trs {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Trs {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         "trs;\n".into()
     }

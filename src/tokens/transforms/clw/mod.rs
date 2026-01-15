@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// let token = Clw::default();
 /// assert_eq!(token.transform("foo bar"), Ok("foo Bar".to_string()));
 /// ```
-#[derive(Copy, Clone, Default)]
-pub struct Clw {}
+#[derive(Clone, Default)]
+pub struct Clw {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Clw {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "clw"
     }

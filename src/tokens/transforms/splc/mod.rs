@@ -24,10 +24,15 @@ use crate::utils::validations::check_vec_len;
 /// assert_eq!(token.transform("banana"), Ok("b a n a n a".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Splc {}
+#[derive(Clone, Default)]
+pub struct Splc {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Splc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "splc"
     }

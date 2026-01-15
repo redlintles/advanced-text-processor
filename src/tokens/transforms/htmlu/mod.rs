@@ -27,10 +27,15 @@ use crate::utils::params::AtpParamTypes;
 ///
 /// assert_eq!(token.transform("&lt;div&gt;banana&lt;/div&gt;"), Ok("<div>banana</div>".to_string()));
 /// ```
-#[derive(Copy, Clone, Default)]
-pub struct Htmlu {}
+#[derive(Clone, Default)]
+pub struct Htmlu {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Htmlu {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "htmlu"
     }

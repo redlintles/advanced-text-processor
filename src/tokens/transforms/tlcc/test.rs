@@ -15,13 +15,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Tlcc::params(1, 4).unwrap();
+        let t = Tlcc::new(1, 4).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "tlcc 1 4;\n");
     }
 
     #[test]
     fn transform_lowercases_only_the_chunk() {
-        let t = Tlcc::params(1, 4).unwrap();
+        let t = Tlcc::new(1, 4).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         // BANANA => BananA (1..4 inclusive)
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn transform_supports_unicode_safely() {
         // "ÁBÇDÊ" lowercasing chunk should not break UTF-8
-        let t = Tlcc::params(1, 3).unwrap();
+        let t = Tlcc::new(1, 3).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         // indexes: 0 Á, 1 B, 2 Ç, 3 D, 4 Ê
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn transform_errors_on_invalid_bounds() {
         // start > end (depende de como seu validator define)
-        let got = Tlcc::params(4, 1);
+        let got = Tlcc::new(4, 1);
         assert!(matches!(got, Err(_)));
     }
 
@@ -79,7 +79,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_opcode_and_two_params() {
-            let t = Tlcc::params(1, 4).unwrap();
+            let t = Tlcc::new(1, 4).unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

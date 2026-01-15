@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_index() {
-        let t = Dls::params(3);
+        let t = Dls::new(3);
         assert_eq!(t.index, 3);
     }
 
@@ -22,14 +22,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Dls::params(7);
+        let t = Dls::new(7);
         assert_eq!(t.to_atp_line().as_ref(), "dls 7;\n");
     }
 
     #[test]
     fn transform_deletes_single_char_basic_example() {
         // index 3 em "banana" remove 'a' => "banna"
-        let t = Dls::params(3);
+        let t = Dls::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("banna".to_string()));
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn transform_deletes_first_char() {
-        let t = Dls::params(0);
+        let t = Dls::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("anana".to_string()));
@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn transform_deletes_last_char() {
-        let t = Dls::params(5);
+        let t = Dls::new(5);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("banan".to_string()));
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn transform_unicode_safe_deletes_accented_char() {
         // "ábc" removendo index 0 => "bc"
-        let t = Dls::params(0);
+        let t = Dls::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("ábc", &mut ctx), Ok("bc".to_string()));
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn transform_unicode_safe_deletes_emoji() {
         // "a💥b" indices por char: 0:'a', 1:'💥', 2:'b'
-        let t = Dls::params(1);
+        let t = Dls::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a💥b", &mut ctx), Ok("ab".to_string()));
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
-        let t = Dls::params(999);
+        let t = Dls::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("abc", &mut ctx);
@@ -131,7 +131,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
-            let t = Dls::params(7);
+            let t = Dls::new(7);
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

@@ -4,7 +4,9 @@ pub mod test;
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::GlobalExecutionContext, tokens::InstructionMethods, utils::{ errors::AtpError, validations::check_vec_len }
+    context::execution_context::GlobalExecutionContext,
+    tokens::InstructionMethods,
+    utils::{ errors::AtpError, validations::check_vec_len },
 };
 
 use crate::utils::params::AtpParamTypes;
@@ -29,10 +31,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana_laranja_cheia_de_canja".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Jsnc {}
+#[derive(Clone, Default)]
+pub struct Jsnc {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Jsnc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "jsnc"
     }

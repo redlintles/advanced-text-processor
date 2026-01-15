@@ -31,6 +31,8 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     fn get_string_repr(&self) -> &'static str;
 
     fn from_params(&mut self, params: &Vec<AtpParamTypes>) -> Result<(), AtpError>;
+
+    fn get_params(&self) -> &Vec<AtpParamTypes>;
     /// BytecodeMethods
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Vec<u8>;

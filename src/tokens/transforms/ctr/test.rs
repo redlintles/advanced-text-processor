@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_accepts_valid_range() {
-        let t = Ctr::params(0, 1).unwrap();
+        let t = Ctr::new(0, 1).unwrap();
         assert_eq!(t.start_index, 0);
         assert_eq!(t.end_index, 1);
     }
@@ -23,13 +23,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Ctr::params(2, 7).unwrap();
+        let t = Ctr::new(2, 7).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "ctr 2 7;\n");
     }
 
     #[test]
     fn transform_capitalizes_range_basic_case() {
-        let t = Ctr::params(1, 5).unwrap();
+        let t = Ctr::new(1, 5).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo bar mar", &mut ctx), Ok("foo Bar Mar".to_string()));
@@ -39,7 +39,7 @@ mod tests {
     fn transform_capitalizes_only_inside_range() {
         // indices por split_whitespace():
         // 0: "aa", 1:"bb", 2:"cc", 3:"dd"
-        let t = Ctr::params(1, 2).unwrap();
+        let t = Ctr::new(1, 2).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aa bb cc dd", &mut ctx), Ok("aa Bb Cc dd".to_string()));
@@ -49,7 +49,7 @@ mod tests {
     fn transform_end_index_is_clamped_when_too_big() {
         // total words = 3, end_index = 999 => clamp para total (3)
         // range vira 1..=3, então capitaliza índices 1 e 2 (3 não existe)
-        let t = Ctr::params(1, 999).unwrap();
+        let t = Ctr::new(1, 999).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("foo bar baz", &mut ctx), Ok("foo Bar Baz".to_string()));
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn transform_empty_input_stays_empty() {
-        let t = Ctr::params(0, 1).unwrap();
+        let t = Ctr::new(0, 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("", &mut ctx), Ok("".to_string()));
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_start_out_of_bounds_for_input_words() {
-        let t = Ctr::params(5, 6).unwrap(); // relação ok, mas input tem poucas palavras
+        let t = Ctr::new(5, 6).unwrap(); // relação ok, mas input tem poucas palavras
         let mut ctx = GlobalExecutionContext::new();
 
         let got: Result<String, AtpError> = t.transform("one two", &mut ctx);
@@ -126,7 +126,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_two_params() {
-            let t = Ctr::params(2, 7).unwrap();
+            let t = Ctr::new(2, 7).unwrap();
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

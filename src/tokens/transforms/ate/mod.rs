@@ -19,24 +19,29 @@ use crate::utils::params::AtpParamTypes;
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::ate::Ate};
 ///
-/// let token = Ate::params(" bar");
+/// let token = Ate::new(" bar");
 /// assert_eq!(token.transform("foo"), Ok("foo bar".to_string()));
 /// ```
 
 #[derive(Clone, Default)]
 pub struct Ate {
     pub text: String,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Ate {
-    pub fn params(text: &str) -> Self {
+    pub fn new(text: &str) -> Self {
         Ate {
             text: text.to_string(),
+            params: vec![text.to_string().into()],
         }
     }
 }
 
 impl InstructionMethods for Ate {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn to_atp_line(&self) -> Cow<'static, str> {
         format!("ate {};\n", self.text).into()
     }

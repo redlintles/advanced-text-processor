@@ -25,10 +25,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("bananalaranjacheiadecanja".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Rmws {}
+#[derive(Clone, Default)]
+pub struct Rmws {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Rmws {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "rmws"
     }

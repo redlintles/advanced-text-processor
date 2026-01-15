@@ -16,13 +16,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_matches_params() {
-        let t = Padl::params("xy", 7);
+        let t = Padl::new("xy", 7);
         assert_eq!(t.to_atp_line().as_ref(), "padl xy 7;\n");
     }
 
     #[test]
     fn transform_returns_input_unchanged_if_already_at_or_above_max_len() {
-        let t = Padl::params("xy", 3);
+        let t = Padl::new("xy", 3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string())); // len 6 >= 3
@@ -32,7 +32,7 @@ mod tests {
     fn transform_pads_left_until_max_len_doc_example() {
         // "banana" tem 6 chars, max_len=7 => precisa de 1 char de padding.
         // extend_string("xy", 1) => "x" (pelo exemplo da doc)
-        let t = Padl::params("xy", 7);
+        let t = Padl::new("xy", 7);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("xbanana".to_string()));
@@ -42,7 +42,7 @@ mod tests {
     fn transform_pads_left_multiple_chars() {
         // 6 -> 10 precisa de 4 chars
         // extend_string("xy", 4) => "xyxy" (comportamento esperado de repetição)
-        let t = Padl::params("xy", 10);
+        let t = Padl::new("xy", 10);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("xyxybanana".to_string()));
@@ -107,7 +107,7 @@ mod tests {
         }
         #[test]
         fn to_bytecode_has_expected_header_and_two_params() {
-            let t = Padl::params("xy", 7);
+            let t = Padl::new("xy", 7);
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_indices() {
-        let t = Dlc::params(1, 3).unwrap();
+        let t = Dlc::new(1, 3).unwrap();
         assert_eq!(t.start_index, 1);
         assert_eq!(t.end_index, 3);
     }
@@ -23,14 +23,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Dlc::params(2, 5).unwrap();
+        let t = Dlc::new(2, 5).unwrap();
         assert_eq!(t.to_atp_line().as_ref(), "dlc 2 5;\n");
     }
 
     #[test]
     fn transform_removes_middle_chunk() {
         // remove "nana" (1..5) from "bananalaranja..."
-        let t = Dlc::params(1, 5).unwrap();
+        let t = Dlc::new(1, 5).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn transform_removes_entire_string() {
-        let t = Dlc::params(0, 100).unwrap();
+        let t = Dlc::new(0, 100).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("abc", &mut ctx), Ok("".to_string()));
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe() {
-        let t = Dlc::params(1, 2).unwrap();
+        let t = Dlc::new(1, 2).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("ábcd", &mut ctx), Ok("ád".to_string()));
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn transform_fails_on_invalid_index() {
-        let t = Dlc::params(10, 20).unwrap();
+        let t = Dlc::new(10, 20).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("abc", &mut ctx);
@@ -118,7 +118,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_params() {
-            let t = Dlc::params(2, 7).unwrap();
+            let t = Dlc::new(2, 7).unwrap();
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

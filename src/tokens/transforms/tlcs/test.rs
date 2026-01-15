@@ -15,13 +15,13 @@ mod tests {
 
     #[test]
     fn to_atp_line_is_correct() {
-        let t = Tlcs::params(1);
+        let t = Tlcs::new(1);
         assert_eq!(t.to_atp_line().as_ref(), "tlcs 1;\n");
     }
 
     #[test]
     fn transform_lowercases_single_char_ascii() {
-        let t = Tlcs::params(1);
+        let t = Tlcs::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("BANANA", &mut ctx), Ok("BaNANA".to_string()));
@@ -30,7 +30,7 @@ mod tests {
     #[test]
     fn transform_lowercases_single_char_unicode() {
         // Índices por CHAR: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
-        let t = Tlcs::params(3);
+        let t = Tlcs::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banÀna", &mut ctx), Ok("banàna".to_string()));
@@ -70,7 +70,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_opcode_and_one_param() {
-            let t = Tlcs::params(7);
+            let t = Tlcs::new(7);
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

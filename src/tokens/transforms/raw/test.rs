@@ -16,27 +16,27 @@ mod tests {
 
     #[test]
     fn params_creates_valid_regex() {
-        let t = Raw::params("a+", "b").unwrap();
+        let t = Raw::new("a+", "b").unwrap();
         assert_eq!(t.text_to_replace, "b".to_string());
         assert_eq!(t.pattern.as_str(), "a+");
     }
 
     #[test]
     fn params_rejects_invalid_regex() {
-        let err = Raw::params("(", "b").unwrap_err();
+        let err = Raw::new("(", "b").unwrap_err();
         assert!(!err.is_empty());
     }
 
     #[test]
     fn to_atp_line_contains_pattern_and_replacement() {
-        let t = Raw::params("a+", "b").unwrap();
+        let t = Raw::new("a+", "b").unwrap();
         let line = t.to_atp_line();
         assert_eq!(line.as_ref(), "raw a+ b;\n");
     }
 
     #[test]
     fn transform_replaces_all_occurrences_doc_example() {
-        let t = Raw::params("a", "b").unwrap();
+        let t = Raw::new("a", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("aaaaa", &mut ctx), Ok("bbbbb".to_string()));
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn transform_with_regex_pattern() {
-        let t = Raw::params(r"\d+", "X").unwrap();
+        let t = Raw::new(r"\d+", "X").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("a1 b22 c333", &mut ctx), Ok("aX bX cX".to_string()));
@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn transform_no_matches_returns_same_string() {
-        let t = Raw::params("zzz", "_").unwrap();
+        let t = Raw::new("zzz", "_").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("banana".to_string()));
@@ -142,7 +142,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_two_string_params() {
-            let t = Raw::params("a+", "b").unwrap();
+            let t = Raw::new("a+", "b").unwrap();
             let bc = t.to_bytecode();
 
             assert!(bc.len() >= 13);

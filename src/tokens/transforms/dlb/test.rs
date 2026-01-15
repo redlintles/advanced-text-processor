@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn params_sets_index() {
-        let t = Dlb::params(3);
+        let t = Dlb::new(3);
         assert_eq!(t.index, 3);
     }
 
@@ -22,14 +22,14 @@ mod tests {
 
     #[test]
     fn to_atp_line_formats_correctly() {
-        let t = Dlb::params(7);
+        let t = Dlb::new(7);
         assert_eq!(t.to_atp_line().as_ref(), "dlb 7;\n");
     }
 
     #[test]
     fn transform_deletes_before_index_example_like_doc() {
         // index 3 em "banana ..." remove "ban" => "ana ..."
-        let t = Dlb::params(3);
+        let t = Dlb::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn transform_index_zero_keeps_string_intact() {
         // drain(0..0) não remove nada
-        let t = Dlb::params(0);
+        let t = Dlb::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("abcdef", &mut ctx), Ok("abcdef".to_string()));
@@ -51,7 +51,7 @@ mod tests {
     fn transform_unicode_safe_char_indexing() {
         // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
         // index 1 remove só o primeiro char => "bcdef"
-        let t = Dlb::params(1);
+        let t = Dlb::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("ábcdef", &mut ctx), Ok("bcdef".to_string()));
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
         // check_index_against_input deve falhar antes do drain
-        let t = Dlb::params(999);
+        let t = Dlb::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("abc", &mut ctx);
@@ -119,7 +119,7 @@ mod tests {
         }
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_one_param() {
-            let t = Dlb::params(7);
+            let t = Dlb::new(7);
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

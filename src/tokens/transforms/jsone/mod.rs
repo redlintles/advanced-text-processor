@@ -27,10 +27,15 @@ use crate::utils::validations::check_vec_len;
 /// assert_eq!(token.transform("{banana: '10'}"), Ok(expected_output));
 /// ```
 
-#[derive(Clone, Copy, Default)]
-pub struct Jsone {}
+#[derive(Clone, Default)]
+pub struct Jsone {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Jsone {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "jsone"
     }

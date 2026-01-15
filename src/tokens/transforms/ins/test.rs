@@ -10,14 +10,14 @@ mod tests {
 
     #[test]
     fn params_sets_fields_and_to_atp_line_formats() {
-        let t = Ins::params(2, "laranja");
+        let t = Ins::new(2, "laranja");
         assert_eq!(t.to_atp_line().as_ref(), "ins 2 laranja;\n");
         assert_eq!(t.get_string_repr(), "ins");
     }
 
     #[test]
     fn transform_inserts_after_index_like_doc_example() {
-        let t = Ins::params(2, "laranja");
+        let t = Ins::new(2, "laranja");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("banlaranjaana".to_string()));
@@ -26,7 +26,7 @@ mod tests {
     #[test]
     fn transform_index_zero_inserts_after_first_char() {
         // index 0 -> after 'b'
-        let t = Ins::params(0, "X");
+        let t = Ins::new(0, "X");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("bXanana".to_string()));
@@ -36,7 +36,7 @@ mod tests {
     fn transform_index_last_char_appends_after_last_char() {
         // chars: b a n a n a (len 6), last index = 5
         // usa nth(index+1) -> None -> split_at(len) => append
-        let t = Ins::params(5, "X");
+        let t = Ins::new(5, "X");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("bananaX".to_string()));
@@ -46,7 +46,7 @@ mod tests {
     fn transform_index_equal_char_count_appends_current_behavior() {
         // detalhe: o código só erra se index > chars_count, então index == chars_count PASSA.
         // byte_index usa nth(index+1) => None -> append.
-        let t = Ins::params(6, "X"); // chars_count("banana") = 6
+        let t = Ins::new(6, "X"); // chars_count("banana") = 6
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("banana", &mut ctx), Ok("bananaX".to_string()));
@@ -56,7 +56,7 @@ mod tests {
     fn transform_unicode_safe_insertion_boundary() {
         // input: "ábc" (chars: á b c)
         // index 0 => after 'á'
-        let t = Ins::params(0, "X");
+        let t = Ins::new(0, "X");
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(t.transform("ábc", &mut ctx), Ok("áXbc".to_string()));
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_too_large() {
-        let t = Ins::params(999, "X");
+        let t = Ins::new(999, "X");
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform("abc", &mut ctx);
@@ -133,7 +133,7 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_header_and_decodes_two_params() {
-            let t = Ins::params(7, "laranja");
+            let t = Ins::new(7, "laranja");
             let bc = t.to_bytecode();
 
             // header mínimo: 8 + 4 + 1 = 13

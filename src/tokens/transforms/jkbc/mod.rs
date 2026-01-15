@@ -31,10 +31,15 @@ use crate::utils::params::AtpParamTypes;
 /// assert_eq!(token.transform("banana laranja cheia de canja"), Ok("banana-laranja-cheia-de-canja".to_string()));
 /// ```
 ///
-#[derive(Clone, Copy, Default)]
-pub struct Jkbc {}
+#[derive(Clone, Default)]
+pub struct Jkbc {
+    params: Vec<AtpParamTypes>,
+}
 
 impl InstructionMethods for Jkbc {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn get_string_repr(&self) -> &'static str {
         "jkbc"
     }

@@ -19,7 +19,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 /// ```rust
 /// use atp::tokens::{InstructionMethods, transforms::rtl::Rtl};
 ///
-/// let token = Rtl::params(3);
+/// let token = Rtl::new(3);
 ///
 /// assert_eq!(token.transform("banana"),Ok("anaban".to_string()));
 ///
@@ -27,15 +27,19 @@ use crate::utils::errors::{ AtpError, AtpErrorCode };
 #[derive(Clone, Default)]
 pub struct Rtl {
     pub times: usize,
+    params: Vec<AtpParamTypes>,
 }
 
 impl Rtl {
-    pub fn params(times: usize) -> Rtl {
-        Rtl { times }
+    pub fn new(times: usize) -> Rtl {
+        Rtl { times, params: vec![times.into()] }
     }
 }
 
 impl InstructionMethods for Rtl {
+    fn get_params(&self) -> &Vec<AtpParamTypes> {
+        &self.params
+    }
     fn transform(&self, input: &str, _: &mut GlobalExecutionContext) -> Result<String, AtpError> {
         if input.is_empty() {
             return Err(
