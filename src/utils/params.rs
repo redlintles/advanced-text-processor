@@ -209,7 +209,7 @@ impl AtpParamTypes {
         assoc_mode: AssocMode
     ) -> Result<(Vec<ValType>, usize), AtpError> {
         // Regex compilada uma vez por chamada (ok por enquanto; se quiser otimizar, use OnceLock)
-        let var_re = Regex::new(r"^\{\{(.+)\}\}$").map_err(|e| {
+        let var_re = Regex::new(r"^\{\{([a-zA-Z][a-zA-Z0-9]+)\}\}$").map_err(|e| {
             AtpError::new(
                 AtpErrorCode::TextParsingError("Error creating regex".into()),
                 "AtpParamTypes::parse_with_cursor(regex)",
