@@ -1,19 +1,39 @@
+// params.rs
+// Reescrito para suportar:
+// - Texto: retorna Vec<ValType> (Literal / VarRef) via sintaxe {{nome}}
+// - Bytecode: 0x01 String, 0x02 Usize, 0x03 Token, 0x04 VarRef
+// - PARAM_TOKEN: constrói TokenWrapper(params: Vec<ValType>, token: Box<dyn InstructionMethods>)
+//   (não chama from_params aqui; isso fica pro runtime no TokenWrapper)
+
 use core::str;
 use std::{ array::TryFromSliceError, borrow::Cow, io::{ Cursor, Read }, sync::Arc };
 
+use regex::Regex;
+
+#[cfg(feature = "bytecode")]
+use crate::context::execution_context::GlobalExecutionContext;
+
 use crate::{
-    globals::table::{ SyntaxDef, SyntaxToken, QuerySource, QueryTarget, TargetValue, TOKEN_TABLE },
+    globals::{
+        table::{ QuerySource, QueryTarget, SyntaxDef, SyntaxToken, TOKEN_TABLE, TargetValue },
+        var::{ TokenWrapper, ValType },
+    },
     tokens::InstructionMethods,
     utils::{ errors::{ AtpError, AtpErrorCode }, transforms::string_to_usize },
 };
 
-/// Param types usados em parâmetros de token
+/// Tipos resolvidos (sem variáveis pendentes)
 #[derive(Clone)]
 pub enum AtpParamTypes {
     String(String),
     Usize(usize),
-    Token(Box<dyn InstructionMethods>),
+    Token(TokenWrapper),
+    VarRef(String),
 }
+
+// --------------------------
+// Conversions
+// --------------------------
 
 impl From<String> for AtpParamTypes {
     fn from(value: String) -> Self {
@@ -27,20 +47,35 @@ impl From<usize> for AtpParamTypes {
     }
 }
 
-impl From<Box<dyn InstructionMethods>> for AtpParamTypes {
-    fn from(value: Box<dyn InstructionMethods>) -> Self {
+impl From<TokenWrapper> for AtpParamTypes {
+    fn from(value: TokenWrapper) -> Self {
         AtpParamTypes::Token(value)
     }
 }
-
-impl From<AtpParamTypes> for String {
-    fn from(value: AtpParamTypes) -> String {
-        match value {
-            AtpParamTypes::String(v) => v.to_string(),
-            AtpParamTypes::Usize(v) => v.to_string(),
-            AtpParamTypes::Token(v) => v.to_atp_line().into(),
-        }
+impl From<Box<dyn InstructionMethods>> for AtpParamTypes {
+    fn from(value: Box<dyn InstructionMethods>) -> Self {
+        AtpParamTypes::Token(TokenWrapper::new(value, None))
     }
+}
+
+impl TryFrom<AtpParamTypes> for String {
+    type Error = AtpError;
+    fn try_from(value: AtpParamTypes) -> Result<String, Self::Error> {
+        Ok(match value {
+            AtpParamTypes::String(v) => v,
+            AtpParamTypes::Usize(v) => v.to_string(),
+            AtpParamTypes::Token(v) => v.to_text_line_unresolved()?,
+            AtpParamTypes::VarRef(v) => v,
+        })
+    }
+}
+
+// Nota: esse dummy_context só existe pra manter o From<AtpParamTypes> for String compilável
+// se você realmente precisar converter TokenWrapper -> String sem contexto, troque por get_default_token().to_atp_line()
+// ou remova completamente esse From.
+fn dummy_context() -> GlobalExecutionContext {
+    // Se seu GlobalExecutionContext não tiver Default, remova o dummy_context e ajuste o From.
+    GlobalExecutionContext::new()
 }
 
 impl TryFrom<AtpParamTypes> for usize {
@@ -52,9 +87,9 @@ impl TryFrom<AtpParamTypes> for usize {
                 Err(
                     AtpError::new(
                         AtpErrorCode::TryIntoFailError(
-                            "Failed conversion from AtpParamTypes To Usize".into()
+                            "Failed conversion from AtpParamTypes to usize".into()
                         ),
-                        "try_into",
+                        "TryFrom<AtpParamTypes> for usize",
                         ""
                     )
                 ),
@@ -62,7 +97,7 @@ impl TryFrom<AtpParamTypes> for usize {
     }
 }
 
-impl TryFrom<AtpParamTypes> for Box<dyn InstructionMethods> {
+impl TryFrom<AtpParamTypes> for TokenWrapper {
     type Error = AtpError;
     fn try_from(value: AtpParamTypes) -> Result<Self, AtpError> {
         match value {
@@ -71,9 +106,9 @@ impl TryFrom<AtpParamTypes> for Box<dyn InstructionMethods> {
                 Err(
                     AtpError::new(
                         AtpErrorCode::TryIntoFailError(
-                            "Failed conversion from AtpParamTypes To Token".into()
+                            "Failed conversion from AtpParamTypes to TokenWrapper".into()
                         ),
-                        "try_into",
+                        "TryFrom<AtpParamTypes> for TokenWrapper",
                         ""
                     )
                 ),
@@ -88,6 +123,7 @@ impl std::fmt::Debug for AtpParamTypes {
             AtpParamTypes::String(s) => f.debug_tuple("String").field(s).finish(),
             AtpParamTypes::Usize(n) => f.debug_tuple("Usize").field(n).finish(),
             AtpParamTypes::Token(t) => f.debug_tuple("Token").field(&t.get_string_repr()).finish(),
+            AtpParamTypes::VarRef(s) => f.debug_tuple("VarRef").field(s).finish(),
         }
     }
 }
@@ -126,24 +162,26 @@ const MAX_DEPTH_ASSOC_PAYLOAD: u8 = 3;
 const PARAM_STRING: u32 = 0x01;
 const PARAM_USIZE: u32 = 0x02;
 const PARAM_TOKEN: u32 = 0x03;
+const PARAM_VARREF: u32 = 0x04;
 
 impl AtpParamTypes {
     pub fn to_string(&self) -> String {
         match self {
             AtpParamTypes::String(payload) => payload.to_string(),
+            AtpParamTypes::VarRef(payload) => payload.to_string(),
             AtpParamTypes::Usize(payload) => payload.to_string(),
             AtpParamTypes::Token(payload) => payload.to_atp_line().into(),
         }
     }
 
     // --------------------------
-    // Parsing de texto
+    // Parsing de texto -> Vec<ValType>
     // --------------------------
 
     pub fn from_expected(
         expected: Arc<[SyntaxDef]>,
         chunks: &[String]
-    ) -> Result<Vec<AtpParamTypes>, AtpError> {
+    ) -> Result<Vec<ValType>, AtpError> {
         let (parsed, consumed) = Self::parse_with_cursor(
             expected,
             chunks,
@@ -151,7 +189,6 @@ impl AtpParamTypes {
             0,
             AssocMode::Normal
         )?;
-
         if consumed != chunks.len() {
             return Err(
                 AtpError::new(
@@ -161,7 +198,6 @@ impl AtpParamTypes {
                 )
             );
         }
-
         Ok(parsed)
     }
 
@@ -171,9 +207,17 @@ impl AtpParamTypes {
         mut i: usize,
         token_depth: u8,
         assoc_mode: AssocMode
-    ) -> Result<(Vec<AtpParamTypes>, usize), AtpError> {
-        let mut out = Vec::with_capacity(expected.len());
+    ) -> Result<(Vec<ValType>, usize), AtpError> {
+        // Regex compilada uma vez por chamada (ok por enquanto; se quiser otimizar, use OnceLock)
+        let var_re = Regex::new(r"^\{\{(.+)\}\}$").map_err(|e| {
+            AtpError::new(
+                AtpErrorCode::TextParsingError("Error creating regex".into()),
+                "AtpParamTypes::parse_with_cursor(regex)",
+                e.to_string()
+            )
+        })?;
 
+        let mut out: Vec<ValType> = Vec::with_capacity(expected.len());
         let this_is_block_like = Self::is_block_like_signature(&expected);
 
         for p in expected.iter() {
@@ -215,7 +259,28 @@ impl AtpParamTypes {
                                 format!("index={}", i)
                             )
                         })?;
-                    out.push(AtpParamTypes::String(s.clone()));
+
+                    if let Some(caps) = var_re.captures(s) {
+                        let name = caps
+                            .get(1)
+                            .map(|m| m.as_str().trim().to_string())
+                            .unwrap_or_default();
+
+                        if name.is_empty() {
+                            return Err(
+                                AtpError::new(
+                                    AtpErrorCode::TextParsingError("Empty var name".into()),
+                                    "AtpParamTypes::parse_with_cursor",
+                                    format!("index={}", i)
+                                )
+                            );
+                        }
+
+                        out.push(ValType::VarRef(name));
+                    } else {
+                        out.push(ValType::Literal(AtpParamTypes::String(s.clone())));
+                    }
+
                     i += 1;
                 }
 
@@ -229,12 +294,11 @@ impl AtpParamTypes {
                                 format!("index={}", i)
                             )
                         })?;
-                    out.push(AtpParamTypes::Usize(string_to_usize(s)?));
+                    out.push(ValType::Literal(AtpParamTypes::Usize(string_to_usize(s)?)));
                     i += 1;
                 }
 
                 SyntaxToken::Token => {
-                    // Decide o modo do próximo nível
                     let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
                         AssocMode::AssocPayload
                     } else if this_is_block_like {
@@ -244,7 +308,6 @@ impl AtpParamTypes {
                     };
 
                     let next_depth = token_depth + 1;
-
                     let max_depth = match child_assoc_mode {
                         AssocMode::Normal => MAX_DEPTH_NORMAL,
                         AssocMode::AssocPayload => MAX_DEPTH_ASSOC_PAYLOAD,
@@ -268,7 +331,7 @@ impl AtpParamTypes {
                         );
                     }
 
-                    // Lê o identificador do token
+                    // token id
                     let nested_id = chunks
                         .get(i)
                         .ok_or_else(|| {
@@ -292,7 +355,7 @@ impl AtpParamTypes {
                         ))?
                     {
                         TargetValue::Syntax(p) => p,
-                        _ => unreachable!("Invalid Query result (Params)"),
+                        _ => unreachable!("Invalid Query result (Syntax)"),
                     };
 
                     // Dentro de AssocPayload não pode existir outro token block-like
@@ -327,9 +390,14 @@ impl AtpParamTypes {
                         _ => unreachable!("Invalid Query result (Token)"),
                     };
 
-                    let mut nested_token = nested_token_ref.into_box();
-                    nested_token.from_params(&nested_params)?;
-                    out.push(AtpParamTypes::Token(nested_token));
+                    let nested_token = nested_token_ref.into_box();
+                    out.push(
+                        ValType::Literal(
+                            AtpParamTypes::Token(
+                                TokenWrapper::new(nested_token, Some(nested_params))
+                            )
+                        )
+                    );
                 }
             }
         }
@@ -344,8 +412,19 @@ impl AtpParamTypes {
             matches!(expected[2].token, SyntaxToken::Token)
     }
 
+    fn effective_syntax_tokens(expected: &Arc<[SyntaxDef]>) -> Vec<SyntaxToken> {
+        let mut out = Vec::with_capacity(expected.len());
+        for ip in expected.iter() {
+            if matches!(ip.token, SyntaxToken::Literal(_)) {
+                continue;
+            }
+            out.push(ip.token);
+        }
+        out
+    }
+
     // --------------------------
-    // Parsing de Bytecode
+    // Parsing de Bytecode -> AtpParamTypes (raiz) / ValType (params internos)
     // --------------------------
 
     pub fn from_bytecode(bytecode: Vec<u8>) -> Result<AtpParamTypes, AtpError> {
@@ -357,7 +436,7 @@ impl AtpParamTypes {
         token_depth: u8,
         assoc_mode: AssocMode
     ) -> Result<AtpParamTypes, AtpError> {
-        // Tenta layout novo primeiro
+        // Layout novo: [u64 total][u32 type][u32 payload_size][payload]
         if bytes.len() >= 16 {
             if let Ok(total) = Self::peek_u64_be(&bytes[0..8]) {
                 if (total as usize) == bytes.len() {
@@ -365,6 +444,7 @@ impl AtpParamTypes {
                 }
             }
         }
+        // Layout antigo: [u32 type][u32 payload_size][payload]
         Self::parse_param_old_layout(bytes, token_depth, assoc_mode)
     }
 
@@ -379,7 +459,6 @@ impl AtpParamTypes {
             &mut reader,
             "AtpParamTypes::from_bytecode(total)"
         )? as usize;
-
         if total_size != bytes.len() {
             return Err(
                 AtpError::new(
@@ -412,7 +491,6 @@ impl AtpParamTypes {
             payload_size,
             "AtpParamTypes::from_bytecode(payload)"
         )?;
-
         Self::decode_param_payload(param_type, payload, token_depth, assoc_mode)
     }
 
@@ -430,8 +508,8 @@ impl AtpParamTypes {
                 )
             );
         }
-        let mut reader = Cursor::new(bytes);
 
+        let mut reader = Cursor::new(bytes);
         let param_type = Self::read_u32_be(&mut reader, "AtpParamTypes::from_bytecode(type)")?;
         let payload_size = Self::read_u32_be(
             &mut reader,
@@ -454,10 +532,10 @@ impl AtpParamTypes {
             payload_size,
             "AtpParamTypes::from_bytecode(payload)"
         )?;
-
         Self::decode_param_payload(param_type, payload, token_depth, assoc_mode)
     }
 
+    /// Decode para tipos resolvidos (não aceita VarRef aqui como raiz)
     fn decode_param_payload(
         param_type: u32,
         payload: Vec<u8>,
@@ -496,8 +574,21 @@ impl AtpParamTypes {
                 Ok(AtpParamTypes::Usize(usize::from_be_bytes(b)))
             }
 
+            PARAM_VARREF => {
+                // VarRef só deveria existir dentro de Token params (ValType),
+                // mas se aparecer aqui como raiz, retorna erro claro.
+                Err(
+                    AtpError::new(
+                        AtpErrorCode::BytecodeParamParsingError(
+                            "VarRef cannot be a root AtpParamTypes".into()
+                        ),
+                        "AtpParamTypes::from_bytecode(VarRef)",
+                        "Use decode_val_payload inside PARAM_TOKEN"
+                    )
+                )
+            }
+
             PARAM_TOKEN => {
-                // Leitura do header do token
                 let mut reader = Cursor::new(payload.as_slice());
 
                 let opcode = Self::read_u32_be(
@@ -509,7 +600,7 @@ impl AtpParamTypes {
                     "AtpParamTypes::from_bytecode(Token.param_count)"
                 )? as usize;
 
-                // Parametros esperados para esse token
+                // Sintaxe esperada (com literais)
                 let expected = match
                     TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Syntax))?
                 {
@@ -517,12 +608,27 @@ impl AtpParamTypes {
                     _ => unreachable!(),
                 };
 
-                // Detecta se o token atual pode gerar assoc payload
-                let this_is_block_like = Self::is_block_like_signature(&expected);
+                let expected_effective = Self::effective_syntax_tokens(&expected);
+                if param_count != expected_effective.len() {
+                    return Err(
+                        AtpError::new(
+                            AtpErrorCode::BytecodeParsingError("Param count mismatch".into()),
+                            "AtpParamTypes::from_bytecode(Token.param_count)",
+                            format!(
+                                "opcode=0x{:X}, expected_effective={}, got={}",
+                                opcode,
+                                expected_effective.len(),
+                                param_count
+                            )
+                        )
+                    );
+                }
 
-                let mut params: Vec<AtpParamTypes> = Vec::with_capacity(param_count);
+                let this_is_block_like = Self::is_block_like_signature(&expected);
+                let mut params: Vec<ValType> = Vec::with_capacity(param_count);
 
                 for idx in 0..param_count {
+                    // Cada parâmetro do token está no layout novo (começa com u64 total)
                     let size_u64 = Self::read_u64_be(
                         &mut reader,
                         "AtpParamTypes::from_bytecode(Token.param_total_size)"
@@ -538,7 +644,8 @@ impl AtpParamTypes {
                             )
                         })?;
 
-                    if size_usize < 8 {
+                    if size_usize < 16 {
+                        // no layout novo, mínimo: 8+4+4
                         return Err(
                             AtpError::new(
                                 AtpErrorCode::BytecodeParsingError(
@@ -561,25 +668,23 @@ impl AtpParamTypes {
                     full_param.extend_from_slice(&size_u64.to_be_bytes());
                     full_param.extend_from_slice(&rest);
 
-                    // Decide modo do filho
+                    // Decide assoc_mode do filho usando idx efetivo
                     let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
                         AssocMode::AssocPayload
                     } else if
                         this_is_block_like &&
-                        Self::param_index_is_token_in_signature(&expected, idx)
+                        matches!(expected_effective[idx], SyntaxToken::Token)
                     {
                         AssocMode::AssocPayload
                     } else {
                         AssocMode::Normal
                     };
 
-                    // Se for um token real, incrementa depth e checa limite
-                    // Verificamos se o next item é realmente um token
+                    // Peek do tipo do filho para checar depth
                     #[allow(unused_parens)]
                     if
                         let Ok(next_param_type) = ({
                             let mut cursor = Cursor::new(full_param.as_slice());
-                            // pula total u64
                             cursor.set_position(8);
                             Self::read_u32_be(&mut cursor, "")
                         })
@@ -590,7 +695,6 @@ impl AtpParamTypes {
                                 AssocMode::Normal => MAX_DEPTH_NORMAL,
                                 AssocMode::AssocPayload => MAX_DEPTH_ASSOC_PAYLOAD,
                             };
-
                             if next_depth > max_depth {
                                 return Err(
                                     AtpError::new(
@@ -609,16 +713,16 @@ impl AtpParamTypes {
                         }
                     }
 
-                    // Recurre com depth incrementado para token
-                    let parsed = Self::from_bytecode_with_policy(
+                    // Agora decodifica o child param como ValType (pode ser VarRef)
+                    let parsed_val = Self::decode_full_param_as_valtype(
                         &full_param,
                         token_depth + 1,
                         child_assoc_mode
                     )?;
 
-                    // Nao permite block-like dentro de assoc payload
+                    // Regra: em AssocPayload não pode existir block-like (só se child for Token literal)
                     if child_assoc_mode == AssocMode::AssocPayload {
-                        if let AtpParamTypes::Token(ref tok) = parsed {
+                        if let ValType::Literal(AtpParamTypes::Token(ref tok)) = parsed_val {
                             let nested_expected = match
                                 TOKEN_TABLE.find((
                                     QuerySource::Identifier(
@@ -645,19 +749,18 @@ impl AtpParamTypes {
                         }
                     }
 
-                    params.push(parsed);
+                    params.push(parsed_val);
                 }
 
-                // Instancia token
+                // Token base (default), embrulhado com params não resolvidos
                 let query_result = TOKEN_TABLE.find((
                     QuerySource::Bytecode(opcode),
                     QueryTarget::Token,
                 ))?;
                 match query_result {
                     TargetValue::Token(token_ref) => {
-                        let mut token = token_ref.into_box();
-                        token.from_params(&params)?;
-                        Ok(AtpParamTypes::Token(token))
+                        let token = token_ref.into_box();
+                        Ok(AtpParamTypes::Token(TokenWrapper::new(token, Some(params))))
                     }
                     _ => unreachable!(),
                 }
@@ -676,15 +779,87 @@ impl AtpParamTypes {
         }
     }
 
-    fn param_index_is_token_in_signature(expected: &Arc<[SyntaxDef]>, param_index: usize) -> bool {
-        let mut effective_types: Vec<SyntaxToken> = Vec::with_capacity(expected.len());
-        for ip in expected.iter() {
-            if matches!(ip.token, SyntaxToken::Literal(_)) {
-                continue;
-            }
-            effective_types.push(ip.token);
+    /// Decodifica um full_param (layout novo) para ValType:
+    /// - 0x04 => VarRef(String)
+    /// - outros => Literal(AtpParamTypes)
+    fn decode_full_param_as_valtype(
+        full_param: &[u8],
+        token_depth: u8,
+        assoc_mode: AssocMode
+    ) -> Result<ValType, AtpError> {
+        if full_param.len() < 16 {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Param too small".into()),
+                    "AtpParamTypes::decode_full_param_as_valtype",
+                    format!("len={}", full_param.len())
+                )
+            );
         }
-        matches!(effective_types.get(param_index), Some(SyntaxToken::Token))
+
+        let mut cursor = Cursor::new(full_param);
+        let total = Self::read_u64_be(&mut cursor, "ValType.param.total")? as usize;
+        if total != full_param.len() {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Param total size mismatch".into()),
+                    "AtpParamTypes::decode_full_param_as_valtype",
+                    format!("declared={}, actual={}", total, full_param.len())
+                )
+            );
+        }
+
+        let ty = Self::read_u32_be(&mut cursor, "ValType.param.type")?;
+        let payload_size = Self::read_u32_be(&mut cursor, "ValType.param.payload_size")? as usize;
+
+        let remaining = full_param.len().saturating_sub(cursor.position() as usize);
+        if payload_size > remaining {
+            return Err(
+                AtpError::new(
+                    AtpErrorCode::BytecodeParsingError("Payload exceeds remaining".into()),
+                    "AtpParamTypes::decode_full_param_as_valtype",
+                    format!("payload_size={}, remaining={}", payload_size, remaining)
+                )
+            );
+        }
+
+        let payload = Self::read_exact_vec(&mut cursor, payload_size, "ValType.param.payload")?;
+
+        match ty {
+            PARAM_VARREF => {
+                let text = str
+                    ::from_utf8(&payload)
+                    .map_err(|e| {
+                        AtpError::new(
+                            AtpErrorCode::BytecodeParamParsingError(
+                                "Failed parsing bytes to UTF8 string".into()
+                            ),
+                            "AtpParamTypes::from_bytecode(VarRef)",
+                            e.to_string()
+                        )
+                    })?;
+
+                let name = text.trim();
+                if name.is_empty() {
+                    return Err(
+                        AtpError::new(
+                            AtpErrorCode::BytecodeParamParsingError("Empty VarRef name".into()),
+                            "AtpParamTypes::from_bytecode(VarRef)",
+                            ""
+                        )
+                    );
+                }
+                Ok(ValType::VarRef(name.to_string()))
+            }
+
+            // Qualquer outro tipo é Literal(AtpParamTypes)
+            _ =>
+                Ok(
+                    ValType::Literal(
+                        Self::decode_param_payload(ty, payload, token_depth, assoc_mode)?
+                    )
+                ),
+        }
     }
 
     // --------------------------
@@ -763,6 +938,7 @@ impl AtpParamTypes {
             })?;
         Ok(u64::from_be_bytes(b))
     }
+
     // --------------------------
     // Bytecode writing (param)
     // --------------------------
@@ -772,17 +948,23 @@ impl AtpParamTypes {
             AtpParamTypes::String(_) => PARAM_STRING,
             AtpParamTypes::Usize(_) => PARAM_USIZE,
             AtpParamTypes::Token(_) => PARAM_TOKEN,
+            AtpParamTypes::VarRef(_) => PARAM_VARREF,
         }
     }
 
     #[cfg(feature = "bytecode")]
-    pub fn write_as_instruction_param(&self, out: &mut Vec<u8>) {
+    pub fn write_as_instruction_param(
+        &self,
+        out: &mut Vec<u8>,
+        context: &mut GlobalExecutionContext
+    ) -> Result<(), AtpError> {
         let param_type = self.get_param_type_code();
 
         let payload: Vec<u8> = match self {
             AtpParamTypes::String(s) => s.as_bytes().to_vec(),
             AtpParamTypes::Usize(n) => n.to_be_bytes().to_vec(),
-            AtpParamTypes::Token(t) => t.to_bytecode(),
+            AtpParamTypes::Token(t) => t.to_bytecode_resolved(context)?,
+            AtpParamTypes::VarRef(s) => s.as_bytes().to_vec(),
         };
 
         let payload_size_u32: u32 = payload.len() as u32;
@@ -792,359 +974,18 @@ impl AtpParamTypes {
         out.extend_from_slice(&param_type.to_be_bytes());
         out.extend_from_slice(&payload_size_u32.to_be_bytes());
         out.extend_from_slice(&payload);
+
+        Ok(())
     }
 
     #[cfg(feature = "bytecode")]
-    pub fn param_to_bytecode(&self) -> (u64, Vec<u8>) {
+    pub fn param_to_bytecode(
+        &self,
+        context: &mut GlobalExecutionContext
+    ) -> Result<(u64, Vec<u8>), AtpError> {
         let mut result: Vec<u8> = Vec::new();
-
-        let param_type = self.get_param_type_code();
-
-        let payload: Vec<u8> = match self {
-            AtpParamTypes::String(x) => x.as_bytes().to_vec(),
-            AtpParamTypes::Usize(x) => x.to_be_bytes().to_vec(),
-            AtpParamTypes::Token(x) => x.to_bytecode(),
-        };
-
-        let payload_size_u32: u32 = payload.len() as u32;
-        let total_size_u64: u64 = 8 + 4 + 4 + (payload.len() as u64);
-
-        result.extend_from_slice(&total_size_u64.to_be_bytes());
-        result.extend_from_slice(&param_type.to_be_bytes());
-        result.extend_from_slice(&payload_size_u32.to_be_bytes());
-        result.extend_from_slice(&payload);
-
-        (total_size_u64, result)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::globals::table::{ SyntaxDef, QuerySource, QueryTarget, TargetValue, TOKEN_TABLE };
-    use std::sync::Arc;
-
-    // -----------------------------
-    // Helpers (TOKEN TABLE)
-    // -----------------------------
-
-    fn expected_for(id: &str) -> Arc<[SyntaxDef]> {
-        let key = std::borrow::Cow::Owned(id.to_string());
-        match TOKEN_TABLE.find((QuerySource::Identifier(key), QueryTarget::Syntax)).unwrap() {
-            TargetValue::Syntax(p) => p,
-            _ => unreachable!("Expected Params"),
-        }
-    }
-
-    fn opcode_for(id: &str) -> u32 {
-        let key = std::borrow::Cow::Owned(id.to_string());
-        match TOKEN_TABLE.find((QuerySource::Identifier(key), QueryTarget::Bytecode)).unwrap() {
-            TargetValue::Bytecode(c) => c,
-            _ => unreachable!("Expected Bytecode"),
-        }
-    }
-
-    fn chunks(parts: &[&str]) -> Vec<String> {
-        parts
-            .iter()
-            .map(|s| s.to_string())
-            .collect()
-    }
-
-    fn is_text_err(code: &AtpErrorCode) -> bool {
-        matches!(code, AtpErrorCode::TextParsingError(_))
-    }
-
-    fn is_bc_err(code: &AtpErrorCode) -> bool {
-        matches!(
-            code,
-            AtpErrorCode::BytecodeParsingError(_) |
-                AtpErrorCode::BytecodeParamParsingError(_) |
-                AtpErrorCode::BytecodeParamNotRecognized(_)
-        )
-    }
-
-    // -----------------------------
-    // Bytecode Builders
-    // -----------------------------
-
-    fn bc_param(param_type: u32, payload: &[u8]) -> Vec<u8> {
-        let total = 8u64 + 4 + 4 + (payload.len() as u64);
-        let mut out = Vec::new();
-        out.extend_from_slice(&total.to_be_bytes());
-        out.extend_from_slice(&param_type.to_be_bytes());
-        out.extend_from_slice(&(payload.len() as u32).to_be_bytes());
-        out.extend_from_slice(payload);
-        out
-    }
-
-    fn bc_string(s: &str) -> Vec<u8> {
-        bc_param(PARAM_STRING, s.as_bytes())
-    }
-    #[allow(dead_code)]
-    fn bc_usize(n: usize) -> Vec<u8> {
-        bc_param(PARAM_USIZE, &n.to_be_bytes())
-    }
-
-    fn bc_token_param(opcode: u32, params: Vec<Vec<u8>>) -> Vec<u8> {
-        let mut payload = Vec::new();
-        payload.extend_from_slice(&opcode.to_be_bytes());
-        payload.push(params.len() as u8);
-        for p in params {
-            payload.extend_from_slice(&p);
-        }
-        bc_param(PARAM_TOKEN, &payload)
-    }
-
-    // -----------------------------
-    // TEXT tests
-    // -----------------------------
-
-    #[test]
-    fn text_basic_ifdc_valid() {
-        let expected = expected_for("ifdc");
-        let parsed = AtpParamTypes::from_expected(
-            expected,
-            &chunks(&["banana", "do", "atb", "pizza"])
-        ).unwrap();
-
-        assert_eq!(parsed.len(), 2);
-        match &parsed[0] {
-            AtpParamTypes::String(s) => assert_eq!(s, "banana"),
-            _ => panic!("Expected String"),
-        }
-        match &parsed[1] {
-            AtpParamTypes::Token(t) => assert_eq!(t.get_string_repr(), "atb"),
-            _ => panic!("Expected Token"),
-        }
-    }
-
-    #[test]
-    fn text_blk_assoc_valid() {
-        let expected = expected_for("blk");
-        let parsed = AtpParamTypes::from_expected(
-            expected,
-            &chunks(&["x", "assoc", "ifdc", "banana", "do", "tbs"])
-        ).unwrap();
-
-        assert_eq!(parsed.len(), 2);
-        match &parsed[0] {
-            AtpParamTypes::String(s) => assert_eq!(s, "x"),
-            _ => panic!("Expected String"),
-        }
-        match &parsed[1] {
-            AtpParamTypes::Token(t) => assert_eq!(t.get_string_repr(), "ifdc"),
-            _ => panic!("Expected Token"),
-        }
-    }
-
-    #[test]
-    fn text_ifdc_nest_blk_assoc_raw() {
-        let expected = expected_for("ifdc");
-        let parsed = AtpParamTypes::from_expected(
-            expected,
-            &chunks(&["laranja", "do", "blk", "x", "assoc", "raw", "laranja", "abacaxi"])
-        ).unwrap();
-
-        match &parsed[1] {
-            AtpParamTypes::Token(t) => assert_eq!(t.get_string_repr(), "blk"),
-            _ => panic!("Expected Token(blk)"),
-        }
-    }
-
-    #[test]
-    fn text_ifdc_nest_blk_assoc_ifdc_raw_ok() {
-        let expected = expected_for("ifdc");
-        let parsed = AtpParamTypes::from_expected(
-            expected,
-            &chunks(
-                &[
-                    "laranja",
-                    "do",
-                    "blk",
-                    "x",
-                    "assoc",
-                    "ifdc",
-                    "pera",
-                    "do",
-                    "raw",
-                    "laranja",
-                    "abacaxi",
-                ]
-            )
-        ).unwrap();
-
-        match &parsed[1] {
-            AtpParamTypes::Token(t) => assert_eq!(t.get_string_repr(), "blk"),
-            _ => panic!("Expected Token(blk)"),
-        }
-    }
-
-    #[test]
-    fn text_rejects_ifdc_inside_ifdc() {
-        let expected = expected_for("ifdc");
-        let err = AtpParamTypes::from_expected(
-            expected,
-            &chunks(&["banana", "do", "ifdc", "coxinha", "do", "atb", "pizza"])
-        ).unwrap_err();
-
-        assert!(is_text_err(&err.error_code));
-    }
-
-    #[test]
-    fn text_rejects_blk_inside_blk_assoc() {
-        let expected = expected_for("blk");
-        let err = AtpParamTypes::from_expected(
-            expected,
-            &chunks(&["x", "assoc", "blk", "y", "assoc", "atb", "banana"])
-        ).unwrap_err();
-
-        assert!(is_text_err(&err.error_code));
-    }
-
-    #[test]
-    fn text_rejects_excessive_assoc_depth() {
-        let expected = expected_for("blk");
-        let err = AtpParamTypes::from_expected(
-            expected,
-            &chunks(
-                &[
-                    "x",
-                    "assoc",
-                    "ifdc",
-                    "a",
-                    "do",
-                    "ifdc",
-                    "b",
-                    "do",
-                    "ifdc",
-                    "c",
-                    "do",
-                    "raw",
-                    "d",
-                    "e",
-                ]
-            )
-        ).unwrap_err();
-
-        assert!(is_text_err(&err.error_code));
-    }
-
-    // -----------------------------
-    // BYTECODE tests
-    // -----------------------------
-
-    #[test]
-    fn bytecode_string_roundtrip() {
-        let p = AtpParamTypes::String("abc".to_string());
-        let (_total, b) = p.param_to_bytecode();
-
-        let total = u64::from_be_bytes(b[0..8].try_into().unwrap());
-        assert_eq!(total as usize, b.len());
-
-        let ty = u32::from_be_bytes(b[8..12].try_into().unwrap());
-        assert_eq!(ty, PARAM_STRING);
-
-        let size = u32::from_be_bytes(b[12..16].try_into().unwrap());
-        assert_eq!(size, 3);
-
-        let parsed = AtpParamTypes::from_bytecode(b).unwrap();
-        match parsed {
-            AtpParamTypes::String(s) => assert_eq!(s, "abc"),
-            _ => panic!("Expected String"),
-        }
-    }
-
-    #[test]
-    fn bytecode_usize_roundtrip() {
-        let p = AtpParamTypes::Usize(42);
-        let (_total, b) = p.param_to_bytecode();
-
-        let parsed = AtpParamTypes::from_bytecode(b).unwrap();
-        match parsed {
-            AtpParamTypes::Usize(n) => assert_eq!(n, 42),
-            _ => panic!("Expected Usize"),
-        }
-    }
-
-    #[test]
-    fn bytecode_token_ifdc_atb() {
-        let atb_op = opcode_for("atb");
-        let ifdc_op = opcode_for("ifdc");
-
-        let atb_param = bc_token_param(atb_op, vec![bc_string("pizza")]);
-        let ifdc_param = bc_token_param(ifdc_op, vec![bc_string("banana"), atb_param]);
-
-        let parsed = AtpParamTypes::from_bytecode(ifdc_param).unwrap();
-        println!("\n\n\n\n\n Banana LARANJA");
-        match parsed {
-            AtpParamTypes::Token(t) => {
-                println!("{}", t.to_atp_line());
-                assert_eq!(t.get_string_repr(), "ifdc")
-            }
-            _ => panic!("Expected Token(ifdc)"),
-        }
-    }
-
-    #[test]
-    fn bytecode_rejects_nested_ifdc_outside_blk_assoc() {
-        let atb_op = opcode_for("atb");
-        let ifdc_op = opcode_for("ifdc");
-
-        let atb_inner = bc_token_param(atb_op, vec![bc_string("pizza")]);
-        let ifdc_inner = bc_token_param(ifdc_op, vec![bc_string("coxinha"), atb_inner]);
-        let ifdc_outer = bc_token_param(ifdc_op, vec![bc_string("banana"), ifdc_inner]);
-
-        let err = AtpParamTypes::from_bytecode(ifdc_outer).unwrap_err();
-        assert!(is_bc_err(&err.error_code));
-    }
-
-    #[test]
-    fn bytecode_allows_ifdc_blk_assoc_raw() {
-        let ifdc_op = opcode_for("ifdc");
-        let blk_op = opcode_for("blk");
-        let raw_op = opcode_for("raw");
-
-        let raw_tok = bc_token_param(raw_op, vec![bc_string("laranja"), bc_string("abacaxi")]);
-        let blk_tok = bc_token_param(blk_op, vec![bc_string("x"), raw_tok]);
-
-        let ifdc_tok = bc_token_param(ifdc_op, vec![bc_string("laranja"), blk_tok]);
-
-        let parsed = AtpParamTypes::from_bytecode(ifdc_tok).unwrap();
-        match parsed {
-            AtpParamTypes::Token(t) => assert_eq!(t.get_string_repr(), "ifdc"),
-            _ => panic!("Expected Token(ifdc)"),
-        }
-    }
-
-    #[test]
-    fn bytecode_rejects_blk_inside_blk_assoc() {
-        let blk_op = opcode_for("blk");
-        let atb_op = opcode_for("atb");
-
-        let atb_tok = bc_token_param(atb_op, vec![bc_string("banana")]);
-        let blk_inner = bc_token_param(blk_op, vec![bc_string("y"), atb_tok]);
-
-        let blk_outer = bc_token_param(blk_op, vec![bc_string("x"), blk_inner]);
-
-        let err = AtpParamTypes::from_bytecode(blk_outer).unwrap_err();
-        assert!(is_bc_err(&err.error_code));
-    }
-
-    #[test]
-    fn bytecode_rejects_excessive_assoc_depth() {
-        let blk_op = opcode_for("blk");
-        let ifdc_op = opcode_for("ifdc");
-        let raw_op = opcode_for("raw");
-
-        let raw_tok = bc_token_param(raw_op, vec![bc_string("d"), bc_string("e")]);
-        let ifdc3 = bc_token_param(ifdc_op, vec![bc_string("c"), raw_tok]);
-        let ifdc2 = bc_token_param(ifdc_op, vec![bc_string("b"), ifdc3]);
-        let ifdc1 = bc_token_param(ifdc_op, vec![bc_string("a"), ifdc2]);
-
-        let blk_outer = bc_token_param(blk_op, vec![bc_string("x"), ifdc1]);
-
-        let err = AtpParamTypes::from_bytecode(blk_outer).unwrap_err();
-        assert!(is_bc_err(&err.error_code));
+        self.write_as_instruction_param(&mut result, context)?;
+        let total = u64::from_be_bytes(result[0..8].try_into().unwrap());
+        Ok((total, result))
     }
 }

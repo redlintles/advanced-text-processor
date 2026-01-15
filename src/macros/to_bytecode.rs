@@ -2,6 +2,7 @@
 macro_rules! to_bytecode {
     ($opcode:expr, [$($param:expr),* $(,)?]) => {
         {
+        use crate::context::execution_context::GlobalExecutionContext;
         // Coleta os params pra contar e iterar
         let params_vec: Vec<crate::utils::params::AtpParamTypes> = vec![$($param),*];
 
@@ -16,8 +17,10 @@ macro_rules! to_bytecode {
         body.extend_from_slice(&opcode_u32.to_be_bytes());
         body.push(param_count_u8);
 
+        let mut ctx = GlobalExecutionContext::new();
+
         for p in &params_vec {
-            p.write_as_instruction_param(&mut body);
+            p.write_as_instruction_param(&mut body, &mut ctx);
         }
 
         // Instruction Total Size = bytes do body (4 + 1 + params...)
