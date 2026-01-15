@@ -1,6 +1,7 @@
 use crate::{
     api::{ AtpBuilderMethods, AtpConditionalMethods },
-    tokens::{ InstructionMethods, instructions::blk::{ Blk } },
+    globals::var::TokenWrapper,
+    tokens::{ InstructionMethods, instructions::blk::Blk },
     utils::{ errors::AtpError, params::AtpParamTypes },
 };
 
@@ -23,10 +24,10 @@ impl BlockBuilder {
 }
 
 impl AtpBuilderMethods for BlockBuilder {
-    fn push_token(&mut self, t: Box<dyn InstructionMethods>) -> Result<(), AtpError> {
-        let param_vec = vec![
-            AtpParamTypes::String(self.block_name.to_string()),
-            AtpParamTypes::Token(t)
+    fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), AtpError> {
+        let param_vec: Vec<AtpParamTypes> = vec![
+            self.block_name.to_string().into(),
+            t.into().into()
         ];
 
         let mut new_block = Box::new(Blk::default());

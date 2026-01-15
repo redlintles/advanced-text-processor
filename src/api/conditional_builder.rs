@@ -1,5 +1,6 @@
 use crate::{
     api::AtpBuilderMethods,
+    globals::var::TokenWrapper,
     tokens::InstructionMethods,
     utils::{ errors::AtpError, params::AtpParamTypes },
 };
@@ -26,13 +27,12 @@ impl ConditionalBuilderEach {
 
 // push_token funciona normalmente para incrementar conditional_tokens
 impl AtpBuilderMethods for ConditionalBuilderEach {
-    fn push_token(&mut self, t: Box<dyn crate::tokens::InstructionMethods>) -> Result<(), AtpError> {
-        let mut new_token = self.token.clone();
-        let token_param = AtpParamTypes::Token(t);
+    fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), AtpError> {
+        let mut new_token: Box<dyn InstructionMethods> = self.token.clone();
 
         let mut param_vec = self.params.clone();
 
-        param_vec.push(token_param);
+        param_vec.push(t.into().into());
 
         new_token.from_params(&param_vec)?;
 

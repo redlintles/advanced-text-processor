@@ -1,10 +1,14 @@
 use std::collections::HashMap;
-use crate::{ tokens::InstructionMethods, utils::errors::{ AtpError, AtpErrorCode } };
+use crate::{
+    globals::var::{ TokenWrapper, ValType },
+    tokens::InstructionMethods,
+    utils::errors::{ AtpError, AtpErrorCode },
+};
 #[derive(Clone)]
 pub enum VarValues {
     String(String),
     Usize(usize),
-    Token(Box<dyn InstructionMethods>),
+    Token(TokenWrapper),
 }
 
 pub enum ToClean {
@@ -22,7 +26,7 @@ pub struct VarEntry {
 // Some tokens could access this object for additional data
 pub struct GlobalExecutionContext {
     variables: HashMap<String, VarEntry>,
-    blocks: HashMap<String, Vec<Box<dyn InstructionMethods>>>,
+    blocks: HashMap<String, Vec<TokenWrapper>>,
 }
 
 // Variable Concept
@@ -43,11 +47,7 @@ pub struct GlobalExecutionContext {
 // cblk {name}; will execute all instructions stored in the {name} block;
 
 pub trait GlobalContextMethods {
-    fn add_to_block(
-        &mut self,
-        block_id: &str,
-        token: Box<dyn InstructionMethods>
-    ) -> Result<(), AtpError>;
+    fn add_to_block(&mut self, block_id: &str, token: TokenWrapper) -> Result<(), AtpError>;
     fn get_formatted_block_items(&mut self, block_id: &str) -> Result<String, AtpError>;
 
     fn add_var(&mut self, id: &str, var_entry: VarEntry) -> Result<(), AtpError>;
@@ -56,8 +56,8 @@ pub trait GlobalContextMethods {
 
     // It would require a more complex implementation. but would help optimizing atp in the future. This will remove data that will no longer be used from the context.
     fn clean_context(&mut self) -> () {}
-    fn take_block(&mut self, block_id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError>;
-    fn put_block(&mut self, block_id: &str, block: Vec<Box<dyn InstructionMethods>>);
+    fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, AtpError>;
+    fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>);
 }
 
 impl GlobalExecutionContext {
@@ -67,11 +67,7 @@ impl GlobalExecutionContext {
 }
 
 impl GlobalContextMethods for GlobalExecutionContext {
-    fn add_to_block(
-        &mut self,
-        block_id: &str,
-        token: Box<dyn InstructionMethods>
-    ) -> Result<(), AtpError> {
+    fn add_to_block(&mut self, block_id: &str, token: TokenWrapper) -> Result<(), AtpError> {
         match self.blocks.get_mut(block_id) {
             Some(tokens) => {
                 tokens.push(token);
@@ -87,7 +83,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         Ok(())
     }
 
-    fn take_block(&mut self, block_id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
+    fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, AtpError> {
         self.blocks
             .remove(block_id)
             .ok_or_else(|| {
@@ -99,7 +95,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
             })
     }
 
-    fn put_block(&mut self, block_id: &str, block: Vec<Box<dyn InstructionMethods>>) {
+    fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>) {
         self.blocks.insert(block_id.to_string(), block);
     }
 

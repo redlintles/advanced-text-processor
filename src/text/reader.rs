@@ -1,8 +1,10 @@
 use std::{ fs::OpenOptions, io::{ BufRead, BufReader }, path::Path };
 
 use crate::{
-    globals::table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
-    tokens::InstructionMethods,
+    globals::{
+        table::{ QuerySource, QueryTarget, TOKEN_TABLE, TargetValue },
+        var::{ TokenWrapper },
+    },
     utils::{
         errors::{ AtpError, AtpErrorCode },
         params::AtpParamTypes,
@@ -10,7 +12,7 @@ use crate::{
     },
 };
 
-pub fn read_from_text(token_string: &str) -> Result<Box<dyn InstructionMethods>, AtpError> {
+pub fn read_from_text(token_string: &str) -> Result<TokenWrapper, AtpError> {
     let chunks = match
         shell_words::split(
             &token_string
@@ -55,21 +57,21 @@ pub fn read_from_text(token_string: &str) -> Result<Box<dyn InstructionMethods>,
 
     match token_query {
         TargetValue::Token(token_ref) => {
-            let mut token = token_ref.into_box();
+            let token = token_ref.into_box();
 
             let parsed_params = AtpParamTypes::from_expected(token_param_types, &chunks[1..])?;
 
-            token.from_params(&parsed_params)?;
+            let wrapper = TokenWrapper::new(token, Some(parsed_params));
 
-            Ok(token)
+            Ok(wrapper)
         }
         _ => unreachable!("Invalid query result!"),
     }
 }
 
-pub fn read_from_file(path: &Path) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
+pub fn read_from_file(path: &Path) -> Result<Vec<TokenWrapper>, AtpError> {
     check_file_path(path, Some("atp"))?;
-    let mut result: Vec<Box<dyn InstructionMethods>> = Vec::new();
+    let mut result = Vec::new();
 
     let file = match OpenOptions::new().read(true).open(path) {
         Ok(x) => x,

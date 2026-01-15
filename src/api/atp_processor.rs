@@ -9,7 +9,7 @@ use crate::api::atp_builder::AtpBuilder;
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 use crate::context::execution_context::{ GlobalContextMethods, GlobalExecutionContext };
-use crate::tokens::InstructionMethods;
+use crate::globals::var::{ TokenWrapper };
 
 use crate::utils::apply::apply_transform;
 use crate::text::reader::read_from_file;
@@ -22,7 +22,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode, ErrorManager, token_array_no
 /// `AtpProcessor` is the main **execution engine** of ATP (Advanced Text Processor).
 ///
 /// It stores multiple linear transformation pipelines (called **transforms**) identified
-/// by a `String` ID (generated with UUID). Each transform is a `Vec<Box<dyn InstructionMethods>>`,
+/// by a `String` ID (generated with UUID). Each transform is a `Vec<TokenWrapper>`,
 /// i.e. a sequence of tokens executed from left to right.
 ///
 /// # Core concepts
@@ -190,7 +190,7 @@ use crate::utils::errors::{ AtpError, AtpErrorCode, ErrorManager, token_array_no
 /// - The pipeline is **one giant vector** of tokens; execution is deterministic and ordered.
 /// - Debug methods (`*_with_debug`) only add printing; they do not change execution.
 pub struct AtpProcessor {
-    transforms: HashMap<String, Vec<Box<dyn InstructionMethods>>>,
+    transforms: HashMap<String, Vec<TokenWrapper>>,
     errors: ErrorManager,
 }
 
@@ -200,7 +200,7 @@ pub struct AtpProcessor {
 /// executed, persisted, inspected, and removed.
 ///
 /// A **transform** is stored internally as:
-/// `HashMap<String, Vec<Box<dyn InstructionMethods>>>`
+/// `HashMap<String, Vec<TokenWrapper>>`
 ///
 /// Where the key is a UUID string and the value is a linear sequence of tokens.
 ///
@@ -253,7 +253,7 @@ pub trait AtpProcessorMethods {
     ///
     /// # Returns
     /// The UUID string identifying the newly registered transform.
-    fn add_transform(&mut self, tokens: Vec<Box<dyn InstructionMethods>>) -> String;
+    fn add_transform(&mut self, tokens: Vec<TokenWrapper>) -> String;
 
     /// Executes all tokens of a registered transform from left to right.
     ///
@@ -289,11 +289,7 @@ pub trait AtpProcessorMethods {
     ///
     /// # Errors
     /// Returns `Err` if the token’s `transform` fails.
-    fn process_single(
-        &mut self,
-        token: Box<dyn InstructionMethods>,
-        input: &str
-    ) -> Result<String, AtpError>;
+    fn process_single(&mut self, token: TokenWrapper, input: &str) -> Result<String, AtpError>;
 
     /// Executes a registered transform like `process_all`, but prints each step.
     ///
@@ -325,7 +321,7 @@ pub trait AtpProcessorMethods {
     /// Returns `Err` if the token’s `transform` fails.
     fn process_single_with_debug(
         &mut self,
-        token: Box<dyn InstructionMethods>,
+        token: TokenWrapper,
         input: &str
     ) -> Result<String, AtpError>;
 
@@ -365,11 +361,11 @@ pub trait AtpProcessorMethods {
     /// - composing transforms (if you later support merging)
     ///
     /// # Returns
-    /// A cloned `Vec<Box<dyn InstructionMethods>>`.
+    /// A cloned `Vec<TokenWrapper>`.
     ///
     /// # Errors
     /// Returns `Err(TokenArrayNotFound)` if the transform does not exist.
-    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError>;
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<TokenWrapper>, AtpError>;
 
     /// Returns the textual `.atp` lines for a given transform `id`.
     ///
@@ -443,7 +439,7 @@ pub trait AtpProcessorMethods {
     #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn InstructionMethods>,
+        token: TokenWrapper,
         input: &str
     ) -> Result<String, AtpError>;
 }
@@ -521,13 +517,13 @@ impl AtpProcessorMethods for AtpProcessor {
         let mut result = String::from(input);
 
         let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id));
+        let mut context = GlobalExecutionContext::new();
 
         match tokens {
             Ok(tks) => {
-                let mut context = GlobalExecutionContext::new();
                 for token in tks.iter() {
                     result = apply_transform(
-                        token.as_ref(),
+                        token,
                         result.as_str(),
                         &mut self.errors,
                         &mut context
@@ -542,11 +538,10 @@ impl AtpProcessorMethods for AtpProcessor {
         }
     }
 
-    fn add_transform(&mut self, tokens: Vec<Box<dyn InstructionMethods>>) -> String {
-        let identifier = Uuid::new_v4();
-        self.transforms.insert(identifier.to_string(), tokens);
-
-        identifier.to_string()
+    fn add_transform(&mut self, tokens: Vec<TokenWrapper>) -> String {
+        let identifier = Uuid::new_v4().to_string();
+        self.transforms.insert(identifier.clone(), tokens);
+        identifier
     }
 
     fn remove_transform(&mut self, id: &str) -> Result<(), AtpError> {
@@ -582,7 +577,7 @@ impl AtpProcessorMethods for AtpProcessor {
         self.transforms.contains_key(id)
     }
 
-    fn get_transform_vec(&self, id: &str) -> Result<Vec<Box<dyn InstructionMethods>>, AtpError> {
+    fn get_transform_vec(&self, id: &str) -> Result<Vec<TokenWrapper>, AtpError> {
         Ok(
             self.transforms
                 .get(id)
@@ -613,18 +608,14 @@ impl AtpProcessorMethods for AtpProcessor {
                 })?
                 .clone()
                 .iter()
-                .map(|t| t.to_atp_line().to_string())
-                .collect::<Vec<String>>()
+                .map(|t| t.to_text_line_unresolved().map(|s| s.to_string()))
+                .collect::<Result<Vec<String>, AtpError>>()?
         )
     }
 
-    fn process_single(
-        &mut self,
-        token: Box<dyn InstructionMethods>,
-        input: &str
-    ) -> Result<String, AtpError> {
+    fn process_single(&mut self, token: TokenWrapper, input: &str) -> Result<String, AtpError> {
         let mut context = GlobalExecutionContext::new();
-        match token.transform(input, &mut context) {
+        match token.apply_token(input, &mut context) {
             Ok(x) => Ok(x),
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -652,12 +643,7 @@ impl AtpProcessorMethods for AtpProcessor {
         let mut context = GlobalExecutionContext::new();
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = apply_transform(
-                token.as_ref(),
-                result.as_str(),
-                &mut self.errors,
-                &mut context
-            )?;
+            let temp = apply_transform(token, result.as_str(), &mut self.errors, &mut context)?;
 
             if token.get_string_repr() == "blk" {
                 // Gambiarra feia, futuramente pensar em forma melhor de consultar os parâmetros de um token
@@ -714,11 +700,11 @@ impl AtpProcessorMethods for AtpProcessor {
 
     fn process_single_with_debug(
         &mut self,
-        token: Box<dyn InstructionMethods>,
+        token: TokenWrapper,
         input: &str
     ) -> Result<String, AtpError> {
         let mut ctx = GlobalExecutionContext::new();
-        let output = match token.transform(input, &mut ctx) {
+        let output = match token.apply_token(input, &mut ctx) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -779,12 +765,7 @@ impl AtpProcessorMethods for AtpProcessor {
         let mut context = GlobalExecutionContext::new();
 
         for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            let temp = apply_transform(
-                token.as_ref(),
-                result.as_str(),
-                &mut self.errors,
-                &mut context
-            )?;
+            let temp = apply_transform(token, result.as_str(), &mut self.errors, &mut context)?;
             println!(
                 "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n",
                 counter.to_string().blue(),
@@ -806,11 +787,11 @@ impl AtpProcessorMethods for AtpProcessor {
     #[cfg(feature = "bytecode")]
     fn process_single_bytecode_with_debug(
         &mut self,
-        token: Box<dyn InstructionMethods>,
+        token: TokenWrapper,
         input: &str
     ) -> Result<String, AtpError> {
         let mut ctx = GlobalExecutionContext::new();
-        let output = match token.transform(input, &mut ctx) {
+        let output = match token.apply_token(input, &mut ctx) {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());

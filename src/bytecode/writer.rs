@@ -1,29 +1,25 @@
-use std::{fs::OpenOptions, io::Write, path::Path};
+use std::{ fs::OpenOptions, io::Write, path::Path };
 
 use crate::{
-    tokens::InstructionMethods,
-    utils::{errors::AtpError, validations::check_file_path},
+    globals::var::TokenWrapper,
+    utils::{ errors::AtpError, validations::check_file_path },
 };
 
-pub fn write_bytecode_to_file(
-    path: &Path,
-    tokens: Vec<Box<dyn InstructionMethods>>,
-) -> Result<(), AtpError> {
+pub fn write_bytecode_to_file(path: &Path, tokens: Vec<TokenWrapper>) -> Result<(), AtpError> {
     check_file_path(path, Some("atpbc"))?;
 
-    let mut file = match OpenOptions::new()
-        .create(true)
-        .truncate(true)
-        .write(true)
-        .open(path)
-    {
+    let mut file = match OpenOptions::new().create(true).truncate(true).write(true).open(path) {
         Ok(x) => x,
         Err(_) => {
-            return Err(AtpError::new(
-                crate::utils::errors::AtpErrorCode::FileOpeningError("Failed opening File".into()),
-                "",
-                format!("{:?}", path),
-            ));
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::FileOpeningError(
+                        "Failed opening File".into()
+                    ),
+                    "",
+                    format!("{:?}", path)
+                )
+            );
         }
     };
 
@@ -42,29 +38,33 @@ pub fn write_bytecode_to_file(
     match file.write(&header) {
         Ok(_) => (),
         Err(_) => {
-            return Err(AtpError::new(
-                crate::utils::errors::AtpErrorCode::FileWritingError(
-                    "Failed writing text to atp file".into(),
-                ),
-                "Write bytecode to file",
-                "Header writing error",
-            ));
+            return Err(
+                AtpError::new(
+                    crate::utils::errors::AtpErrorCode::FileWritingError(
+                        "Failed writing text to atp file".into()
+                    ),
+                    "Write bytecode to file",
+                    "Header writing error"
+                )
+            );
         }
     }
 
     for token in tokens.iter() {
-        let line = token.to_bytecode();
+        let line = token.to_bytecode_unresolved()?;
 
         match file.write(&line) {
             Ok(_) => (),
             Err(_) => {
-                return Err(AtpError::new(
-                    crate::utils::errors::AtpErrorCode::FileWritingError(
-                        "Failed writing text to atp file".into(),
-                    ),
-                    "Write bytecode to file",
-                    token.to_atp_line(),
-                ));
+                return Err(
+                    AtpError::new(
+                        crate::utils::errors::AtpErrorCode::FileWritingError(
+                            "Failed writing text to atp file".into()
+                        ),
+                        "Write bytecode to file",
+                        token.to_atp_line()
+                    )
+                );
             }
         }
     }
